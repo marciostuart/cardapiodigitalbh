@@ -22,6 +22,7 @@
                         <x-nav-link :href="route('owner.inventory.index')" :active="request()->routeIs('owner.inventory.*')">Estoque</x-nav-link>
                         <x-nav-link :href="route('owner.schedules.index')" :active="request()->routeIs('owner.schedules.*')">Horários</x-nav-link>
                         <x-nav-link :href="route('owner.commerce.index')" :active="request()->routeIs('owner.commerce.*')">Vendas</x-nav-link>
+                        <x-nav-link :href="route('owner.reports.index')" :active="request()->routeIs('owner.reports.*')">Relatórios</x-nav-link>
                         <x-nav-link :href="route('owner.team')" :active="request()->routeIs('owner.team*')">Equipe</x-nav-link>
                         <x-nav-link :href="route('owner.settings')" :active="request()->routeIs('owner.settings*')">Configurações</x-nav-link>
                         <x-nav-link :href="route('owner.whatsapp.index')" :active="request()->routeIs('owner.whatsapp.*')">WhatsApp</x-nav-link>
@@ -106,6 +107,7 @@
                 <x-responsive-nav-link :href="route('owner.inventory.index')" :active="request()->routeIs('owner.inventory.*')">Estoque</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('owner.schedules.index')" :active="request()->routeIs('owner.schedules.*')">Horários</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('owner.commerce.index')" :active="request()->routeIs('owner.commerce.*')">Vendas</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('owner.reports.index')" :active="request()->routeIs('owner.reports.*')">Relatórios</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('owner.team')" :active="request()->routeIs('owner.team*')">Equipe</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('owner.settings')" :active="request()->routeIs('owner.settings*')">Configurações</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('owner.whatsapp.index')" :active="request()->routeIs('owner.whatsapp.*')">WhatsApp</x-responsive-nav-link>

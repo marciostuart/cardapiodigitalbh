@@ -16,6 +16,7 @@ use App\Http\Controllers\OwnerInventoryController;
 use App\Http\Controllers\OwnerScheduleController;
 use App\Http\Controllers\OwnerCommerceController;
 use App\Http\Controllers\OwnerOrderController;
+use App\Http\Controllers\OwnerReportController;
 use App\Http\Controllers\OwnerTableController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicMenuController;
@@ -115,6 +116,8 @@ Route::middleware(['auth', 'account.active'])->group(function () {
         Route::patch('/painel/regioes-entrega/{zone}', [OwnerCommerceController::class, 'updateZone'])->name('owner.delivery-zones.update');
         Route::get('/painel/pedidos', [OwnerOrderController::class, 'index'])->name('owner.orders.index');
         Route::patch('/painel/pedidos/{order}', [OwnerOrderController::class, 'update'])->name('owner.orders.update');
+        Route::get('/painel/relatorios', [OwnerReportController::class, 'index'])->name('owner.reports.index');
+        Route::get('/painel/relatorios/pedidos.csv', [OwnerReportController::class, 'csv'])->name('owner.reports.csv');
         Route::get('/painel/integracoes/whatsapp', [WhatsappIntegrationController::class, 'index'])->name('owner.whatsapp.index');
         Route::post('/painel/integracoes/whatsapp/conectar', [WhatsappIntegrationController::class, 'connect'])->name('owner.whatsapp.connect');
         Route::post('/painel/integracoes/whatsapp/atualizar', [WhatsappIntegrationController::class, 'refresh'])->name('owner.whatsapp.refresh');
