@@ -36,6 +36,7 @@ Plataforma SaaS independente para restaurantes, bares e lanchonetes: cardápio d
 - O Owner da plataforma dispõe de `Reset Whats`, que destrói somente o nome de instância associado ao tenant selecionado e registra auditoria.
 - Estoque suporta produto acabado, insumos, ficha técnica, reserva transacional, consumo idempotente, devolução antes do preparo, ajustes e alertas mínimos.
 - Funcionamento automático suporta múltiplos intervalos, horários após meia-noite e abertura/fechamento manual temporário.
+- Exceções de calendário substituem os horários semanais em feriados e datas especiais, com fechamento integral ou intervalo próprio.
 - Geofence opcional valida latitude/longitude no servidor e aceita raio entre 20 e 1.000 metros.
 - Cardápio público aceita mesa, retirada e delivery; inclui clientes, endereço ViaCEP, regiões/taxas, pedido mínimo, cupons, troco e acompanhamento por token público.
 - Gestão de pedidos aplica uma máquina de estados progressiva e dispara eventos transacionais do WhatsApp quando houver consentimento.
@@ -83,7 +84,7 @@ Plataforma SaaS independente para restaurantes, bares e lanchonetes: cardápio d
 1. Adotar a stack pelo Portainer para controle Total quando o produto estiver estável.
 2. Decidir quando tornar a verificação de e-mail obrigatória; o template e a infraestrutura de envio já estão preparados.
 3. Integrar o MinIO para fotos de produtos quando as credenciais e o bucket exclusivos do projeto forem definidos.
-4. Completar banners, Web Push, agente de impressão e exceções de calendário.
+4. Completar banners, Web Push e agente de impressão.
 5. Homologar Mercado Pago por estabelecimento somente após estabilização do núcleo operacional.
 6. Em etapa posterior, implementar cobrança SaaS, marketplace, anúncios, afiliados e vouchers.
 

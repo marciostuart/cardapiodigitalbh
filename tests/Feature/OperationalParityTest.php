@@ -10,6 +10,7 @@ use App\Models\ProductCategory;
 use App\Models\Tenant;
 use App\Models\Venue;
 use App\Models\VenueSchedule;
+use App\Models\VenueScheduleException;
 use App\Services\InventoryService;
 use App\Services\WhatsappNotifier;
 use App\Support\VenueAvailability;
@@ -46,6 +47,19 @@ class OperationalParityTest extends TestCase
         $this->assertEquals(2, (float) $product->fresh()->stock_reserved);
         $this->assertEquals(200, (float) $ingredient->fresh()->stock_reserved);
         $this->postJson(route('public.qr-order', $table->qr_token), ['items' => [['product_id' => $product->id, 'quantity' => 1]]])->assertUnprocessable();
+    }
+
+    public function test_calendar_exception_overrides_weekly_schedule(): void
+    {
+        [, $venue] = $this->venue('holiday');
+        VenueSchedule::create(['venue_id' => $venue->id, 'day_of_week' => 1, 'opens_at' => '08:00', 'closes_at' => '23:00']);
+        VenueScheduleException::create(['venue_id' => $venue->id, 'date' => '2026-08-24', 'is_closed' => true, 'note' => 'Feriado']);
+        $timezone = $venue->timezone ?: 'America/Sao_Paulo';
+        $this->assertFalse(VenueAvailability::isOpen($venue, CarbonImmutable::parse('2026-08-24 12:00', $timezone)));
+
+        VenueScheduleException::where('venue_id', $venue->id)->update(['is_closed' => false, 'opens_at' => '18:00', 'closes_at' => '22:00']);
+        $this->assertFalse(VenueAvailability::isOpen($venue, CarbonImmutable::parse('2026-08-24 12:00', $timezone)));
+        $this->assertTrue(VenueAvailability::isOpen($venue, CarbonImmutable::parse('2026-08-24 20:00', $timezone)));
     }
 
     public function test_consumption_is_idempotent(): void

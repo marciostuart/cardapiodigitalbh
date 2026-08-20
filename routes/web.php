@@ -115,6 +115,8 @@ Route::middleware(['auth', 'account.active'])->group(function () {
         Route::post('/painel/horarios', [OwnerScheduleController::class, 'store'])->name('owner.schedules.store');
         Route::delete('/painel/horarios/{schedule}', [OwnerScheduleController::class, 'destroy'])->name('owner.schedules.destroy');
         Route::patch('/painel/horarios/funcionamento', [OwnerScheduleController::class, 'override'])->name('owner.schedules.override');
+        Route::post('/painel/horarios/excecoes', [OwnerScheduleController::class, 'storeException'])->name('owner.schedule-exceptions.store');
+        Route::delete('/painel/horarios/excecoes/{exception}', [OwnerScheduleController::class, 'destroyException'])->name('owner.schedule-exceptions.destroy');
         Route::get('/painel/vendas', [OwnerCommerceController::class, 'index'])->name('owner.commerce.index');
         Route::post('/painel/cupons', [OwnerCommerceController::class, 'storeCoupon'])->name('owner.coupons.store');
         Route::patch('/painel/cupons/{coupon}', [OwnerCommerceController::class, 'updateCoupon'])->name('owner.coupons.update');
