@@ -22,6 +22,7 @@ class OwnerDashboardController extends Controller
             'openTabs' => $venue ? Tab::where('venue_id', $venue->id)->where('status', 'open')->count() : 0,
             'todaySales' => $venue ? Order::where('venue_id', $venue->id)->where('status', '!=', 'cancelled')->where('created_at', '>=', now()->startOfDay())->sum('total') : 0,
             'tables' => $venue ? $venue->diningTables()->count() : 0,
+            'publicMenuUrl' => $venue ? 'https://'.$venue->subdomain.'.cardapiodigitalbh.com.br/menu' : null,
         ]);
     }
 }
