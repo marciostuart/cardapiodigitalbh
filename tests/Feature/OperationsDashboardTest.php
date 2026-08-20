@@ -30,6 +30,6 @@ class OperationsDashboardTest extends TestCase
             ->assertOk()
             ->assertSee('Bistro Central')
             ->assertSee('Mesa 12')
-            ->assertSee('Mesas e comandas em tempo real');
+            ->assertSee('Vendas de hoje');
     }
 }
