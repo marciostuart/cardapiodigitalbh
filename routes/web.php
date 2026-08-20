@@ -7,3 +7,4 @@ Route::get('/', function () {
 });
 
 Route::middleware('tenant')->get('/menu', [\App\Http\Controllers\PublicMenuController::class, 'show']);
+Route::post('/onboarding/venues', [\App\Http\Controllers\VenueRegistrationController::class, 'store']);
