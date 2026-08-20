@@ -13,12 +13,14 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - ./:/var/www/html:ro
     networks: [360Network, internal]
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.cardapio.rule=Host(`cardapiodigitalbh.com.br`) || HostRegexp(`{subdomain:[a-z0-9-]+}.cardapiodigitalbh.com.br`)
-      - traefik.http.routers.cardapio.entrypoints=websecure
-      - traefik.http.routers.cardapio.tls=true
-      - traefik.http.services.cardapio.loadbalancer.server.port=8080
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=360Network
+        - traefik.http.routers.cardapio.rule=Host(`cardapiodigitalbh.com.br`) || HostRegexp(`{subdomain:[a-z0-9-]+}.cardapiodigitalbh.com.br`)
+        - traefik.http.routers.cardapio.entrypoints=websecure
+        - traefik.http.routers.cardapio.tls=true
+        - traefik.http.services.cardapio.loadbalancer.server.port=8080
   worker:
     build: .
     image: cardapiodigitalbh:latest
