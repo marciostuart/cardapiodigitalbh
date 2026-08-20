@@ -1,17 +1,1 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Dashboard') }}
-        </h2>
-    </x-slot>
-
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    {{ __("You're logged in!") }}
-                </div>
-            </div>
-        </div>
-    </div>
-</x-app-layout>
+<x-app-layout><x-slot name="header"><h2 class="font-semibold text-xl text-gray-800 leading-tight">Visão geral</h2></x-slot><div class="py-10"><div class="max-w-7xl mx-auto sm:px-6 lg:px-8">@if($venue)<div class="overflow-hidden rounded-2xl bg-slate-900 p-8 text-white shadow-sm"><p class="text-sm font-semibold text-emerald-300">ESTABELECIMENTO</p><h1 class="mt-2 text-3xl font-bold">{{ $venue->name }}</h1><p class="mt-2 text-slate-300">{{ $venue->subdomain }}.cardapiodigitalbh.com.br</p><div class="mt-7 grid gap-4 sm:grid-cols-3"><div class="rounded-xl bg-white/10 p-4"><span class="text-sm text-slate-300">Mesas cadastradas</span><b class="mt-1 block text-2xl">{{ $tables }}</b></div><div class="rounded-xl bg-white/10 p-4"><span class="text-sm text-slate-300">Comandas abertas</span><b class="mt-1 block text-2xl">{{ $openTabs }}</b></div><div class="rounded-xl bg-white/10 p-4"><span class="text-sm text-slate-300">Vendas de hoje</span><b class="mt-1 block text-2xl">R$ {{ number_format((float)$todaySales,2,',','.') }}</b></div></div></div><div class="mt-6 grid gap-4 md:grid-cols-3"><a class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200" href="#"><b class="text-lg">Operação do salão</b><p class="mt-2 text-sm text-slate-500">Mesas e comandas.</p></a><a class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200" href="#"><b class="text-lg">Cadastrar produtos</b><p class="mt-2 text-sm text-slate-500">Monte seu cardápio.</p></a><a class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200" href="#"><b class="text-lg">Cadastrar mesas</b><p class="mt-2 text-sm text-slate-500">Gere QR Codes.</p></a></div>@else<div class="rounded-2xl bg-white p-8 shadow-sm"><h1 class="text-2xl font-bold">Vamos configurar seu estabelecimento.</h1><p class="mt-2 text-slate-500">Não encontramos um estabelecimento vinculado à sua conta.</p></div>@endif</div></div></x-app-layout>
