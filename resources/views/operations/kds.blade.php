@@ -11,7 +11,7 @@
                         @foreach($order->items as $item)
                             <form method="post" action="{{ route('kds.items.update', $item) }}" class="py-3">@csrf @method('patch')
                                 <div class="flex justify-between gap-3"><div><b>{{ $item->quantity }}× {{ $item->name_snapshot }}</b>@if($item->options_snapshot)<p class="text-xs font-semibold text-emerald-700">{{ collect($item->options_snapshot)->pluck('name')->join(', ') }}</p>@endif<p class="text-xs text-slate-500">{{ $item->station === 'bar' ? 'Bar' : 'Cozinha' }} · {{ $item->status }}</p></div>
-                                    <select name="status" onchange="this.form.submit()" class="rounded-lg border-slate-300 text-sm"><option value="accepted" @selected($item->status === 'accepted' || $item->status === 'pending')>Aceito</option><option value="preparing" @selected($item->status === 'preparing')>Preparando</option><option value="ready" @selected($item->status === 'ready')>Pronto</option><option value="cancelled" @selected($item->status === 'cancelled')>Cancelado</option></select>
+                                    <select name="status" onchange="this.form.submit()" class="rounded-lg border-slate-300 text-sm"><option value="accepted" @selected($item->status === 'accepted' || $item->status === 'pending')>Aceito</option><option value="preparing" @selected($item->status === 'preparing')>Em preparo</option><option value="ready" @selected($item->status === 'ready')>Pronto</option><option value="cancelled" @selected($item->status === 'cancelled')>Cancelado</option></select>
                                 </div>
                             </form>
                         @endforeach

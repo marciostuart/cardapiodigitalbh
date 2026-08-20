@@ -21,7 +21,7 @@
             @if(session()->has('impersonator_id'))
                 <div class="bg-amber-300 px-4 py-3 text-center text-sm font-bold text-amber-950">
                     Modo suporte: você está acessando a conta de um cliente.
-                    <form method="POST" action="{{ route('admin.leave') }}" class="ml-3 inline">@csrf<button class="underline">Retornar ao Owner</button></form>
+                    <form method="POST" action="{{ route('admin.leave') }}" class="ml-3 inline">@csrf<button class="underline">Retornar ao proprietário</button></form>
                 </div>
             @endif
 

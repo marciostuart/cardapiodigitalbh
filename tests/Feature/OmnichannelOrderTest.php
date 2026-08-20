@@ -37,6 +37,20 @@ class OmnichannelOrderTest extends TestCase
         $this->postJson('http://no-delivery.cardapiodigitalbh.com.br/pedidos', ['channel' => 'delivery', 'customer_name' => 'Ana', 'customer_phone' => '31999999999', 'payment_method' => 'pix', 'delivery_zone_id' => 1, 'postal_code' => '30110-000', 'street' => 'Rua A', 'number' => '10', 'neighborhood' => 'Centro', 'city' => 'BH', 'state' => 'MG', 'items' => [['product_id' => $product->id, 'quantity' => 1]]])->assertUnprocessable();
     }
 
+    public function test_public_order_allows_optional_name_and_phone_without_whatsapp_consent(): void
+    {
+        [, $venue, $product] = $this->catalog('optional-contact');
+        $venue->update(['pickup_enabled' => true]);
+
+        $this->postJson('http://optional-contact.cardapiodigitalbh.com.br/pedidos', [
+            'channel' => 'pickup', 'payment_method' => 'pix',
+            'items' => [['product_id' => $product->id, 'quantity' => 1]],
+        ])->assertCreated();
+
+        $this->assertDatabaseHas('orders', ['venue_id' => $venue->id, 'customer_name' => null, 'customer_phone' => null]);
+        $this->assertDatabaseCount('customers', 0);
+    }
+
     public function test_owner_cannot_update_an_order_from_another_tenant(): void
     {
         [$tenantA, $venueA, $productA] = $this->catalog('tenant-one');

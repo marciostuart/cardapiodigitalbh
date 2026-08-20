@@ -13,7 +13,7 @@
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
+                        Painel
                     </x-nav-link>
                     @if(Auth::user()->role === 'owner')
                         <x-nav-link :href="route('owner.catalog')" :active="request()->routeIs('owner.catalog')">Cardápio</x-nav-link>
@@ -34,7 +34,7 @@
                     @elseif(Auth::user()->role === 'cashier')
                         <x-nav-link :href="route('cashier.index')" :active="request()->routeIs('cashier.*')">Caixa</x-nav-link>
                     @elseif(Auth::user()->role === 'platform_owner')
-                        <x-nav-link :href="route('platform.dashboard')" :active="request()->routeIs('platform.dashboard')">Owner</x-nav-link>
+                        <x-nav-link :href="route('platform.dashboard')" :active="request()->routeIs('platform.dashboard')">Painel do proprietário</x-nav-link>
                         <x-nav-link :href="route('admin.platform')" :active="request()->routeIs('admin.platform')">Administração</x-nav-link>
                         <x-nav-link :href="route('admin.plans.index')" :active="request()->routeIs('admin.plans.*')">Planos</x-nav-link>
                         <x-nav-link :href="route('admin.whatsapp-templates.index')" :active="request()->routeIs('admin.whatsapp-templates.*')">WhatsApp</x-nav-link>
@@ -98,7 +98,7 @@
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                {{ __('Dashboard') }}
+                Painel
             </x-responsive-nav-link>
             @if(Auth::user()->role === 'owner')
                 <x-responsive-nav-link :href="route('owner.catalog')" :active="request()->routeIs('owner.catalog')">Cardápio</x-responsive-nav-link>
@@ -119,7 +119,7 @@
             @elseif(Auth::user()->role === 'cashier')
                 <x-responsive-nav-link :href="route('cashier.index')" :active="request()->routeIs('cashier.*')">Caixa</x-responsive-nav-link>
             @elseif(Auth::user()->role === 'platform_owner')
-                <x-responsive-nav-link :href="route('platform.dashboard')" :active="request()->routeIs('platform.dashboard')">Owner</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('platform.dashboard')" :active="request()->routeIs('platform.dashboard')">Painel do proprietário</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.platform')" :active="request()->routeIs('admin.platform')">Administração</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.plans.index')" :active="request()->routeIs('admin.plans.*')">Planos</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.whatsapp-templates.index')" :active="request()->routeIs('admin.whatsapp-templates.*')">WhatsApp</x-responsive-nav-link>

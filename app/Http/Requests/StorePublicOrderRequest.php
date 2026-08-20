@@ -11,8 +11,8 @@ class StorePublicOrderRequest extends FormRequest
     {
         return [
             'channel' => ['required', 'in:pickup,delivery'],
-            'customer_name' => ['required', 'string', 'max:80'],
-            'customer_phone' => ['required', 'string', 'max:20', 'regex:/^[0-9() +\-]{10,20}$/'],
+            'customer_name' => ['nullable', 'string', 'max:80'],
+            'customer_phone' => ['nullable', 'string', 'max:20', 'regex:/^[0-9() +\-]{10,20}$/'],
             'whatsapp_consent' => ['nullable', 'boolean'],
             'marketing_consent' => ['nullable', 'boolean'],
             'payment_method' => ['required', 'in:cash,pix,debit,credit'],
