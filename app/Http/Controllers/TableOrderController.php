@@ -24,7 +24,7 @@ class TableOrderController extends Controller
             abort_unless($products->count()===$ids->count(), 422, 'Produto indisponível para este estabelecimento.');
             $order = Order::create(['venue_id'=>$venue->id,'tab_id'=>$tab->id,'channel'=>'table','status'=>'pending','subtotal'=>0,'total'=>0]);
             $subtotal=0;
-            foreach($request->validated('items') as $line){$p=$products[$line['product_id']];$total=$p->price*$line['quantity'];$subtotal+=$total;$order->items()->create(['product_id'=>$p->id,'name_snapshot'=>$p->name,'unit_price'=>$p->price,'quantity'=>$line['quantity'],'total'=>$total,'status'=>'pending']);}
+            foreach($request->validated('items') as $line){$p=$products[$line['product_id']];$total=$p->price*$line['quantity'];$subtotal+=$total;$order->items()->create(['product_id'=>$p->id,'name_snapshot'=>$p->name,'unit_price'=>$p->price,'quantity'=>$line['quantity'],'total'=>$total,'station'=>$p->station,'status'=>'pending']);}
             $order->update(['subtotal'=>$subtotal,'total'=>$subtotal]);
             return response()->json($order->load('items'),201);
         });
