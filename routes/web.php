@@ -16,6 +16,11 @@ Route::get('/dashboard', \App\Http\Controllers\OwnerDashboardController::class)
     ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/painel/cardapio', [\App\Http\Controllers\OwnerCatalogController::class, 'index'])->name('owner.catalog');
+    Route::post('/painel/categorias', [\App\Http\Controllers\OwnerCatalogController::class, 'storeCategory'])->name('owner.categories.store');
+    Route::post('/painel/produtos', [\App\Http\Controllers\OwnerCatalogController::class, 'storeProduct'])->name('owner.products.store');
+    Route::get('/painel/mesas', [\App\Http\Controllers\OwnerTableController::class, 'index'])->name('owner.tables');
+    Route::post('/painel/mesas', [\App\Http\Controllers\OwnerTableController::class, 'store'])->name('owner.tables.store');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
