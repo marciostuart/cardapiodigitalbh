@@ -2,7 +2,10 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\User;
+use App\Notifications\WelcomeToCardapio;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class RegistrationTest extends TestCase
@@ -18,6 +21,8 @@ class RegistrationTest extends TestCase
 
     public function test_new_users_can_register(): void
     {
+        Notification::fake();
+
         $response = $this->post('/register', [
             'name' => 'Test User',
             'venue_name' => 'Restaurante Teste',
@@ -30,6 +35,7 @@ class RegistrationTest extends TestCase
         $this->assertAuthenticated();
         $this->assertDatabaseHas('tenants', ['name' => 'Restaurante Teste', 'plan' => 'free', 'status' => 'active']);
         $this->assertDatabaseHas('venues', ['subdomain' => 'restaurante-teste']);
+        Notification::assertSentTo(User::where('email', 'test@example.com')->firstOrFail(), WelcomeToCardapio::class);
         $response->assertRedirect(route('dashboard', absolute: false));
     }
 

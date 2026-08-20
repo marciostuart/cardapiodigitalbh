@@ -16,6 +16,7 @@ Plataforma SaaS independente para restaurantes, bares e lanchonetes: cardápio d
 
 - Landing institucional, login e cadastro de estabelecimento.
 - Cadastro cria Tenant, Venue e usuário `owner`; plano inicial `free`.
+- Cadastro enfileira e-mail de boas-vindas; entrega real depende do SMTP configurado no ambiente.
 - Owner de plataforma (`platform_owner`): `/admin`, lista estabelecimentos, altera plano e pode impersonar o owner do cliente.
 - Owner de estabelecimento: dashboard, CRUD do catálogo, mesas e QR Code SVG imprimível por mesa.
 - Cardápio público no domínio raiz do tenant (`https://{slug}.cardapiodigitalbh.com.br`) e por QR (`/m/{token}`).
