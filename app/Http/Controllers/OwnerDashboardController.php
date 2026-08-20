@@ -13,6 +13,10 @@ class OwnerDashboardController extends Controller
         $tenant = $request->user()->tenant;
         $venue = $tenant?->venues()->first();
 
+        if ($venue && $venue->diningTables()->count() === 0) {
+            return redirect()->route('owner.tables')->with('status', 'Comece cadastrando a primeira mesa.');
+        }
+
         return view('dashboard', [
             'venue' => $venue,
             'openTabs' => $venue ? Tab::where('venue_id', $venue->id)->where('status', 'open')->count() : 0,
