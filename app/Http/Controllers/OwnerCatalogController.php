@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Models\ProductOption;
+use App\Models\ProductOptionGroup;
 use App\Support\CatalogOrdering;
 use Illuminate\Http\Request;
 
@@ -24,7 +26,7 @@ class OwnerCatalogController extends Controller
         return view('owner.catalog', [
             'venue' => $venue,
             'categories' => ProductCategory::where('venue_id', $venue->id)
-                ->with(['products' => fn ($query) => CatalogOrdering::apply($query, $venue->catalog_sort_mode)])
+                ->with(['products' => fn ($query) => CatalogOrdering::apply($query, $venue->catalog_sort_mode)->with('optionGroups.options')])
                 ->orderBy('position')
                 ->orderBy('name')
                 ->get(),
@@ -91,6 +93,56 @@ class OwnerCatalogController extends Controller
         $product->update($data);
 
         return back()->with('status', 'Produto atualizado.');
+    }
+
+    public function storeOptionGroup(Request $request, Product $product)
+    {
+        $venue = $this->venue($request);
+        abort_unless($product->venue_id === $venue->id, 404);
+        $data = $request->validate(['name' => ['required', 'string', 'max:80'], 'minimum' => ['required', 'integer', 'min:0', 'max:30'], 'maximum' => ['required', 'integer', 'min:1', 'max:30', 'gte:minimum']]);
+        $product->optionGroups()->create($data + ['position' => ((int) $product->optionGroups()->max('position')) + 10]);
+        return back()->with('status', 'Grupo de adicionais criado.');
+    }
+
+    public function updateOptionGroup(Request $request, ProductOptionGroup $group)
+    {
+        $venue = $this->venue($request);
+        abort_unless($group->product()->where('venue_id', $venue->id)->exists(), 404);
+        $group->update($request->validate(['name' => ['required', 'string', 'max:80'], 'minimum' => ['required', 'integer', 'min:0', 'max:30'], 'maximum' => ['required', 'integer', 'min:1', 'max:30', 'gte:minimum'], 'active' => ['required', 'boolean']]));
+        return back()->with('status', 'Grupo atualizado.');
+    }
+
+    public function destroyOptionGroup(Request $request, ProductOptionGroup $group)
+    {
+        $venue = $this->venue($request);
+        abort_unless($group->product()->where('venue_id', $venue->id)->exists(), 404);
+        $group->delete();
+        return back()->with('status', 'Grupo removido.');
+    }
+
+    public function storeOption(Request $request, ProductOptionGroup $group)
+    {
+        $venue = $this->venue($request);
+        abort_unless($group->product()->where('venue_id', $venue->id)->exists(), 404);
+        $data = $request->validate(['name' => ['required', 'string', 'max:100'], 'price' => ['required', 'numeric', 'min:0']]);
+        $group->options()->create($data + ['position' => ((int) $group->options()->max('position')) + 10]);
+        return back()->with('status', 'Opção adicionada.');
+    }
+
+    public function updateOption(Request $request, ProductOption $option)
+    {
+        $venue = $this->venue($request);
+        abort_unless($option->group()->whereHas('product', fn ($q) => $q->where('venue_id', $venue->id))->exists(), 404);
+        $option->update($request->validate(['name' => ['required', 'string', 'max:100'], 'price' => ['required', 'numeric', 'min:0'], 'active' => ['required', 'boolean']]));
+        return back()->with('status', 'Opção atualizada.');
+    }
+
+    public function destroyOption(Request $request, ProductOption $option)
+    {
+        $venue = $this->venue($request);
+        abort_unless($option->group()->whereHas('product', fn ($q) => $q->where('venue_id', $venue->id))->exists(), 404);
+        $option->delete();
+        return back()->with('status', 'Opção removida.');
     }
 
     public function destroyProduct(Request $request, Product $product)

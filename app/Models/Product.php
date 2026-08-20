@@ -10,4 +10,5 @@ class Product extends Model
     protected function casts(): array { return ['price' => 'decimal:2', 'track_stock' => 'boolean', 'stock_on_hand' => 'decimal:3', 'stock_reserved' => 'decimal:3', 'low_stock_threshold' => 'decimal:3', 'active' => 'boolean']; }
     public function orderItems() { return $this->hasMany(OrderItem::class); }
     public function ingredients() { return $this->belongsToMany(InventoryItem::class, 'product_recipes')->withPivot('quantity')->withTimestamps(); }
+    public function optionGroups() { return $this->hasMany(ProductOptionGroup::class)->orderBy('position')->orderBy('name'); }
 }

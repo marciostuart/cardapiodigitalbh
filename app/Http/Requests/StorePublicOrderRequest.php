@@ -31,6 +31,8 @@ class StorePublicOrderRequest extends FormRequest
             'items' => ['required', 'array', 'min:1'],
             'items.*.product_id' => ['required', 'integer'],
             'items.*.quantity' => ['required', 'integer', 'min:1', 'max:99'],
+            'items.*.option_ids' => ['nullable', 'array', 'max:30'],
+            'items.*.option_ids.*' => ['integer'],
         ];
     }
 }

@@ -11,6 +11,7 @@ use App\Models\Product;
 use App\Services\InventoryService;
 use App\Services\WhatsappNotifier;
 use App\Support\VenueAvailability;
+use App\Support\OrderLineBuilder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -36,11 +37,8 @@ class PublicOrderController extends Controller
                 $customer->addresses()->create($address);
             }
 
-            $lines = collect($request->validated('items'));
-            $ids = $lines->pluck('product_id')->unique();
-            $products = Product::where('venue_id', $venue->id)->where('active', true)->whereIn('id', $ids)->get()->keyBy('id');
-            abort_unless($products->count() === $ids->count(), 422, 'Produto indisponível para este estabelecimento.');
-            $subtotal = $lines->sum(fn ($line) => (float) $products[$line['product_id']]->price * (int) $line['quantity']);
+            $lines = OrderLineBuilder::build($venue->id, $request->validated('items'));
+            $subtotal = collect($lines)->sum('total');
             abort_if($subtotal + 0.009 < (float) $venue->minimum_order, 422, 'O pedido mínimo é R$ '.number_format((float) $venue->minimum_order, 2, ',', '.').'.');
             [$coupon, $discount] = $this->coupon($venue->id, $request->validated('coupon_code'), $subtotal);
             $fee = $zone ? (float) $zone->fee : 0;
@@ -50,9 +48,8 @@ class PublicOrderController extends Controller
 
             $order = Order::create(['venue_id' => $venue->id, 'customer_id' => $customer->id, 'delivery_zone_id' => $zone?->id, 'public_token' => Str::random(48), 'channel' => $channel, 'status' => 'pending', 'customer_name' => $customer->name, 'customer_phone' => $phone, 'whatsapp_consent' => (bool) $request->validated('whatsapp_consent', false), 'delivery_address' => $address, 'coupon_code' => $coupon?->code, 'discount' => $discount, 'delivery_fee' => $fee, 'payment_method' => $request->validated('payment_method'), 'change_for' => $changeFor, 'subtotal' => $subtotal, 'total' => $total, 'notes' => $request->validated('notes')]);
             foreach ($lines as $line) {
-                $product = $products[$line['product_id']];
-                $lineTotal = (float) $product->price * (int) $line['quantity'];
-                $order->items()->create(['product_id' => $product->id, 'name_snapshot' => $product->name, 'unit_price' => $product->price, 'quantity' => $line['quantity'], 'total' => $lineTotal, 'station' => $product->station, 'status' => 'pending']);
+                $product = $line['product'];
+                $order->items()->create(['product_id' => $product->id, 'name_snapshot' => $product->name, 'unit_price' => $line['unit_price'], 'quantity' => $line['quantity'], 'total' => $line['total'], 'station' => $product->station, 'status' => 'pending', 'options_snapshot' => $line['options']]);
             }
             app(InventoryService::class)->reserve($order);
             if ($coupon) $coupon->increment('used_count');

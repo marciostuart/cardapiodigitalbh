@@ -16,7 +16,7 @@
         <p class="eyebrow">Cardápio digital</p>
         <h1>{{ $venue->name }}</h1>
         <p class="subtitle">Escolha com calma. Preços e disponibilidade atualizados pelo estabelecimento.</p>
-        <span class="table-badge">{{ $isOpen ?? true ? 'Aberto para pedidos' : 'Fechado no momento' }}</span>
+        <span class="table-badge">{{ ($isOpen ?? true) ? 'Aberto para pedidos' : 'Fechado no momento' }}</span>
         @isset($table)<span class="table-badge">Mesa {{ $table->name ?: $table->code }}</span>@endisset
     </header>
 
@@ -24,6 +24,18 @@
         <section class="category">
             <h2>{{ $category->name }}</h2>
             @forelse($category->products as $product)
+                @php
+                    $productPayload = [
+                        'id' => $product->id,
+                        'name' => $product->name,
+                        'price' => (float) $product->price,
+                        'groups' => $product->optionGroups->map(function ($group) {
+                            return ['id' => $group->id, 'name' => $group->name, 'minimum' => $group->minimum, 'maximum' => $group->maximum, 'options' => $group->options->map(function ($option) {
+                                return ['id' => $option->id, 'name' => $option->name, 'price' => (float) $option->price];
+                            })->values()];
+                        })->values(),
+                    ];
+                @endphp
                 <article class="item">
                     <div>
                         <h3>{{ $product->name }}</h3>
@@ -31,7 +43,7 @@
                         <span class="price">R$ {{ number_format((float) $product->price, 2, ',', '.') }}</span>
                     </div>
                     @if((isset($table) || $venue->pickup_enabled || $venue->delivery_enabled) && ($isOpen ?? true))
-                        <button class="add" type="button" aria-label="Adicionar {{ $product->name }}" data-product='@json(["id" => $product->id, "name" => $product->name, "price" => (float) $product->price])'>+</button>
+                        <button class="add" type="button" aria-label="Adicionar {{ $product->name }}" data-product='@json($productPayload)'>+</button>
                     @endif
                 </article>
             @empty
@@ -45,6 +57,9 @@
 
 @if(isset($table) || $venue->pickup_enabled || $venue->delivery_enabled)
     @php($orderEndpoint = isset($table) ? route('public.tenant-table-order', ['subdomain' => $venue->subdomain, 'token' => $table->qr_token]) : route('public.orders.store', ['subdomain' => $venue->subdomain]))
+    <div id="customPanel" class="panel" role="dialog" aria-modal="true" aria-label="Personalizar produto">
+        <div class="sheet"><div class="sheet-head"><div><h2 id="customTitle">Personalizar</h2><small style="color:var(--muted)">Monte do seu jeito</small></div><button id="closeCustom" class="close" type="button" aria-label="Fechar">×</button></div><div id="customGroups"></div><div id="customError" class="notice error"></div><button id="confirmCustom" class="checkout" type="button">Adicionar ao pedido</button></div>
+    </div>
     <button id="cartButton" class="cart" type="button"><span><strong id="cartCount">0 itens</strong><small>Revisar pedido</small></span><span id="cartTotal" class="cart-total">R$ 0,00</span></button>
     <div id="cartPanel" class="panel" role="dialog" aria-modal="true" aria-label="Seu pedido">
         <div class="sheet">
@@ -76,6 +91,10 @@
             const lines = document.getElementById('cartLines');
             const notice = document.getElementById('notice');
             const checkout = document.getElementById('checkout');
+            const customPanel = document.getElementById('customPanel');
+            const customGroups = document.getElementById('customGroups');
+            const customError = document.getElementById('customError');
+            let customizing = null;
             let coordinates = null;
             const escapeHtml = value => { const div = document.createElement('div'); div.textContent = value; return div.innerHTML; };
 
@@ -86,10 +105,15 @@
                 button.classList.toggle('visible', count > 0);
                 document.getElementById('cartCount').textContent = count + (count === 1 ? ' item' : ' itens');
                 document.getElementById('cartTotal').textContent = money(total);
-                lines.innerHTML = entries.map(item => `<div class="cart-line"><div><strong>${escapeHtml(item.name)}</strong><div>${money(item.price * item.quantity)}</div></div><div class="qty"><button type="button" data-less="${item.id}">−</button><b>${item.quantity}</b><button type="button" data-more="${item.id}">+</button></div></div>`).join('');
+                lines.innerHTML = entries.map(item => `<div class="cart-line"><div><strong>${escapeHtml(item.name)}</strong>${item.optionNames.length ? `<small style="display:block;color:var(--muted)">${escapeHtml(item.optionNames.join(', '))}</small>` : ''}<div>${money(item.price * item.quantity)}</div></div><div class="qty"><button type="button" data-less="${item.key}">−</button><b>${item.quantity}</b><button type="button" data-more="${item.key}">+</button></div></div>`).join('');
             }
-            document.querySelectorAll('[data-product]').forEach(el => el.addEventListener('click', () => { const item = JSON.parse(el.dataset.product); const current = cart.get(item.id) || {...item, quantity:0}; current.quantity++; cart.set(item.id, current); render(); }));
-            lines.addEventListener('click', event => { const id = Number(event.target.dataset.less || event.target.dataset.more); if (!id || !cart.has(id)) return; const item = cart.get(id); item.quantity += event.target.dataset.more ? 1 : -1; item.quantity > 0 ? cart.set(id, item) : cart.delete(id); render(); });
+            function addItem(product, selected = []) { const optionIds = selected.map(option => option.id).sort((a,b)=>a-b); const key = product.id+'-'+optionIds.join('-'); const price = product.price + selected.reduce((sum, option) => sum + option.price, 0); const current = cart.get(key) || {key,id:product.id,name:product.name,price,optionIds,optionNames:selected.map(option=>option.name),quantity:0}; current.quantity++; cart.set(key,current); render(); }
+            function openCustomizer(product) { customizing=product; document.getElementById('customTitle').textContent=product.name; customError.style.display='none'; customGroups.innerHTML=product.groups.map(group=>`<section style="margin-top:18px;padding-top:16px;border-top:1px solid var(--line)" data-group="${group.id}" data-min="${group.minimum}" data-max="${group.maximum}"><h3 style="margin:0 0 4px">${escapeHtml(group.name)}</h3><small style="color:var(--muted)">${group.minimum ? `Escolha no mínimo ${group.minimum}` : 'Opcional'} · máximo ${group.maximum}</small>${group.options.map(option=>`<div style="display:flex;justify-content:space-between;gap:12px;padding:11px 0"><label style="display:flex;gap:9px;align-items:center"><input type="checkbox" value="${option.id}"> ${escapeHtml(option.name)}</label><b>${option.price ? '+ '+money(option.price) : 'Grátis'}</b></div>`).join('')}</section>`).join(''); customPanel.classList.add('open'); }
+            document.querySelectorAll('[data-product]').forEach(el => el.addEventListener('click', () => { const product=JSON.parse(el.dataset.product); product.groups.length ? openCustomizer(product) : addItem(product); }));
+            document.getElementById('confirmCustom').addEventListener('click',()=>{ const selected=[]; for(const groupElement of customGroups.querySelectorAll('[data-group]')){ const checked=[...groupElement.querySelectorAll('input:checked')]; const min=Number(groupElement.dataset.min),max=Number(groupElement.dataset.max); if(checked.length<min||checked.length>max){ customError.textContent=`Revise as escolhas de ${groupElement.querySelector('h3').textContent}.`;customError.style.display='block';return;} checked.forEach(input=>{const group=customizing.groups.find(group=>group.id===Number(groupElement.dataset.group));selected.push(group.options.find(option=>option.id===Number(input.value)));}); } addItem(customizing,selected); customPanel.classList.remove('open'); });
+            document.getElementById('closeCustom').addEventListener('click',()=>customPanel.classList.remove('open'));
+            customPanel.addEventListener('click',event=>{if(event.target===customPanel)customPanel.classList.remove('open')});
+            lines.addEventListener('click', event => { const key = event.target.dataset.less || event.target.dataset.more; if (!key || !cart.has(key)) return; const item = cart.get(key); item.quantity += event.target.dataset.more ? 1 : -1; item.quantity > 0 ? cart.set(key, item) : cart.delete(key); render(); });
             button.addEventListener('click', () => panel.classList.add('open'));
             document.getElementById('closeCart').addEventListener('click', () => panel.classList.remove('open'));
             panel.addEventListener('click', event => { if (event.target === panel) panel.classList.remove('open'); });
@@ -107,7 +131,7 @@
                     const phone = document.getElementById('customerPhone').value;
                     const consent = document.getElementById('whatsappConsent').checked;
                     if (consent && !phone.trim()) throw new Error('Informe o WhatsApp para receber atualizações.');
-                    const payload = {...coordinates, channel:channel?.value, customer_name:document.getElementById('customerName').value, customer_phone:phone, whatsapp_consent:consent, payment_method:document.getElementById('paymentMethod')?.value, change_for:document.getElementById('changeFor')?.value||null, coupon_code:document.getElementById('couponCode')?.value||null, delivery_zone_id:document.getElementById('deliveryZone')?.value||null, postal_code:postalCode?.value, street:document.getElementById('street')?.value, number:document.getElementById('number')?.value, complement:document.getElementById('complement')?.value, neighborhood:document.getElementById('neighborhood')?.value, city:document.getElementById('city')?.value, state:document.getElementById('state')?.value, reference:document.getElementById('reference')?.value, notes:document.getElementById('orderNotes').value, items:[...cart.values()].map(item => ({product_id:item.id, quantity:item.quantity}))};
+                    const payload = {...coordinates, channel:channel?.value, customer_name:document.getElementById('customerName').value, customer_phone:phone, whatsapp_consent:consent, payment_method:document.getElementById('paymentMethod')?.value, change_for:document.getElementById('changeFor')?.value||null, coupon_code:document.getElementById('couponCode')?.value||null, delivery_zone_id:document.getElementById('deliveryZone')?.value||null, postal_code:postalCode?.value, street:document.getElementById('street')?.value, number:document.getElementById('number')?.value, complement:document.getElementById('complement')?.value, neighborhood:document.getElementById('neighborhood')?.value, city:document.getElementById('city')?.value, state:document.getElementById('state')?.value, reference:document.getElementById('reference')?.value, notes:document.getElementById('orderNotes').value, items:[...cart.values()].map(item => ({product_id:item.id, quantity:item.quantity, option_ids:item.optionIds}))};
                     const response = await fetch(@json($orderEndpoint), {method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content}, body:JSON.stringify(payload)});
                     const data = await response.json(); if (!response.ok) throw new Error(data.message || Object.values(data.errors||{})[0]?.[0] || 'Não foi possível enviar o pedido. Tente novamente.');
                     cart.clear(); render(); notice.className = 'notice'; notice.textContent = 'Pedido enviado com sucesso! A cozinha já recebeu.'; notice.style.display = 'block'; checkout.textContent = 'Pedido enviado';

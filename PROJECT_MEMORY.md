@@ -39,6 +39,7 @@ Plataforma SaaS independente para restaurantes, bares e lanchonetes: cardápio d
 - Geofence opcional valida latitude/longitude no servidor e aceita raio entre 20 e 1.000 metros.
 - Cardápio público aceita mesa, retirada e delivery; inclui clientes, endereço ViaCEP, regiões/taxas, pedido mínimo, cupons, troco e acompanhamento por token público.
 - Gestão de pedidos aplica uma máquina de estados progressiva e dispara eventos transacionais do WhatsApp quando houver consentimento.
+- Produtos aceitam grupos de variações/adicionais com seleção mínima e máxima. O preço e o pertencimento de cada opção são validados no servidor e gravados como snapshot no item do pedido.
 
 ## Padrões obrigatórios
 
@@ -82,7 +83,7 @@ Plataforma SaaS independente para restaurantes, bares e lanchonetes: cardápio d
 1. Adotar a stack pelo Portainer para controle Total quando o produto estiver estável.
 2. Decidir quando tornar a verificação de e-mail obrigatória; o template e a infraestrutura de envio já estão preparados.
 3. Integrar o MinIO para fotos de produtos quando as credenciais e o bucket exclusivos do projeto forem definidos.
-4. Completar variações/adicionais, banners, Web Push, agente de impressão, relatórios exportáveis e exceções de calendário.
+4. Completar banners, Web Push, agente de impressão e exceções de calendário.
 5. Homologar Mercado Pago por estabelecimento somente após estabilização do núcleo operacional.
 6. Em etapa posterior, implementar cobrança SaaS, marketplace, anúncios, afiliados e vouchers.
 
@@ -98,6 +99,8 @@ Plataforma SaaS independente para restaurantes, bares e lanchonetes: cardápio d
 | Geofence | Implementado/testado | Haversine no servidor; liberação temporária ainda pendente |
 | Retirada, delivery, clientes, CEP, frete e cupons | Implementado/testado | totais recalculados no servidor |
 | Evolution e Reset Whats | Implementado/testado localmente | teste contratual usa API simulada; homologação real pendente |
-| Variações, banners, impressão, Web Push e relatórios | Planejado | próximo lote operacional |
+| Variações e adicionais | Implementado/testado | grupos obrigatórios/opcionais, limites e preço no servidor |
+| Relatórios | Implementado/testado | período, KPIs, canais, produtos e CSV |
+| Banners, impressão e Web Push | Planejado | próximo lote operacional |
 | Mercado Pago por estabelecimento | Planejado | liberar por feature flag após piloto |
 | Marketplace, afiliados, anúncios e vouchers | Planejado | não bloqueia o lançamento operacional |

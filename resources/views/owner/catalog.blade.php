@@ -76,6 +76,39 @@
                                     <input name="low_stock_threshold" value="{{ $product->low_stock_threshold }}" type="number" min="0" step="0.001" title="Alerta mínimo" class="rounded-lg border-slate-300 md:col-span-1">
                                     <button class="rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white md:col-span-1">Salvar produto</button>
                                 </form>
+                                <details class="rounded-xl border border-slate-200 bg-white p-4">
+                                    <summary class="cursor-pointer font-bold text-slate-800">Variações e adicionais · {{ $product->optionGroups->count() }} grupo(s)</summary>
+                                    <div class="mt-4 space-y-4">
+                                        @foreach($product->optionGroups as $group)
+                                            <div class="rounded-xl bg-slate-50 p-4">
+                                                <form method="post" action="{{ route('owner.option-groups.update', $group) }}" class="grid gap-2 sm:grid-cols-6">@csrf @method('patch')
+                                                    <input name="name" value="{{ $group->name }}" required class="rounded-lg border-slate-300 sm:col-span-2">
+                                                    <input name="minimum" value="{{ $group->minimum }}" type="number" min="0" max="30" title="Mínimo" class="rounded-lg border-slate-300">
+                                                    <input name="maximum" value="{{ $group->maximum }}" type="number" min="1" max="30" title="Máximo" class="rounded-lg border-slate-300">
+                                                    <select name="active" class="rounded-lg border-slate-300"><option value="1" @selected($group->active)>Ativo</option><option value="0" @selected(!$group->active)>Pausado</option></select>
+                                                    <button class="rounded-lg bg-slate-800 px-3 py-2 text-sm font-bold text-white">Salvar grupo</button>
+                                                </form>
+                                                <p class="mt-2 text-xs text-slate-500">Mínimo {{ $group->minimum }} · máximo {{ $group->maximum }} escolhas</p>
+                                                <div class="mt-3 space-y-2">
+                                                    @foreach($group->options as $option)
+                                                        <form method="post" action="{{ route('owner.options.update', $option) }}" class="grid gap-2 sm:grid-cols-5">@csrf @method('patch')
+                                                            <input name="name" value="{{ $option->name }}" required class="rounded-lg border-slate-300 sm:col-span-2">
+                                                            <input name="price" value="{{ $option->price }}" type="number" min="0" step="0.01" required class="rounded-lg border-slate-300">
+                                                            <select name="active" class="rounded-lg border-slate-300"><option value="1" @selected($option->active)>Ativa</option><option value="0" @selected(!$option->active)>Pausada</option></select>
+                                                            <button class="rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold">Salvar opção</button>
+                                                        </form>
+                                                    @endforeach
+                                                    <form method="post" action="{{ route('owner.options.store', $group) }}" class="grid gap-2 sm:grid-cols-5">@csrf
+                                                        <input name="name" placeholder="Nova opção" required class="rounded-lg border-slate-300 sm:col-span-2"><input name="price" type="number" min="0" step="0.01" value="0" required class="rounded-lg border-slate-300"><button class="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-bold text-white sm:col-span-2">Adicionar opção</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                        <form method="post" action="{{ route('owner.option-groups.store', $product) }}" class="grid gap-2 rounded-xl border border-dashed border-slate-300 p-3 sm:grid-cols-5">@csrf
+                                            <input name="name" placeholder="Ex.: Escolha o tamanho" required class="rounded-lg border-slate-300 sm:col-span-2"><input name="minimum" type="number" min="0" max="30" value="0" title="Mínimo" class="rounded-lg border-slate-300"><input name="maximum" type="number" min="1" max="30" value="1" title="Máximo" class="rounded-lg border-slate-300"><button class="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-bold text-white">Novo grupo</button>
+                                        </form>
+                                    </div>
+                                </details>
                             @empty
                                 <p class="py-4 text-sm text-slate-500">Nenhum produto nesta categoria.</p>
                             @endforelse

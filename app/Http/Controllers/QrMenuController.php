@@ -20,6 +20,6 @@ class QrMenuController extends Controller
         $resolvedVenue = $request->attributes->get('venue');
         abort_if($resolvedVenue && $resolvedVenue->id !== $venue->id, 404);
 
-        return view('public.menu', ['venue' => $venue, 'table' => $table, 'isOpen' => VenueAvailability::isOpen($venue), 'deliveryZones' => collect(), 'categories' => ProductCategory::where('venue_id', $venue->id)->where('active', true)->with(['products' => fn ($query) => CatalogOrdering::apply($query->where('active', true), $venue->catalog_sort_mode)])->orderBy('position')->get()]);
+        return view('public.menu', ['venue' => $venue, 'table' => $table, 'isOpen' => VenueAvailability::isOpen($venue), 'deliveryZones' => collect(), 'categories' => ProductCategory::where('venue_id', $venue->id)->where('active', true)->with(['products' => fn ($query) => CatalogOrdering::apply($query->where('active', true), $venue->catalog_sort_mode)->with(['optionGroups' => fn ($q) => $q->where('active', true)->with(['options' => fn ($q) => $q->where('active', true)])])])->orderBy('position')->get()]);
     }
 }

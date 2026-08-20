@@ -11,6 +11,7 @@ use App\Services\InventoryService;
 use App\Services\WhatsappNotifier;
 use App\Support\Geofence;
 use App\Support\VenueAvailability;
+use App\Support\OrderLineBuilder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -50,16 +51,13 @@ class TableOrderController extends Controller
                 $tab = Tab::create(['venue_id' => $venue->id, 'dining_table_id' => $table->id, 'code' => 'M'.$table->code.'-'.now()->format('YmdHisv'), 'customer_name' => $customerName, 'opened_at' => now()]);
                 $table->update(['status' => 'occupied']);
             }
-            $ids = collect($request->validated('items'))->pluck('product_id')->unique();
-            $products = Product::where('venue_id', $venue->id)->where('active', true)->whereIn('id', $ids)->get()->keyBy('id');
-            abort_unless($products->count() === $ids->count(), 422, 'Produto indisponível para este estabelecimento.');
+            $lines = OrderLineBuilder::build($venue->id, $request->validated('items'));
             $order = Order::create(['venue_id' => $venue->id, 'tab_id' => $tab->id, 'public_token' => Str::random(48), 'channel' => 'table', 'status' => 'pending', 'customer_name' => $customerName, 'customer_phone' => $request->validated('customer_phone'), 'whatsapp_consent' => (bool) $request->validated('whatsapp_consent', false), 'subtotal' => 0, 'total' => 0, 'notes' => $request->validated('notes')]);
             $subtotal = 0;
-            foreach ($request->validated('items') as $line) {
-                $p = $products[$line['product_id']];
-                $total = $p->price * $line['quantity'];
-                $subtotal += $total;
-                $order->items()->create(['product_id' => $p->id, 'name_snapshot' => $p->name, 'unit_price' => $p->price, 'quantity' => $line['quantity'], 'total' => $total, 'station' => $p->station, 'status' => 'pending']);
+            foreach ($lines as $line) {
+                $p = $line['product'];
+                $subtotal += $line['total'];
+                $order->items()->create(['product_id' => $p->id, 'name_snapshot' => $p->name, 'unit_price' => $line['unit_price'], 'quantity' => $line['quantity'], 'total' => $line['total'], 'station' => $p->station, 'status' => 'pending', 'options_snapshot' => $line['options']]);
             }
             $order->update(['subtotal' => $subtotal, 'total' => $subtotal]);
             app(InventoryService::class)->reserve($order);

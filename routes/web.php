@@ -92,6 +92,12 @@ Route::middleware(['auth', 'account.active'])->group(function () {
         Route::post('/painel/produtos', [OwnerCatalogController::class, 'storeProduct'])->name('owner.products.store');
         Route::patch('/painel/produtos/{product}', [OwnerCatalogController::class, 'updateProduct'])->name('owner.products.update');
         Route::delete('/painel/produtos/{product}', [OwnerCatalogController::class, 'destroyProduct'])->name('owner.products.destroy');
+        Route::post('/painel/produtos/{product}/grupos', [OwnerCatalogController::class, 'storeOptionGroup'])->name('owner.option-groups.store');
+        Route::patch('/painel/grupos/{group}', [OwnerCatalogController::class, 'updateOptionGroup'])->name('owner.option-groups.update');
+        Route::delete('/painel/grupos/{group}', [OwnerCatalogController::class, 'destroyOptionGroup'])->name('owner.option-groups.destroy');
+        Route::post('/painel/grupos/{group}/opcoes', [OwnerCatalogController::class, 'storeOption'])->name('owner.options.store');
+        Route::patch('/painel/opcoes/{option}', [OwnerCatalogController::class, 'updateOption'])->name('owner.options.update');
+        Route::delete('/painel/opcoes/{option}', [OwnerCatalogController::class, 'destroyOption'])->name('owner.options.destroy');
         Route::get('/painel/mesas', [OwnerTableController::class, 'index'])->name('owner.tables');
         Route::post('/painel/mesas', [OwnerTableController::class, 'store'])->name('owner.tables.store');
         Route::get('/painel/mesas/{table}/qr.svg', [OwnerTableController::class, 'qr'])->name('owner.tables.qr');

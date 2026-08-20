@@ -18,7 +18,7 @@ class PublicMenuController extends Controller
             'deliveryZones' => $venue->deliveryZones()->where('active', true)->orderBy('name')->get(),
             'categories' => \App\Models\ProductCategory::where('venue_id', $venue->id)
                 ->where('active', true)
-                ->with(['products' => fn ($query) => CatalogOrdering::apply($query->where('active', true), $venue->catalog_sort_mode)])
+                ->with(['products' => fn ($query) => CatalogOrdering::apply($query->where('active', true), $venue->catalog_sort_mode)->with(['optionGroups' => fn ($q) => $q->where('active', true)->with(['options' => fn ($q) => $q->where('active', true)])])])
                 ->orderBy('position')->get(),
         ]);
     }
