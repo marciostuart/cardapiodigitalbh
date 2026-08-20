@@ -11,14 +11,29 @@ class TenantMedia
 {
     private const CATEGORIES = ['logos', 'products', 'banners'];
 
+    public function __construct(private readonly ImageOptimizer $optimizer) {}
+
     public function store(Tenant $tenant, UploadedFile $file, string $category, string $seoName): string
     {
         abort_unless(in_array($category, self::CATEGORIES, true), 422);
         $base = Str::slug($seoName) ?: 'imagem';
-        $extension = strtolower($file->guessExtension() ?: $file->extension() ?: 'webp');
-        $filename = Str::limit($base, 90, '').'-'.Str::lower(Str::random(8)).'.'.$extension;
+        $filename = Str::limit($base, 90, '').'-'.Str::lower(Str::random(8)).'.webp';
         $path = "tenants/{$tenant->id}/{$category}/{$filename}";
-        $written = Storage::disk(config('filesystems.media_disk', 's3'))->putFileAs(dirname($path), $file, basename($path));
+        $optimized = $this->optimizer->toWebp($file);
+        $stream = fopen($optimized, 'rb');
+
+        try {
+            $written = Storage::disk(config('filesystems.media_disk', 's3'))->put($path, $stream, [
+                'ContentType' => 'image/webp',
+            ]);
+        } finally {
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
+
+            @unlink($optimized);
+        }
+
         abort_unless($written, 500, 'Não foi possível armazenar a imagem.');
 
         return $path;

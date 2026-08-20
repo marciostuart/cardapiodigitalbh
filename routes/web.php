@@ -93,6 +93,8 @@ Route::middleware(['auth', 'account.active'])->group(function () {
         Route::patch('/painel/categorias/{category}', [OwnerCatalogController::class, 'updateCategory'])->name('owner.categories.update');
         Route::delete('/painel/categorias/{category}', [OwnerCatalogController::class, 'destroyCategory'])->name('owner.categories.destroy');
         Route::post('/painel/produtos', [OwnerCatalogController::class, 'storeProduct'])->name('owner.products.store');
+        Route::get('/painel/produtos/novo', [OwnerCatalogController::class, 'createProduct'])->name('owner.products.create');
+        Route::get('/painel/produtos/{product}', [OwnerCatalogController::class, 'editProduct'])->name('owner.products.edit');
         Route::patch('/painel/produtos/{product}', [OwnerCatalogController::class, 'updateProduct'])->name('owner.products.update');
         Route::delete('/painel/produtos/{product}', [OwnerCatalogController::class, 'destroyProduct'])->name('owner.products.destroy');
         Route::post('/painel/produtos/{product}/grupos', [OwnerCatalogController::class, 'storeOptionGroup'])->name('owner.option-groups.store');

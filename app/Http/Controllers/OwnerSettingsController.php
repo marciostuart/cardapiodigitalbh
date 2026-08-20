@@ -29,7 +29,7 @@ class OwnerSettingsController extends Controller
             'confirm_slug_change' => ['sometimes', 'accepted'],
             'primary_color' => ['sometimes', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'secondary_color' => ['sometimes', 'regex:/^#[0-9a-fA-F]{6}$/'],
-            'logo' => ['nullable', File::image()->max(5 * 1024)],
+            'logo' => ['nullable', File::image()->max(12 * 1024)],
             'timezone' => ['required', 'in:America/Sao_Paulo,America/Manaus,America/Cuiaba,America/Belem,America/Fortaleza,America/Recife'],
             'catalog_sort_mode' => ['sometimes', 'in:manual,popularity'],
             'geofence_enabled' => ['sometimes', 'boolean'],

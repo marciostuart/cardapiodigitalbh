@@ -35,6 +35,24 @@ class OwnerCatalogController extends Controller
         ]);
     }
 
+    public function createProduct(Request $request)
+    {
+        $venue = $this->venue($request);
+        $categories = ProductCategory::where('venue_id', $venue->id)->orderBy('position')->orderBy('name')->get();
+
+        return view('owner.product-form', compact('venue', 'categories'));
+    }
+
+    public function editProduct(Request $request, Product $product)
+    {
+        $venue = $this->venue($request);
+        abort_unless($product->venue_id === $venue->id, 404);
+        $product->load('optionGroups.options');
+        $categories = ProductCategory::where('venue_id', $venue->id)->orderBy('position')->orderBy('name')->get();
+
+        return view('owner.product-form', compact('venue', 'categories', 'product'));
+    }
+
     public function storeCategory(Request $request)
     {
         $venue = $this->venue($request);
@@ -66,15 +84,15 @@ class OwnerCatalogController extends Controller
     public function storeProduct(Request $request, TenantMedia $media)
     {
         $venue = $this->venue($request);
-        $data = $request->validate(['product_category_id' => ['required', 'integer'], 'name' => ['required', 'string', 'max:120'], 'sku' => ['nullable', 'string', 'max:60'], 'description' => ['nullable', 'string', 'max:1000'], 'price' => ['required', 'numeric', 'min:0'], 'image' => ['nullable', File::image()->max(5 * 1024)], 'station' => ['nullable', 'in:kitchen,bar'], 'position' => ['nullable', 'integer', 'min:0'], 'track_stock' => ['nullable', 'boolean'], 'stock_on_hand' => ['nullable', 'numeric', 'min:0'], 'low_stock_threshold' => ['nullable', 'numeric', 'min:0']]);
+        $data = $request->validate(['product_category_id' => ['required', 'integer'], 'name' => ['required', 'string', 'max:120'], 'sku' => ['nullable', 'string', 'max:60'], 'description' => ['nullable', 'string', 'max:1000'], 'price' => ['required', 'numeric', 'min:0'], 'image' => ['nullable', File::image()->max(12 * 1024)], 'station' => ['nullable', 'in:kitchen,bar'], 'position' => ['nullable', 'integer', 'min:0'], 'track_stock' => ['nullable', 'boolean'], 'stock_on_hand' => ['nullable', 'numeric', 'min:0'], 'low_stock_threshold' => ['nullable', 'numeric', 'min:0']]);
         abort_unless(ProductCategory::whereKey($data['product_category_id'])->where('venue_id', $venue->id)->exists(), 422);
         $data['position'] ??= ((int) Product::where('product_category_id', $data['product_category_id'])->max('position')) + 10;
         unset($data['image']);
         if ($request->hasFile('image')) {
             $data['image_path'] = $media->store($request->user()->tenant, $request->file('image'), 'products', $venue->name.' '.$data['name']);
-        } Product::create($data + ['venue_id' => $venue->id, 'active' => true]);
+        } $product = Product::create($data + ['venue_id' => $venue->id, 'active' => true]);
 
-        return back()->with('status', 'Produto cadastrado.');
+        return redirect()->route('owner.products.edit', $product)->with('status', 'Produto cadastrado. Agora você pode adicionar variações.');
     }
 
     public function updateProduct(Request $request, Product $product, TenantMedia $media)
@@ -87,7 +105,7 @@ class OwnerCatalogController extends Controller
             'sku' => ['nullable', 'string', 'max:60'],
             'description' => ['nullable', 'string', 'max:1000'],
             'price' => ['required', 'numeric', 'min:0'],
-            'image' => ['nullable', File::image()->max(5 * 1024)],
+            'image' => ['nullable', File::image()->max(12 * 1024)],
             'station' => ['required', 'in:kitchen,bar'],
             'active' => ['required', 'boolean'],
             'position' => ['required', 'integer', 'min:0'],
@@ -103,7 +121,7 @@ class OwnerCatalogController extends Controller
             $media->delete($old, $request->user()->tenant);
         } $product->update($data);
 
-        return back()->with('status', 'Produto atualizado.');
+        return redirect()->route('owner.products.edit', $product)->with('status', 'Produto atualizado.');
     }
 
     public function storeOptionGroup(Request $request, Product $product)
@@ -162,12 +180,13 @@ class OwnerCatalogController extends Controller
         return back()->with('status', 'Opção removida.');
     }
 
-    public function destroyProduct(Request $request, Product $product)
+    public function destroyProduct(Request $request, Product $product, TenantMedia $media)
     {
         $venue = $this->venue($request);
         abort_unless($product->venue_id === $venue->id, 404);
+        $media->delete($product->image_path, $request->user()->tenant);
         $product->delete();
 
-        return back()->with('status', 'Produto excluído.');
+        return redirect()->route('owner.catalog')->with('status', 'Produto excluído.');
     }
 }

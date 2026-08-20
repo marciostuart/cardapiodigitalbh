@@ -45,6 +45,20 @@ class CatalogManagementTest extends TestCase
         ])->assertUnprocessable();
     }
 
+    public function test_owner_can_open_own_product_editor_but_not_another_tenants(): void
+    {
+        [$user, $venue] = $this->ownerWithVenue('editor-a');
+        [, $otherVenue] = $this->ownerWithVenue('editor-b');
+        $category = ProductCategory::create(['venue_id' => $venue->id, 'name' => 'Lanches']);
+        $otherCategory = ProductCategory::create(['venue_id' => $otherVenue->id, 'name' => 'Privada']);
+        $product = Product::create(['venue_id' => $venue->id, 'product_category_id' => $category->id, 'name' => 'X-Burger', 'price' => 20]);
+        $otherProduct = Product::create(['venue_id' => $otherVenue->id, 'product_category_id' => $otherCategory->id, 'name' => 'Privado', 'price' => 30]);
+
+        $this->actingAs($user)->get(route('owner.products.create'))->assertOk()->assertSee('Cadastrar produto');
+        $this->actingAs($user)->get(route('owner.products.edit', $product))->assertOk()->assertSee('Editar produto')->assertSee('Variações e adicionais');
+        $this->actingAs($user)->get(route('owner.products.edit', $otherProduct))->assertNotFound();
+    }
+
     public function test_owner_can_render_a_scannable_table_qr_code(): void
     {
         [$user, $venue] = $this->ownerWithVenue('casa-qr');

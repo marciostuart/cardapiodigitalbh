@@ -42,6 +42,8 @@ Plataforma SaaS independente para restaurantes, bares e lanchonetes: cardápio d
 - Gestão de pedidos aplica uma máquina de estados progressiva e dispara eventos transacionais do WhatsApp quando houver consentimento.
 - Produtos aceitam grupos de variações/adicionais com seleção mínima e máxima. O preço e o pertencimento de cada opção são validados no servidor e gravados como snapshot no item do pedido.
 - Mídias usam MinIO/S3 privado no bucket exclusivo `cardapiodigitalbh`, com credencial limitada ao bucket e prefixos `tenants/{tenant_id}/logos`, `products` e `banners`. Nomes de arquivo usam slug SEO mais sufixo aleatório; a aplicação publica as imagens pelo subdomínio correto com cache.
+- Toda imagem de produto, logo ou banner é validada, redimensionada proporcionalmente para no máximo 1.600 px e convertida para WebP com qualidade 75%; o original não é persistido. O limite da aplicação é 12 MB/24 megapixels e o PHP usa `upload_max_filesize=16M` e `post_max_size=20M`.
+- Produtos possuem editor dedicado e responsivo, com prévia/arrastar-e-soltar da foto, dados comerciais, estoque, visibilidade e variações em uma única jornada.
 - Identidade visual, logo, cores e banners são administrados em Configurações. O slug pode ser alterado quando disponível, mas exige confirmação explícita sobre a quebra de URLs e QR Codes antigos.
 
 ## Padrões obrigatórios
@@ -80,6 +82,7 @@ Plataforma SaaS independente para restaurantes, bares e lanchonetes: cardápio d
 | 2026-08-20 | Cookies de sessão em produção sem atributo `Secure` | `SESSION_SECURE_COOKIE=true` definido no ambiente de produção; Caddy recebeu cabeçalhos defensivos. |
 | 2026-08-20 | Quitação individual liberava mesa com outras comandas abertas | Caixa agora verifica outras comandas antes de alterar a mesa para disponível. |
 | 2026-08-20 | Suspensão administrativa não era aplicada ao tenant | Login, domínio público e pedidos QR agora respeitam o status do estabelecimento. |
+| 2026-08-20 | Upload de produto acima de 8 MB era rejeitado antes de chegar ao Laravel | Limites do PHP elevados com margem controlada; validação em 12 MB e pipeline GD/WebP 75% adicionados à imagem Docker. |
 
 ## Pendências pós-lançamento
 

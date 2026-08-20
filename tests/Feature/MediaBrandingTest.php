@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Venue;
+use App\Services\ImageOptimizer;
 use App\Services\TenantMedia;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -21,8 +22,12 @@ class MediaBrandingTest extends TestCase
         config(['filesystems.media_disk' => 's3']);
         $tenant = Tenant::create(['name' => 'Pão & Sabor', 'slug' => 'pao-sabor']);
         $png = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=');
+        $optimized = tempnam(sys_get_temp_dir(), 'optimized-');
+        file_put_contents($optimized, 'webp-content');
+        $this->mock(ImageOptimizer::class)->shouldReceive('toWebp')->once()->andReturn($optimized);
         $path = app(TenantMedia::class)->store($tenant, UploadedFile::fake()->createWithContent('foto.png', $png), 'products', 'Pão de Queijo Especial');
         $this->assertStringStartsWith("tenants/{$tenant->id}/products/pao-de-queijo-especial-", $path);
+        $this->assertStringEndsWith('.webp', $path);
         Storage::disk('s3')->assertExists($path);
     }
 

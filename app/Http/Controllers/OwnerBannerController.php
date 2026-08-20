@@ -12,7 +12,7 @@ class OwnerBannerController extends Controller
     public function store(Request $request, TenantMedia $media)
     {
         $venue = $request->user()->tenant->venues()->firstOrFail();
-        $data = $request->validate(['title' => ['required', 'string', 'max:120'], 'description' => ['nullable', 'string', 'max:300'], 'link_url' => ['nullable', 'url', 'max:500'], 'image' => ['required', File::image()->max(8 * 1024)], 'starts_at' => ['nullable', 'date'], 'ends_at' => ['nullable', 'date', 'after:starts_at']]);
+        $data = $request->validate(['title' => ['required', 'string', 'max:120'], 'description' => ['nullable', 'string', 'max:300'], 'link_url' => ['nullable', 'url', 'max:500'], 'image' => ['required', File::image()->max(12 * 1024)], 'starts_at' => ['nullable', 'date'], 'ends_at' => ['nullable', 'date', 'after:starts_at']]);
         $path = $media->store($request->user()->tenant, $request->file('image'), 'banners', $venue->name.' '.$data['title']);
         unset($data['image']);
         $venue->banners()->create($data + ['image_path' => $path, 'position' => (int) $venue->banners()->max('position') + 10]);
@@ -36,6 +36,6 @@ class OwnerBannerController extends Controller
         $media->delete($banner->image_path, $request->user()->tenant);
         $banner->delete();
 
-        return back()->with('status','Banner removido.');
+        return back()->with('status', 'Banner removido.');
     }
 }
