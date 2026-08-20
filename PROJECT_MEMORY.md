@@ -44,7 +44,8 @@ Plataforma SaaS independente para restaurantes, bares e lanchonetes: cardápio d
 - Rede compartilhada somente para conectividade: `360Network`.
 - Banco exclusivo: `cardapiodigitalbh`; usuário exclusivo criado na VPS.
 - Traefik usa `letsencryptresolver` para o domínio principal.
-- Para subdomínios HTTPS em escala, é necessário certificado wildcard via DNS challenge; não alterar Traefik global sem autorização explícita.
+- O wildcard DNS está com proxy Cloudflare e SSL `Full`, fornecendo HTTPS confiável para `{slug}.cardapiodigitalbh.com.br` sem modificar o Traefik global.
+- SMTP próprio configurado somente no `.env` de produção; envio real do template HTML validado em 2026-08-20.
 - Caddy serve assets compilados. A causa de CSS ausente foi volume do host mascarando `public/build`; solução permanente: imagem `web` no Dockerfile copia assets da imagem `app`.
 
 ## Incidentes e correções
@@ -56,13 +57,13 @@ Plataforma SaaS independente para restaurantes, bares e lanchonetes: cardápio d
 | 2026-08-20 | `/admin` retornou 500 | Controller Admin não havia sido copiado para a VPS; diretório e imagem corrigidos. |
 | 2026-08-20 | `/menu` no domínio principal retornou 404 | Menu depende de tenant; prévia deve usar slug/subdomínio ou token QR. |
 | 2026-08-20 | `/painel/cardapio` retornou 500 | View fechava `@forelse` com `@endforeach`; corrigida e coberta por teste funcional. |
-| 2026-08-20 | HTTPS do subdomínio apresentou certificado não confiável | Aplicação e roteamento respondem 200; falta certificado wildcard por DNS challenge. |
+| 2026-08-20 | HTTPS do subdomínio apresentou certificado não confiável | Wildcard DNS passou pelo proxy Cloudflare em modo SSL `Full`; certificado público validado sem alterar o Traefik global. |
 | 2026-08-20 | Cookies de sessão em produção sem atributo `Secure` | `SESSION_SECURE_COOKIE=true` definido no ambiente de produção; Caddy recebeu cabeçalhos defensivos. |
 | 2026-08-20 | Quitação individual liberava mesa com outras comandas abertas | Caixa agora verifica outras comandas antes de alterar a mesa para disponível. |
 | 2026-08-20 | Suspensão administrativa não era aplicada ao tenant | Login, domínio público e pedidos QR agora respeitam o status do estabelecimento. |
 
-## Pendências críticas de lançamento
+## Pendências pós-lançamento
 
-1. Habilitar HTTPS wildcard para subdomínios por DNS challenge.
-2. Configurar SMTP real, recuperação de senha e verificação de e-mail.
-3. Adotar a stack pelo Portainer para controle Total quando o produto estiver estável.
+1. Adotar a stack pelo Portainer para controle Total quando o produto estiver estável.
+2. Decidir quando tornar a verificação de e-mail obrigatória; o template e a infraestrutura de envio já estão preparados.
+3. Integrar o MinIO para fotos de produtos quando as credenciais e o bucket exclusivos do projeto forem definidos.
