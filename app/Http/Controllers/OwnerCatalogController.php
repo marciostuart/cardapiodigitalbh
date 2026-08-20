@@ -10,7 +10,9 @@ class OwnerCatalogController extends Controller
 {
     private function venue(Request $request)
     {
-        return $request->user()->tenant?->venues()->firstOrFail();
+        $venue = $request->user()->tenant?->venues()->first();
+        abort_unless($venue, 404, 'Estabelecimento não encontrado para esta conta.');
+        return $venue;
     }
 
     public function index(Request $request)
