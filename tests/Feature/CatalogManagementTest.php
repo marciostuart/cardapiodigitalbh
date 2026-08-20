@@ -2,19 +2,66 @@
 
 namespace Tests\Feature;
 
+use App\Models\Product;
+use App\Models\ProductCategory;
+use App\Models\Tenant;
+use App\Models\User;
+use App\Models\Venue;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
 class CatalogManagementTest extends TestCase
 {
-    /**
-     * A basic feature test example.
-     */
-    public function test_example(): void
-    {
-        $response = $this->get('/');
+    use RefreshDatabase;
 
-        $response->assertStatus(200);
+    public function test_owner_can_open_and_manage_own_catalog(): void
+    {
+        [$user, $venue] = $this->ownerWithVenue('casa-teste');
+
+        $this->actingAs($user)->get('/painel/cardapio')->assertOk()->assertSee('Cardápio');
+        $this->actingAs($user)->post('/painel/categorias', ['name' => 'Hambúrgueres'])->assertRedirect();
+        $category = ProductCategory::where('venue_id', $venue->id)->sole();
+
+        $this->actingAs($user)->post('/painel/produtos', [
+            'product_category_id' => $category->id,
+            'name' => 'Clássico',
+            'price' => '29.90',
+            'station' => 'kitchen',
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas(Product::class, ['venue_id' => $venue->id, 'name' => 'Clássico', 'price' => 29.90]);
+    }
+
+    public function test_owner_cannot_add_product_to_another_venue_category(): void
+    {
+        [$user] = $this->ownerWithVenue('casa-a');
+        [, $otherVenue] = $this->ownerWithVenue('casa-b');
+        $category = ProductCategory::create(['venue_id' => $otherVenue->id, 'name' => 'Privada']);
+
+        $this->actingAs($user)->post('/painel/produtos', [
+            'product_category_id' => $category->id,
+            'name' => 'Produto indevido',
+            'price' => 10,
+        ])->assertUnprocessable();
+    }
+
+    public function test_owner_can_render_a_scannable_table_qr_code(): void
+    {
+        [$user, $venue] = $this->ownerWithVenue('casa-qr');
+        $table = $venue->diningTables()->create(['code' => '10', 'qr_token' => fake()->uuid]);
+
+        $this->actingAs($user)->get(route('owner.tables.qr', $table))
+            ->assertOk()
+            ->assertHeader('Content-Type', 'image/svg+xml')
+            ->assertSee('<svg', false);
+    }
+
+    private function ownerWithVenue(string $slug): array
+    {
+        $tenant = Tenant::create(['name' => $slug, 'slug' => $slug]);
+        $venue = Venue::create(['tenant_id' => $tenant->id, 'name' => $slug, 'subdomain' => $slug]);
+        $user = User::factory()->create(['tenant_id' => $tenant->id, 'role' => 'owner']);
+
+        return [$user, $venue];
     }
 }

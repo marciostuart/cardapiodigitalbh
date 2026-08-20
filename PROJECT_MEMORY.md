@@ -17,9 +17,10 @@ Plataforma SaaS independente para restaurantes, bares e lanchonetes: cardápio d
 - Landing institucional, login e cadastro de estabelecimento.
 - Cadastro cria Tenant, Venue e usuário `owner`; plano inicial `free`.
 - Owner de plataforma (`platform_owner`): `/admin`, lista estabelecimentos, altera plano e pode impersonar o owner do cliente.
-- Owner de estabelecimento: dashboard, categorias, produtos, mesas e token QR por mesa.
-- Cardápio público por QR: `/m/{token}`.
-- Operação inicial: pedidos, comandas, pagamentos manuais e KDS possuem base de domínio/API.
+- Owner de estabelecimento: dashboard, CRUD do catálogo, mesas e QR Code SVG imprimível por mesa.
+- Cardápio público no domínio raiz do tenant (`https://{slug}.cardapiodigitalbh.com.br`) e por QR (`/m/{token}`).
+- Pedido público por QR com carrinho; preço e total sempre recalculados no servidor.
+- Operação: mapa de mesas, KDS visual, avanço de itens, comandas, pagamentos manuais e liberação de mesa.
 
 ## Padrões obrigatórios
 
@@ -47,12 +48,12 @@ Plataforma SaaS independente para restaurantes, bares e lanchonetes: cardápio d
 | 2026-08-20 | CSS/JS ausentes no Caddy | Assets sincronizados; Dockerfile evoluído para imagem web própria. |
 | 2026-08-20 | `/admin` retornou 500 | Controller Admin não havia sido copiado para a VPS; diretório e imagem corrigidos. |
 | 2026-08-20 | `/menu` no domínio principal retornou 404 | Menu depende de tenant; prévia deve usar slug/subdomínio ou token QR. |
+| 2026-08-20 | `/painel/cardapio` retornou 500 | View fechava `@forelse` com `@endforeach`; corrigida e coberta por teste funcional. |
+| 2026-08-20 | HTTPS do subdomínio apresentou certificado não confiável | Aplicação e roteamento respondem 200; falta certificado wildcard por DNS challenge. |
 
 ## Pendências críticas de lançamento
 
-1. Corrigir página de cardápio interno (`/painel/cardapio`) e testes de fluxo autenticado.
-2. Finalizar link de prévia com slug e habilitar HTTPS wildcard para subdomínios.
-3. Exibir QR Code imprimível por mesa, não apenas URL.
-4. Completar pedido público por QR e atualização de status para cozinha/caixa.
-5. Configurar SMTP real, recuperação de senha e verificação de e-mail.
-6. Adotar a stack pelo Portainer para controle Total quando o produto estiver estável.
+1. Habilitar HTTPS wildcard para subdomínios por DNS challenge.
+2. Configurar SMTP real, recuperação de senha e verificação de e-mail.
+3. Criar gestão de equipe/garçons e permissões por função.
+4. Adotar a stack pelo Portainer para controle Total quando o produto estiver estável.

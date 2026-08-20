@@ -10,8 +10,9 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -33,18 +34,21 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        $request->merge(['subdomain' => Str::slug((string) $request->input('subdomain'))]);
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'venue_name' => ['required', 'string', 'max:120'],
-            'subdomain' => ['required', 'alpha_dash', 'min:3', 'max:50', 'unique:venues,subdomain'],
+            'subdomain' => ['required', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/', 'min:3', 'max:50', 'not_in:www,admin,app,api,mail,painel,suporte', 'unique:venues,subdomain'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'password' => ['required', 'confirmed', Rules\Password::min(8)->mixedCase()->numbers()],
         ]);
 
         $user = DB::transaction(function () use ($request) {
             $tenant = Tenant::create([
                 'name' => $request->venue_name,
                 'slug' => $request->subdomain,
+                'plan' => 'free',
+                'status' => 'active',
             ]);
 
             Venue::create([

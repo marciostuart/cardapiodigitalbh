@@ -15,6 +15,13 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    @if(Auth::user()->tenant_id)
+                        <x-nav-link :href="route('owner.catalog')" :active="request()->routeIs('owner.catalog')">Cardápio</x-nav-link>
+                        <x-nav-link :href="route('owner.tables')" :active="request()->routeIs('owner.tables')">Mesas</x-nav-link>
+                        <x-nav-link href="/operacao" :active="request()->is('operacao')">Operação</x-nav-link>
+                    @elseif(Auth::user()->role === 'platform_owner')
+                        <x-nav-link :href="route('admin.platform')" :active="request()->routeIs('admin.*')">Administração</x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -34,8 +41,13 @@
                     </x-slot>
 
                     <x-slot name="content">
+                        @if(session()->has('impersonator_id'))
+                            <form method="POST" action="{{ route('admin.leave') }}">@csrf
+                                <x-dropdown-link href="#" onclick="event.preventDefault(); this.closest('form').submit();">Retornar à administração</x-dropdown-link>
+                            </form>
+                        @endif
                         <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Profile') }}
+                            Perfil
                         </x-dropdown-link>
 
                         <!-- Authentication -->
@@ -45,7 +57,7 @@
                             <x-dropdown-link :href="route('logout')"
                                     onclick="event.preventDefault();
                                                 this.closest('form').submit();">
-                                {{ __('Log Out') }}
+                                Sair
                             </x-dropdown-link>
                         </form>
                     </x-slot>
@@ -70,6 +82,13 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+            @if(Auth::user()->tenant_id)
+                <x-responsive-nav-link :href="route('owner.catalog')" :active="request()->routeIs('owner.catalog')">Cardápio</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('owner.tables')" :active="request()->routeIs('owner.tables')">Mesas</x-responsive-nav-link>
+                <x-responsive-nav-link href="/operacao" :active="request()->is('operacao')">Operação</x-responsive-nav-link>
+            @elseif(Auth::user()->role === 'platform_owner')
+                <x-responsive-nav-link :href="route('admin.platform')" :active="request()->routeIs('admin.*')">Administração</x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->
@@ -81,7 +100,7 @@
 
             <div class="mt-3 space-y-1">
                 <x-responsive-nav-link :href="route('profile.edit')">
-                    {{ __('Profile') }}
+                    Perfil
                 </x-responsive-nav-link>
 
                 <!-- Authentication -->
@@ -91,7 +110,7 @@
                     <x-responsive-nav-link :href="route('logout')"
                             onclick="event.preventDefault();
                                         this.closest('form').submit();">
-                        {{ __('Log Out') }}
+                                Sair
                     </x-responsive-nav-link>
                 </form>
             </div>

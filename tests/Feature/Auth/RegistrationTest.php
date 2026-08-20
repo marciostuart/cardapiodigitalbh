@@ -3,8 +3,6 @@
 namespace Tests\Feature\Auth;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use App\Models\Tenant;
-use App\Models\Venue;
 use Tests\TestCase;
 
 class RegistrationTest extends TestCase
@@ -25,13 +23,27 @@ class RegistrationTest extends TestCase
             'venue_name' => 'Restaurante Teste',
             'subdomain' => 'restaurante-teste',
             'email' => 'test@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => 'Password1',
+            'password_confirmation' => 'Password1',
         ]);
 
         $this->assertAuthenticated();
-        $this->assertDatabaseHas('tenants', ['name' => 'Restaurante Teste']);
+        $this->assertDatabaseHas('tenants', ['name' => 'Restaurante Teste', 'plan' => 'free', 'status' => 'active']);
         $this->assertDatabaseHas('venues', ['subdomain' => 'restaurante-teste']);
         $response->assertRedirect(route('dashboard', absolute: false));
+    }
+
+    public function test_reserved_subdomain_cannot_be_registered(): void
+    {
+        $this->post('/register', [
+            'name' => 'Test User',
+            'venue_name' => 'Restaurante Teste',
+            'subdomain' => 'admin',
+            'email' => 'test@example.com',
+            'password' => 'Password1',
+            'password_confirmation' => 'Password1',
+        ])->assertSessionHasErrors('subdomain');
+
+        $this->assertGuest();
     }
 }
