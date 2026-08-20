@@ -3,6 +3,8 @@
 namespace Tests\Feature\Auth;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Models\Tenant;
+use App\Models\Venue;
 use Tests\TestCase;
 
 class RegistrationTest extends TestCase
@@ -20,12 +22,16 @@ class RegistrationTest extends TestCase
     {
         $response = $this->post('/register', [
             'name' => 'Test User',
+            'venue_name' => 'Restaurante Teste',
+            'subdomain' => 'restaurante-teste',
             'email' => 'test@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
         ]);
 
         $this->assertAuthenticated();
+        $this->assertDatabaseHas('tenants', ['name' => 'Restaurante Teste']);
+        $this->assertDatabaseHas('venues', ['subdomain' => 'restaurante-teste']);
         $response->assertRedirect(route('dashboard', absolute: false));
     }
 }
