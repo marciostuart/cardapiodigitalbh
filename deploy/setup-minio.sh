@@ -5,23 +5,26 @@ project_dir=/opt/cardapiodigitalbh
 minio_service=minio_minio
 bucket=cardapiodigitalbh
 policy=cardapiodigitalbh
-env_lines=$(docker service inspect --format '{{range .Spec.TaskTemplate.ContainerSpec.Env}}{{println .}}{{end}}' "$minio_service")
-root_user=$(printf '%s\n' "$env_lines" | sed -n 's/^MINIO_ROOT_USER=//p' | head -n1)
-root_password=$(printf '%s\n' "$env_lines" | sed -n 's/^MINIO_ROOT_PASSWORD=//p' | head -n1)
+minio_container=$(docker ps --filter name=minio_minio --format '{{.ID}}' | head -n1)
+root_user=$(docker exec "$minio_container" printenv MINIO_ROOT_USER)
+root_password=$(docker exec "$minio_container" printenv MINIO_ROOT_PASSWORD)
 access_key=cdbh_$(openssl rand -hex 10)
 secret_key=$(openssl rand -hex 24)
 test -n "$root_user" && test -n "$root_password"
 
-docker run --rm --network 360Network --entrypoint /bin/sh \
-  -e ROOT_USER="$root_user" -e ROOT_PASSWORD="$root_password" -e ACCESS_KEY="$access_key" -e SECRET_KEY="$secret_key" \
-  -v "$project_dir/deploy/minio-cardapiodigitalbh-policy.json:/policy.json:ro" minio/mc -c '
-    set -eu
-    mc alias set local http://minio:9000 "$ROOT_USER" "$ROOT_PASSWORD" >/dev/null
-    mc mb --ignore-existing local/cardapiodigitalbh >/dev/null
-    mc admin user add local "$ACCESS_KEY" "$SECRET_KEY" >/dev/null
-    mc admin policy create local cardapiodigitalbh /policy.json >/dev/null
-    mc admin policy attach local cardapiodigitalbh --user "$ACCESS_KEY" >/dev/null
-  '
+docker service rm cdbh_minio_setup >/dev/null 2>&1 || true
+docker service create --detach --name cdbh_minio_setup --network 360Network --restart-condition none --entrypoint /bin/sh \
+  --mount type=bind,src="$project_dir/deploy/minio-cardapiodigitalbh-policy.json",dst=/policy.json,readonly \
+  --mount type=bind,src="$project_dir/deploy/minio-provision-worker.sh",dst=/worker.sh,readonly \
+  -e ROOT_USER="$root_user" -e ROOT_PASSWORD="$root_password" -e ACCESS_KEY="$access_key" -e SECRET_KEY="$secret_key" minio/mc /worker.sh >/dev/null
+ready=0
+i=0
+while [ "$i" -lt 30 ]; do
+  if docker service logs cdbh_minio_setup 2>&1 | grep -q READY; then ready=1; break; fi
+  i=$((i+1)); sleep 2
+done
+if [ "$ready" -ne 1 ]; then docker service ps cdbh_minio_setup --no-trunc; docker service logs cdbh_minio_setup; exit 1; fi
+docker service rm cdbh_minio_setup >/dev/null
 
 env_file="$project_dir/.env"
 for key in MEDIA_DISK AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_DEFAULT_REGION AWS_BUCKET AWS_ENDPOINT AWS_USE_PATH_STYLE_ENDPOINT; do
