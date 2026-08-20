@@ -11,4 +11,5 @@ Route::middleware('tenant')->post('/tables/{table}/orders', [\App\Http\Controlle
 Route::middleware('tenant')->post('/tabs/{tab}/payments', [\App\Http\Controllers\CashierController::class, 'pay']);
 Route::middleware('tenant')->get('/kds/orders', [\App\Http\Controllers\KitchenDisplayController::class, 'index']);
 Route::middleware('tenant')->patch('/kds/items/{item}', [\App\Http\Controllers\KitchenDisplayController::class, 'update']);
+Route::middleware('tenant')->get('/operacao', [\App\Http\Controllers\OperationsDashboardController::class, 'index']);
 Route::post('/onboarding/venues', [\App\Http\Controllers\VenueRegistrationController::class, 'store']);
