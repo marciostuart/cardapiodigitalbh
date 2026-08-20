@@ -6,6 +6,7 @@ use App\Http\Controllers\KitchenDisplayController;
 use App\Http\Controllers\OperationsDashboardController;
 use App\Http\Controllers\OwnerCatalogController;
 use App\Http\Controllers\OwnerDashboardController;
+use App\Http\Controllers\OwnerSettingsController;
 use App\Http\Controllers\OwnerTableController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicMenuController;
@@ -23,9 +24,12 @@ Route::get('/', function () {
     return view('marketing.home');
 });
 
-Route::get('/cardapio-digital-em-belo-horizonte', function () {
-    return view('marketing.home');
-});
+Route::view('/cardapio-digital-em-belo-horizonte', 'marketing.local-seo')->name('marketing.local-seo');
+Route::view('/termos-de-uso', 'marketing.terms')->name('marketing.terms');
+Route::view('/politica-de-privacidade', 'marketing.privacy')->name('marketing.privacy');
+Route::get('/sitemap.xml', function () {
+    return response()->view('marketing.sitemap')->header('Content-Type', 'application/xml');
+})->name('marketing.sitemap');
 Route::get('/m/{token}', [QrMenuController::class, 'show'])->name('public.qr-menu');
 Route::post('/m/{token}/orders', [TableOrderController::class, 'storeByToken'])->middleware('throttle:30,1')->name('public.qr-order');
 
@@ -55,6 +59,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/painel/equipe', [TeamController::class, 'store'])->name('owner.team.store');
         Route::patch('/painel/equipe/{member}', [TeamController::class, 'update'])->name('owner.team.update');
         Route::patch('/painel/equipe/{member}/senha', [TeamController::class, 'resetPassword'])->name('owner.team.password');
+        Route::get('/painel/configuracoes', [OwnerSettingsController::class, 'edit'])->name('owner.settings');
+        Route::patch('/painel/configuracoes', [OwnerSettingsController::class, 'update'])->name('owner.settings.update');
     });
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

@@ -56,6 +56,18 @@ class CatalogManagementTest extends TestCase
             ->assertSee('<svg', false);
     }
 
+    public function test_owner_can_update_venue_identity_without_changing_the_public_slug(): void
+    {
+        [$user, $venue] = $this->ownerWithVenue('slug-permanente');
+
+        $this->actingAs($user)->patch('/painel/configuracoes', [
+            'name' => 'Novo Nome',
+            'timezone' => 'America/Sao_Paulo',
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas(Venue::class, ['id' => $venue->id, 'name' => 'Novo Nome', 'subdomain' => 'slug-permanente']);
+    }
+
     private function ownerWithVenue(string $slug): array
     {
         $tenant = Tenant::create(['name' => $slug, 'slug' => $slug]);

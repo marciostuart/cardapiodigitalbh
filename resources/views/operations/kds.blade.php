@@ -5,7 +5,8 @@
         <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
             @forelse($orders as $order)
                 <article class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
-                    <header class="flex items-center justify-between bg-slate-900 px-5 py-4 text-white"><div><b>Pedido #{{ $order->id }}</b><p class="text-xs text-slate-300">{{ $order->tab?->diningTable ? 'Mesa '.$order->tab->diningTable->code : $order->tab?->code }}</p></div><span class="rounded-full bg-white/10 px-3 py-1 text-xs">{{ $order->created_at->diffForHumans() }}</span></header>
+                    <header class="flex items-center justify-between bg-slate-900 px-5 py-4 text-white"><div><b>Pedido #{{ $order->id }}</b><p class="text-xs text-slate-300">{{ $order->tab?->diningTable ? 'Mesa '.$order->tab->diningTable->code : $order->tab?->code }}{{ $order->tab?->customer_name ? ' · '.$order->tab->customer_name : '' }}</p></div><span class="rounded-full bg-white/10 px-3 py-1 text-xs">{{ $order->created_at->diffForHumans() }}</span></header>
+                    @if($order->notes)<p class="mx-4 mt-4 rounded-xl bg-amber-50 p-3 text-sm font-medium text-amber-900">Observação: {{ $order->notes }}</p>@endif
                     <div class="divide-y divide-slate-100 p-4">
                         @foreach($order->items as $item)
                             <form method="post" action="{{ route('kds.items.update', $item) }}" class="py-3">@csrf @method('patch')

@@ -20,8 +20,10 @@ Plataforma SaaS independente para restaurantes, bares e lanchonetes: cardápio d
 - Owner de estabelecimento: dashboard, CRUD do catálogo, mesas e QR Code SVG imprimível por mesa.
 - Cardápio público no domínio raiz do tenant (`https://{slug}.cardapiodigitalbh.com.br`) e por QR (`/m/{token}`).
 - Pedido público por QR com carrinho; preço e total sempre recalculados no servidor.
+- Comandas podem ser coletivas por mesa ou individuais por nome informado no pedido.
 - Operação: mapa de mesas, KDS visual, avanço de itens, comandas, pagamentos manuais e liberação de mesa.
 - Equipe: owner cria acessos de garçom, cozinha e caixa; cada função possui rotas limitadas ao trabalho correspondente.
+- SEO: preservar as URLs indexadas `/cardapio-digital-em-belo-horizonte`, `/termos-de-uso` e `/politica-de-privacidade`; sitemap e robots publicados no domínio principal.
 
 ## Padrões obrigatórios
 

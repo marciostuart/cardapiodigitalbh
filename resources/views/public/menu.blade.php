@@ -48,6 +48,9 @@
         <div class="sheet">
             <div class="sheet-head"><h2>Seu pedido</h2><button id="closeCart" class="close" type="button" aria-label="Fechar">×</button></div>
             <div id="cartLines"></div>
+            <label style="display:block;margin-top:18px;font-weight:700">Comanda individual <small style="display:block;color:var(--muted);font-weight:400">Informe seu nome apenas se quiser separar sua conta das demais pessoas da mesa.</small></label>
+            <input id="customerName" maxlength="80" placeholder="Seu nome (opcional)" style="width:100%;margin-top:8px;padding:12px;border:1px solid var(--line);border-radius:12px">
+            <textarea id="orderNotes" maxlength="500" rows="2" placeholder="Observações do pedido (opcional)" style="width:100%;margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:12px;font:inherit"></textarea>
             <div id="notice" class="notice"></div>
             <button id="checkout" class="checkout" type="button">Enviar pedido para a cozinha</button>
         </div>
@@ -80,7 +83,7 @@
             checkout.addEventListener('click', async () => {
                 checkout.disabled = true; notice.style.display = 'none';
                 try {
-                    const response = await fetch(@json(route('public.qr-order', $table->qr_token)), {method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content}, body:JSON.stringify({items:[...cart.values()].map(item => ({product_id:item.id, quantity:item.quantity}))})});
+                    const response = await fetch(@json(route('public.qr-order', $table->qr_token)), {method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content}, body:JSON.stringify({customer_name:document.getElementById('customerName').value, notes:document.getElementById('orderNotes').value, items:[...cart.values()].map(item => ({product_id:item.id, quantity:item.quantity}))})});
                     if (!response.ok) throw new Error('Não foi possível enviar o pedido. Tente novamente.');
                     cart.clear(); render(); notice.className = 'notice'; notice.textContent = 'Pedido enviado com sucesso! A cozinha já recebeu.'; notice.style.display = 'block'; checkout.textContent = 'Pedido enviado';
                 } catch (error) { notice.className = 'notice error'; notice.textContent = error.message; notice.style.display = 'block'; checkout.disabled = false; }

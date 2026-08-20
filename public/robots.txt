@@ -1,2 +1,11 @@
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /painel
+Disallow: /profile
+Disallow: /operacao
+Disallow: /cozinha
+Disallow: /caixa
+
+Sitemap: https://cardapiodigitalbh.com.br/sitemap.xml

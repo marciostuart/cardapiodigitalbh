@@ -19,6 +19,7 @@
                         <x-nav-link :href="route('owner.catalog')" :active="request()->routeIs('owner.catalog')">Cardápio</x-nav-link>
                         <x-nav-link :href="route('owner.tables')" :active="request()->routeIs('owner.tables')">Mesas</x-nav-link>
                         <x-nav-link :href="route('owner.team')" :active="request()->routeIs('owner.team*')">Equipe</x-nav-link>
+                        <x-nav-link :href="route('owner.settings')" :active="request()->routeIs('owner.settings*')">Configurações</x-nav-link>
                         <x-nav-link :href="route('operations.index')" :active="request()->routeIs('operations.*')">Operação</x-nav-link>
                     @elseif(Auth::user()->role === 'waiter')
                         <x-nav-link :href="route('operations.index')" :active="request()->routeIs('operations.*')">Salão</x-nav-link>
@@ -93,6 +94,7 @@
                 <x-responsive-nav-link :href="route('owner.catalog')" :active="request()->routeIs('owner.catalog')">Cardápio</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('owner.tables')" :active="request()->routeIs('owner.tables')">Mesas</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('owner.team')" :active="request()->routeIs('owner.team*')">Equipe</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('owner.settings')" :active="request()->routeIs('owner.settings*')">Configurações</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('operations.index')" :active="request()->routeIs('operations.*')">Operação</x-responsive-nav-link>
             @elseif(Auth::user()->role === 'waiter')
                 <x-responsive-nav-link :href="route('operations.index')" :active="request()->routeIs('operations.*')">Salão</x-responsive-nav-link>

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Tab extends Model
 {
-    protected $fillable = ['venue_id', 'dining_table_id', 'code', 'status', 'service_charge_rate', 'opened_at', 'closed_at'];
+    protected $fillable = ['venue_id', 'dining_table_id', 'code', 'customer_name', 'status', 'service_charge_rate', 'opened_at', 'closed_at'];
 
     protected function casts(): array
     {
