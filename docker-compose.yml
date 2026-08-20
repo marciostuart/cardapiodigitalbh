@@ -1,0 +1,19 @@
+services:
+  app:
+    image: cardapiodigitalbh:latest
+    env_file: .env
+    restart: unless-stopped
+    networks: [traefik, internal]
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.cardapio.rule=Host(`cardapiodigitalbh.com.br`) || HostRegexp(`{subdomain:[a-z0-9-]+}.cardapiodigitalbh.com.br`)
+      - traefik.http.services.cardapio.loadbalancer.server.port=8080
+  worker:
+    image: cardapiodigitalbh:latest
+    command: php artisan queue:work --sleep=1 --tries=3
+    env_file: .env
+    restart: unless-stopped
+    networks: [internal]
+networks:
+  traefik: {external: true}
+  internal: {}
