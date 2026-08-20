@@ -4,7 +4,11 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('marketing.home');
+});
+
+Route::get('/cardapio-digital-em-belo-horizonte', function () {
+    return view('marketing.home');
 });
 
 Route::get('/dashboard', function () {
