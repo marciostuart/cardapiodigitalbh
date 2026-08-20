@@ -28,7 +28,19 @@ Route::view('/cardapio-digital-em-belo-horizonte', 'marketing.local-seo')->name(
 Route::view('/termos-de-uso', 'marketing.terms')->name('marketing.terms');
 Route::view('/politica-de-privacidade', 'marketing.privacy')->name('marketing.privacy');
 Route::get('/sitemap.xml', function () {
-    return response()->view('marketing.sitemap')->header('Content-Type', 'application/xml');
+    $xml = <<<'XML'
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url><loc>https://cardapiodigitalbh.com.br/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+<url><loc>https://cardapiodigitalbh.com.br/cardapio-digital-em-belo-horizonte</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+<url><loc>https://cardapiodigitalbh.com.br/register</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://cardapiodigitalbh.com.br/login</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+<url><loc>https://cardapiodigitalbh.com.br/politica-de-privacidade</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+<url><loc>https://cardapiodigitalbh.com.br/termos-de-uso</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+</urlset>
+XML;
+
+    return response($xml)->header('Content-Type', 'application/xml');
 })->name('marketing.sitemap');
 Route::get('/m/{token}', [QrMenuController::class, 'show'])->name('public.qr-menu');
 Route::post('/m/{token}/orders', [TableOrderController::class, 'storeByToken'])->middleware('throttle:30,1')->name('public.qr-order');
