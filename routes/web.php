@@ -10,6 +10,7 @@ Route::get('/', function () {
 Route::get('/cardapio-digital-em-belo-horizonte', function () {
     return view('marketing.home');
 });
+Route::get('/m/{token}', [\App\Http\Controllers\QrMenuController::class, 'show'])->name('public.qr-menu');
 
 Route::get('/dashboard', \App\Http\Controllers\OwnerDashboardController::class)
     ->middleware(['auth'])
