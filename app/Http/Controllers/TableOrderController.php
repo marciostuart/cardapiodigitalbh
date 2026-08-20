@@ -11,8 +11,9 @@ use Illuminate\Support\Facades\DB;
 
 class TableOrderController extends Controller
 {
-    public function store(StoreTableOrderRequest $request, DiningTable $table)
+    public function store(StoreTableOrderRequest $request, int $table)
     {
+        $table = DiningTable::findOrFail($table);
         $venue = $request->attributes->get('venue');
         abort_unless($venue && $table->venue_id === $venue->id, 404);
         return DB::transaction(function () use ($request, $table, $venue) {
