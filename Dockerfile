@@ -7,7 +7,7 @@ COPY public ./public
 COPY vite.config.js postcss.config.js tailwind.config.js ./
 RUN npm run build
 
-FROM php:8.4-fpm-alpine
+FROM php:8.4-fpm-alpine AS app
 WORKDIR /var/www/html
 RUN apk add --no-cache $PHPIZE_DEPS postgresql-dev libzip-dev oniguruma-dev && docker-php-ext-install pdo_pgsql mbstring zip opcache && pecl install redis && docker-php-ext-enable redis && apk del $PHPIZE_DEPS
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
@@ -17,3 +17,7 @@ COPY . .
 COPY --from=frontend /build/public/build ./public/build
 RUN composer dump-autoload --no-dev --optimize && chown -R www-data:www-data storage bootstrap/cache
 CMD ["php-fpm", "-F"]
+
+FROM caddy:2.10-alpine AS web
+COPY Caddyfile /etc/caddy/Caddyfile
+COPY --from=app /var/www/html/public /var/www/html/public

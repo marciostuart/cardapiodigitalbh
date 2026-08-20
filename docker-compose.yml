@@ -6,12 +6,12 @@ services:
     restart: unless-stopped
     networks: [360Network, internal]
   web:
-    image: caddy:2.10-alpine
+    build:
+      context: .
+      target: web
+    image: cardapiodigitalbh-web:latest
     restart: unless-stopped
     depends_on: [app]
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - ./:/var/www/html:ro
     networks: [360Network, internal]
     deploy:
       labels:
