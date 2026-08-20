@@ -40,6 +40,21 @@ class MediaBrandingTest extends TestCase
         $this->assertSame('slug-novo', $venue->fresh()->subdomain);
     }
 
+    public function test_private_tenant_media_is_streamed_through_the_public_route(): void
+    {
+        $this->withoutExceptionHandling();
+        Storage::fake('s3');
+        config(['filesystems.media_disk' => 's3']);
+        [, $venue] = $this->owner('midia-publica');
+        $path = "tenants/{$venue->tenant_id}/products/produto-teste.webp";
+        Storage::disk('s3')->put($path, 'webp-content');
+
+        $this->get('http://midia-publica.cardapiodigitalbh.com.br/media/products/produto-teste.webp')
+            ->assertOk()
+            ->assertHeader('Content-Type', 'image/webp')
+            ->assertStreamedContent('webp-content');
+    }
+
     private function owner(string $slug): array
     {
         $tenant = Tenant::create(['name' => $slug, 'slug' => $slug]);

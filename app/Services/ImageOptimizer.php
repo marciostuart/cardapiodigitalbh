@@ -7,11 +7,15 @@ use Illuminate\Validation\ValidationException;
 
 class ImageOptimizer
 {
-    private const MAX_SIDE = 1600;
+    private const MAX_SIDE = 1400;
 
     private const MAX_PIXELS = 24_000_000;
 
-    private const WEBP_QUALITY = 75;
+    private const WEBP_QUALITY = 68;
+
+    private const MIN_WEBP_QUALITY = 55;
+
+    private const TARGET_BYTES = 140 * 1024;
 
     public function toWebp(UploadedFile $file): string
     {
@@ -42,7 +46,14 @@ class ImageOptimizer
         imagecopyresampled($target, $source, 0, 0, 0, 0, $targetWidth, $targetHeight, $width, $height);
 
         $path = tempnam(sys_get_temp_dir(), 'cdbh-webp-');
-        $saved = $path && imagewebp($target, $path, self::WEBP_QUALITY);
+        $quality = self::WEBP_QUALITY;
+        $saved = $path && imagewebp($target, $path, $quality);
+        clearstatcache(true, $path ?: '');
+        while ($saved && filesize($path) > self::TARGET_BYTES && $quality > self::MIN_WEBP_QUALITY) {
+            $quality = max(self::MIN_WEBP_QUALITY, $quality - 5);
+            $saved = imagewebp($target, $path, $quality);
+            clearstatcache(true, $path);
+        }
 
         imagedestroy($source);
         imagedestroy($target);

@@ -93,7 +93,25 @@
                                     <span id="uploadPrompt" class="{{ $editing && $product->image_path ? 'hidden' : '' }} px-5 py-10"><span class="text-4xl text-emerald-600">+</span><strong class="mt-2 block text-slate-800">Clique ou arraste a foto</strong><small class="mt-1 block text-slate-500">JPG, PNG, GIF ou WebP · até 12 MB</small></span>
                                 </label>
                                 <input id="imageInput" name="image" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="sr-only">
-                                <p id="imageMessage" class="mt-3 text-xs text-slate-500">Redimensionamos para até 1600 px e convertemos para WebP com qualidade 75%.</p>
+                                <p id="imageMessage" class="mt-3 text-xs text-slate-500">Redimensionamos para até 1400 px e aplicamos compressão WebP adaptativa.</p>
+                            </section>
+
+                            <section class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+                                <div class="flex items-start justify-between gap-3"><div><h3 class="font-bold text-slate-900">Galeria do produto</h3><p class="mt-1 text-xs text-slate-500">Adicione até quatro imagens complementares.</p></div><span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600">{{ $editing ? $product->images->count() : 0 }}/4</span></div>
+                                @if($editing && $product->images->isNotEmpty())
+                                    <div class="mt-4 grid grid-cols-2 gap-3">
+                                        @foreach($product->images as $galleryImage)
+                                            <div class="group relative overflow-hidden rounded-xl border border-slate-200">
+                                                <img src="{{ route('public.media',['subdomain'=>$venue->subdomain,'category'=>'products','filename'=>basename($galleryImage->path)]) }}" alt="Imagem da galeria" class="aspect-square w-full object-cover">
+                                                <button form="delete-gallery-{{ $galleryImage->id }}" class="absolute right-2 top-2 rounded-lg bg-red-600 px-2 py-1 text-xs font-bold text-white" aria-label="Excluir imagem">Excluir</button>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
+                                <label for="galleryInput" class="mt-4 flex cursor-pointer items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-5 text-center text-sm font-bold text-slate-700 hover:border-emerald-500">+ Selecionar imagens da galeria</label>
+                                <input id="galleryInput" name="gallery_images[]" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif" class="sr-only" @disabled($editing && $product->images->count() >= 4)>
+                                <div id="galleryPreview" class="mt-3 grid grid-cols-2 gap-3"></div>
+                                <p id="galleryMessage" class="mt-2 text-xs text-slate-500">O total, incluindo as imagens existentes, não pode ultrapassar quatro.</p>
                             </section>
 
                             <section class="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-sm text-emerald-950">
@@ -109,6 +127,8 @@
                     </div>
                 </form>
             @endif
+
+            @if($editing)@foreach($product->images as $galleryImage)<form id="delete-gallery-{{ $galleryImage->id }}" method="post" action="{{ route('owner.product-images.destroy', $galleryImage) }}" onsubmit="return confirm('Remover esta imagem da galeria?')">@csrf @method('DELETE')</form>@endforeach @endif
 
             @if($editing)
                 <section class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 sm:p-6">
@@ -178,6 +198,10 @@
         const prompt = document.getElementById('uploadPrompt');
         const message = document.getElementById('imageMessage');
         const maxBytes = 12 * 1024 * 1024;
+        const galleryInput = document.getElementById('galleryInput');
+        const galleryPreview = document.getElementById('galleryPreview');
+        const galleryMessage = document.getElementById('galleryMessage');
+        const existingGalleryCount = {{ $editing ? $product->images->count() : 0 }};
 
         function showImage(file) {
             if (!file) return;
@@ -195,6 +219,24 @@
         }
 
         if (input) input.addEventListener('change', event => showImage(event.target.files[0]));
+        if (galleryInput) galleryInput.addEventListener('change', event => {
+            const files = [...event.target.files];
+            galleryPreview.innerHTML = '';
+            if (existingGalleryCount + files.length > 4 || files.some(file => file.size > maxBytes)) {
+                galleryInput.value = '';
+                galleryMessage.textContent = existingGalleryCount + files.length > 4 ? 'Selecione no máximo ' + (4 - existingGalleryCount) + ' nova(s) imagem(ns).' : 'Uma das imagens excede 12 MB.';
+                galleryMessage.className = 'mt-2 text-xs font-bold text-red-600';
+                return;
+            }
+            files.forEach(file => {
+                const image = document.createElement('img');
+                image.src = URL.createObjectURL(file);
+                image.className = 'aspect-square w-full rounded-xl object-cover';
+                galleryPreview.appendChild(image);
+            });
+            galleryMessage.textContent = files.length ? files.length + ' imagem(ns) selecionada(s). Serão convertidas para WebP.' : 'O total não pode ultrapassar quatro.';
+            galleryMessage.className = 'mt-2 text-xs font-semibold text-emerald-700';
+        });
         if (zone) {
             ['dragenter', 'dragover'].forEach(name => zone.addEventListener(name, event => { event.preventDefault(); zone.classList.add('border-emerald-500', 'bg-emerald-50'); }));
             ['dragleave', 'drop'].forEach(name => zone.addEventListener(name, event => { event.preventDefault(); zone.classList.remove('border-emerald-500', 'bg-emerald-50'); }));

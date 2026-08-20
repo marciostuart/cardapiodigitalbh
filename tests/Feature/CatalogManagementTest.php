@@ -8,6 +8,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Venue;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
 
 class CatalogManagementTest extends TestCase
@@ -68,6 +69,33 @@ class CatalogManagementTest extends TestCase
             ->assertOk()
             ->assertHeader('Content-Type', 'image/svg+xml')
             ->assertSee('<svg', false);
+    }
+
+    public function test_product_gallery_rejects_more_than_four_images(): void
+    {
+        [$user, $venue] = $this->ownerWithVenue('galeria');
+        $category = ProductCategory::create(['venue_id' => $venue->id, 'name' => 'Lanches']);
+        $png = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=');
+        $images = collect(range(1, 5))->map(fn ($index) => UploadedFile::fake()->createWithContent("foto-{$index}.png", $png))->all();
+
+        $this->actingAs($user)->post(route('owner.products.store'), [
+            'product_category_id' => $category->id,
+            'name' => 'Produto com fotos',
+            'price' => 20,
+            'station' => 'kitchen',
+            'gallery_images' => $images,
+        ])->assertSessionHasErrors('gallery_images');
+    }
+
+    public function test_public_product_page_is_tenant_scoped(): void
+    {
+        [, $venue] = $this->ownerWithVenue('produto-publico');
+        [, $otherVenue] = $this->ownerWithVenue('produto-privado');
+        $category = ProductCategory::create(['venue_id' => $venue->id, 'name' => 'Lanches']);
+        $product = Product::create(['venue_id' => $venue->id, 'product_category_id' => $category->id, 'name' => 'X-Burger Especial', 'price' => 25]);
+
+        $this->get("http://produto-publico.cardapiodigitalbh.com.br/produto/{$product->id}")->assertOk()->assertSee('X-Burger Especial');
+        $this->get("http://produto-privado.cardapiodigitalbh.com.br/produto/{$product->id}")->assertNotFound();
     }
 
     public function test_owner_can_update_venue_identity_without_changing_the_public_slug(): void

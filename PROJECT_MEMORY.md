@@ -42,8 +42,10 @@ Plataforma SaaS independente para restaurantes, bares e lanchonetes: cardápio d
 - Gestão de pedidos aplica uma máquina de estados progressiva e dispara eventos transacionais do WhatsApp quando houver consentimento.
 - Produtos aceitam grupos de variações/adicionais com seleção mínima e máxima. O preço e o pertencimento de cada opção são validados no servidor e gravados como snapshot no item do pedido.
 - Mídias usam MinIO/S3 privado no bucket exclusivo `cardapiodigitalbh`, com credencial limitada ao bucket e prefixos `tenants/{tenant_id}/logos`, `products` e `banners`. Nomes de arquivo usam slug SEO mais sufixo aleatório; a aplicação publica as imagens pelo subdomínio correto com cache.
-- Toda imagem de produto, logo ou banner é validada, redimensionada proporcionalmente para no máximo 1.600 px e convertida para WebP com qualidade 75%; o original não é persistido. O limite da aplicação é 12 MB/24 megapixels e o PHP usa `upload_max_filesize=16M` e `post_max_size=20M`.
+- Toda imagem de produto, logo ou banner é validada, redimensionada proporcionalmente para no máximo 1.400 px e convertida para WebP. A compressão inicia em 68% e reduz até 55% quando necessário, visando cerca de 140 KB; o original não é persistido. O limite da aplicação é 12 MB/24 megapixels e o PHP usa `upload_max_filesize=16M` e `post_max_size=20M`.
 - Produtos possuem editor dedicado e responsivo, com prévia/arrastar-e-soltar da foto, dados comerciais, estoque, visibilidade e variações em uma única jornada.
+- Cada produto aceita uma foto de destaque e até quatro fotos de galeria (cinco no total), todas isoladas por tenant e submetidas ao mesmo pipeline WebP adaptativo/1.400 px.
+- A vitrine pública usa largura de até 1.400 px, busca, navegação por categorias e carrosséis responsivos com três produtos visíveis no desktop. A foto abre a página individual; `Comprar` adiciona diretamente quando não há variações e abre a personalização quando houver grupos.
 - Identidade visual, logo, cores e banners são administrados em Configurações. O slug pode ser alterado quando disponível, mas exige confirmação explícita sobre a quebra de URLs e QR Codes antigos.
 
 ## Padrões obrigatórios
@@ -83,6 +85,7 @@ Plataforma SaaS independente para restaurantes, bares e lanchonetes: cardápio d
 | 2026-08-20 | Quitação individual liberava mesa com outras comandas abertas | Caixa agora verifica outras comandas antes de alterar a mesa para disponível. |
 | 2026-08-20 | Suspensão administrativa não era aplicada ao tenant | Login, domínio público e pedidos QR agora respeitam o status do estabelecimento. |
 | 2026-08-20 | Upload de produto acima de 8 MB era rejeitado antes de chegar ao Laravel | Limites do PHP elevados com margem controlada; validação em 12 MB e pipeline GD/WebP 75% adicionados à imagem Docker. |
+| 2026-08-20 | Upload era concluído, mas a rota pública da imagem retornava 404 | O parâmetro de domínio `{subdomain}` estava deslocando os argumentos do controller invocável; assinatura corrigida e coberta por teste de streaming privado. |
 
 ## Pendências pós-lançamento
 

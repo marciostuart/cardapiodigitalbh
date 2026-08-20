@@ -24,6 +24,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicMediaController;
 use App\Http\Controllers\PublicMenuController;
 use App\Http\Controllers\PublicOrderController;
+use App\Http\Controllers\PublicProductController;
 use App\Http\Controllers\QrMenuController;
 use App\Http\Controllers\TableOrderController;
 use App\Http\Controllers\TeamController;
@@ -37,6 +38,7 @@ Route::domain('{subdomain}.cardapiodigitalbh.com.br')->middleware('tenant')->gro
     Route::post('/mesa/{token}/pedidos', [TableOrderController::class, 'storeByToken'])->middleware('throttle:30,1')->name('public.tenant-table-order');
     Route::post('/pedidos', [PublicOrderController::class, 'store'])->middleware('throttle:30,1')->name('public.orders.store');
     Route::get('/pedido/{token}', [PublicOrderController::class, 'track'])->name('public.order.track');
+    Route::get('/produto/{product}', [PublicProductController::class, 'show'])->name('public.product');
     Route::get('/media/{category}/{filename}', PublicMediaController::class)->name('public.media');
 });
 
@@ -97,6 +99,7 @@ Route::middleware(['auth', 'account.active'])->group(function () {
         Route::get('/painel/produtos/{product}', [OwnerCatalogController::class, 'editProduct'])->name('owner.products.edit');
         Route::patch('/painel/produtos/{product}', [OwnerCatalogController::class, 'updateProduct'])->name('owner.products.update');
         Route::delete('/painel/produtos/{product}', [OwnerCatalogController::class, 'destroyProduct'])->name('owner.products.destroy');
+        Route::delete('/painel/produtos/imagens/{image}', [OwnerCatalogController::class, 'destroyProductImage'])->name('owner.product-images.destroy');
         Route::post('/painel/produtos/{product}/grupos', [OwnerCatalogController::class, 'storeOptionGroup'])->name('owner.option-groups.store');
         Route::patch('/painel/grupos/{group}', [OwnerCatalogController::class, 'updateOptionGroup'])->name('owner.option-groups.update');
         Route::delete('/painel/grupos/{group}', [OwnerCatalogController::class, 'destroyOptionGroup'])->name('owner.option-groups.destroy');

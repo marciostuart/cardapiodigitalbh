@@ -17,7 +17,7 @@ class QrMenuController extends Controller
         $resolved = $request->attributes->get('venue');
         abort_if($resolved && $resolved->id !== $venue->id, 404);
         $banners = $venue->banners()->where('active', true)->where(fn ($q) => $q->whereNull('starts_at')->orWhere('starts_at', '<=', now()))->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>=', now()))->orderBy('position')->get();
-        $categories = ProductCategory::where('venue_id', $venue->id)->where('active', true)->with(['products' => fn ($q) => CatalogOrdering::apply($q->where('active', true), $venue->catalog_sort_mode)->with(['optionGroups' => fn ($q) => $q->where('active', true)->with(['options' => fn ($q) => $q->where('active', true)])])])->orderBy('position')->get();
+        $categories = ProductCategory::where('venue_id', $venue->id)->where('active', true)->with(['products' => fn ($q) => CatalogOrdering::apply($q->where('active', true), $venue->catalog_sort_mode)->with(['images', 'optionGroups' => fn ($q) => $q->where('active', true)->with(['options' => fn ($q) => $q->where('active', true)])])])->orderBy('position')->get();
 
         return view('public.menu', compact('venue', 'table', 'banners', 'categories') + ['isOpen' => VenueAvailability::isOpen($venue), 'deliveryZones' => collect()]);
     }
