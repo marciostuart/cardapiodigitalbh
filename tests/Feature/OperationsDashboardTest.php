@@ -18,7 +18,7 @@ class OperationsDashboardTest extends TestCase
         $venue = Venue::create([
             'tenant_id' => $tenant->id,
             'name' => 'Bistro Central',
-            'subdomain' => 'bistro',
+            'subdomain' => 'localhost',
         ]);
         DiningTable::create([
             'venue_id' => $venue->id,
@@ -26,7 +26,7 @@ class OperationsDashboardTest extends TestCase
             'qr_token' => (string) str()->uuid(),
         ]);
 
-        $this->get('/operacao', ['HOST' => 'bistro.localhost'])
+        $this->get('/operacao')
             ->assertOk()
             ->assertSee('Bistro Central')
             ->assertSee('Mesa 12')
