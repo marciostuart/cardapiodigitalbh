@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Support\TransactionalMail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -20,13 +21,9 @@ class WelcomeToCardapio extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)
-            ->subject('Seu Cardápio Digital BH está pronto')
-            ->greeting('Olá, '.$notifiable->name.'!')
-            ->line('O cadastro de '.$this->venueName.' foi concluído com sucesso no plano Grátis.')
-            ->line('Agora você já pode cadastrar produtos, criar mesas e imprimir os QR Codes do estabelecimento.')
-            ->action('Acessar meu painel', route('login'))
-            ->line('Conte com a gente para colocar sua operação no ar.');
+        return TransactionalMail::message('welcome', $notifiable, [
+            'venue_name' => $this->venueName,
+        ], route('login'));
     }
 
     public function toArray(object $notifiable): array

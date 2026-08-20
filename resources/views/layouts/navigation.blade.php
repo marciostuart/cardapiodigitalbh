@@ -28,7 +28,8 @@
                     @elseif(Auth::user()->role === 'cashier')
                         <x-nav-link :href="route('cashier.index')" :active="request()->routeIs('cashier.*')">Caixa</x-nav-link>
                     @elseif(Auth::user()->role === 'platform_owner')
-                        <x-nav-link :href="route('admin.platform')" :active="request()->routeIs('admin.*')">Administração</x-nav-link>
+                        <x-nav-link :href="route('admin.platform')" :active="request()->routeIs('admin.platform')">Administração</x-nav-link>
+                        <x-nav-link :href="route('admin.email-templates.index')" :active="request()->routeIs('admin.email-templates.*')">E-mails</x-nav-link>
                     @endif
                 </div>
             </div>
@@ -103,7 +104,8 @@
             @elseif(Auth::user()->role === 'cashier')
                 <x-responsive-nav-link :href="route('cashier.index')" :active="request()->routeIs('cashier.*')">Caixa</x-responsive-nav-link>
             @elseif(Auth::user()->role === 'platform_owner')
-                <x-responsive-nav-link :href="route('admin.platform')" :active="request()->routeIs('admin.*')">Administração</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.platform')" :active="request()->routeIs('admin.platform')">Administração</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.email-templates.index')" :active="request()->routeIs('admin.email-templates.*')">E-mails</x-responsive-nav-link>
             @endif
         </div>
 

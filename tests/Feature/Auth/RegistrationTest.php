@@ -36,6 +36,14 @@ class RegistrationTest extends TestCase
         $this->assertDatabaseHas('tenants', ['name' => 'Restaurante Teste', 'plan' => 'free', 'status' => 'active']);
         $this->assertDatabaseHas('venues', ['subdomain' => 'restaurante-teste']);
         Notification::assertSentTo(User::where('email', 'test@example.com')->firstOrFail(), WelcomeToCardapio::class);
+        Notification::assertSentTo(User::where('email', 'test@example.com')->firstOrFail(), WelcomeToCardapio::class, function ($notification, $channels) {
+            $mail = $notification->toMail(User::where('email', 'test@example.com')->firstOrFail());
+
+            $this->assertSame('Seu Cardápio Digital BH está pronto', $mail->subject);
+            $this->assertStringContainsString('Restaurante Teste', view($mail->view['html'], $mail->viewData)->render());
+
+            return $channels === ['mail'];
+        });
         $response->assertRedirect(route('dashboard', absolute: false));
     }
 

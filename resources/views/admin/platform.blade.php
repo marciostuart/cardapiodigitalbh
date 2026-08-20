@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header"><h2 class="text-xl font-semibold">Administração da plataforma</h2></x-slot>
     <div class="mx-auto max-w-7xl py-8 sm:px-6 lg:px-8">
-        <div class="rounded-2xl bg-slate-900 p-7 text-white"><p class="text-sm font-bold text-emerald-300">OWNER</p><h1 class="mt-2 text-3xl font-bold">Estabelecimentos e planos</h1><p class="mt-2 text-slate-300">Gerencie clientes, planos, suspensões e acesso de suporte.</p></div>
+        <div class="rounded-2xl bg-slate-900 p-7 text-white"><div class="flex flex-wrap items-end justify-between gap-4"><div><p class="text-sm font-bold text-emerald-300">OWNER</p><h1 class="mt-2 text-3xl font-bold">Estabelecimentos e planos</h1><p class="mt-2 text-slate-300">Gerencie clientes, planos, suspensões e acesso de suporte.</p></div><a href="{{ route('admin.email-templates.index') }}" class="rounded-xl bg-white px-4 py-3 text-sm font-bold text-slate-900">Editar e-mails transacionais</a></div></div>
         @if(session('status'))<div class="mt-4 rounded bg-emerald-50 p-3 text-emerald-800">{{ session('status') }}</div>@endif
         <div class="mt-6 overflow-x-auto rounded-xl bg-white shadow"><table class="w-full text-left">
             <thead class="bg-slate-50 text-sm"><tr><th class="p-4">Estabelecimento</th><th class="p-4">Endereço</th><th class="p-4">Plano e status</th><th class="p-4">Ações</th></tr></thead>

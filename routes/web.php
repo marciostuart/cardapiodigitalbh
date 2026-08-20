@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\EmailTemplateController;
 use App\Http\Controllers\Admin\PlatformController;
 use App\Http\Controllers\CashierController;
 use App\Http\Controllers\KitchenDisplayController;
@@ -54,6 +55,8 @@ Route::middleware(['auth', 'account.active'])->group(function () {
         Route::get('/admin', [PlatformController::class, 'index'])->name('admin.platform');
         Route::post('/admin/estabelecimentos/{tenant}/acessar', [PlatformController::class, 'impersonate'])->name('admin.impersonate');
         Route::patch('/admin/estabelecimentos/{tenant}/plano', [PlatformController::class, 'updatePlan'])->name('admin.plan.update');
+        Route::get('/admin/emails', [EmailTemplateController::class, 'index'])->name('admin.email-templates.index');
+        Route::patch('/admin/emails/{template}', [EmailTemplateController::class, 'update'])->name('admin.email-templates.update');
     });
     Route::post('/admin/retornar', [PlatformController::class, 'leave'])->name('admin.leave');
     Route::middleware('role:owner')->group(function () {

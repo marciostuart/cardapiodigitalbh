@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\EmailTemplate;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Venue;
@@ -47,5 +48,36 @@ class AdminPlatformTest extends TestCase
         $customer = User::factory()->create(['role' => 'owner']);
 
         $this->actingAs($customer)->get(route('admin.platform'))->assertForbidden();
+    }
+
+    public function test_platform_owner_can_edit_transactional_email_templates(): void
+    {
+        $platformOwner = User::factory()->create(['role' => 'platform_owner']);
+        $template = EmailTemplate::where('key', 'welcome')->firstOrFail();
+
+        $this->actingAs($platformOwner)->get(route('admin.email-templates.index'))
+            ->assertOk()
+            ->assertSee('Boas-vindas');
+
+        $this->patch(route('admin.email-templates.update', $template), [
+            'subject' => 'Bem-vindo à plataforma, {{name}}',
+            'heading' => 'Tudo pronto',
+            'body' => 'Seu estabelecimento {{venue_name}} está pronto.',
+            'action_text' => 'Abrir painel',
+            'footer' => 'Equipe Cardápio Digital BH',
+            'active' => true,
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas(EmailTemplate::class, [
+            'id' => $template->id,
+            'subject' => 'Bem-vindo à plataforma, {{name}}',
+        ]);
+    }
+
+    public function test_customer_cannot_edit_transactional_email_templates(): void
+    {
+        $customer = User::factory()->create(['role' => 'owner']);
+
+        $this->actingAs($customer)->get(route('admin.email-templates.index'))->assertForbidden();
     }
 }
