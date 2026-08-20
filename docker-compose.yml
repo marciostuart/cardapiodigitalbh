@@ -1,19 +1,32 @@
 services:
   app:
+    build: .
     image: cardapiodigitalbh:latest
     env_file: .env
     restart: unless-stopped
+    networks: [internal]
+  web:
+    image: caddy:2.10-alpine
+    restart: unless-stopped
+    depends_on: [app]
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./:/var/www/html:ro
     networks: [traefik, internal]
     labels:
       - traefik.enable=true
       - traefik.http.routers.cardapio.rule=Host(`cardapiodigitalbh.com.br`) || HostRegexp(`{subdomain:[a-z0-9-]+}.cardapiodigitalbh.com.br`)
+      - traefik.http.routers.cardapio.entrypoints=websecure
+      - traefik.http.routers.cardapio.tls=true
       - traefik.http.services.cardapio.loadbalancer.server.port=8080
   worker:
+    build: .
     image: cardapiodigitalbh:latest
-    command: php artisan queue:work --sleep=1 --tries=3
+    command: php artisan queue:work redis --sleep=1 --tries=3 --max-time=3600
     env_file: .env
     restart: unless-stopped
     networks: [internal]
 networks:
-  traefik: {external: true}
+  traefik:
+    external: true
   internal: {}
