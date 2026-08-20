@@ -27,4 +27,9 @@ class Tab extends Model
     {
         return $this->belongsTo(DiningTable::class);
     }
+
+    public function venue()
+    {
+        return $this->belongsTo(Venue::class);
+    }
 }

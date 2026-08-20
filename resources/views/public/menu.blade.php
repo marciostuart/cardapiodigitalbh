@@ -16,6 +16,7 @@
         <p class="eyebrow">Cardápio digital</p>
         <h1>{{ $venue->name }}</h1>
         <p class="subtitle">Escolha com calma. Preços e disponibilidade atualizados pelo estabelecimento.</p>
+        <span class="table-badge">{{ $isOpen ?? true ? 'Aberto para pedidos' : 'Fechado no momento' }}</span>
         @isset($table)<span class="table-badge">Mesa {{ $table->name ?: $table->code }}</span>@endisset
     </header>
 
@@ -29,9 +30,9 @@
                         @if($product->description)<p>{{ $product->description }}</p>@endif
                         <span class="price">R$ {{ number_format((float) $product->price, 2, ',', '.') }}</span>
                     </div>
-                    @isset($table)
+                    @if((isset($table) || $venue->pickup_enabled || $venue->delivery_enabled) && ($isOpen ?? true))
                         <button class="add" type="button" aria-label="Adicionar {{ $product->name }}" data-product='@json(["id" => $product->id, "name" => $product->name, "price" => (float) $product->price])'>+</button>
-                    @endisset
+                    @endif
                 </article>
             @empty
                 <p class="empty">Nenhum item disponível nesta categoria.</p>
@@ -42,14 +43,25 @@
     @endforelse
 </main>
 
-@isset($table)
+@if(isset($table) || $venue->pickup_enabled || $venue->delivery_enabled)
+    @php($orderEndpoint = isset($table) ? route('public.tenant-table-order', ['subdomain' => $venue->subdomain, 'token' => $table->qr_token]) : route('public.orders.store', ['subdomain' => $venue->subdomain]))
     <button id="cartButton" class="cart" type="button"><span><strong id="cartCount">0 itens</strong><small>Revisar pedido</small></span><span id="cartTotal" class="cart-total">R$ 0,00</span></button>
     <div id="cartPanel" class="panel" role="dialog" aria-modal="true" aria-label="Seu pedido">
         <div class="sheet">
             <div class="sheet-head"><h2>Seu pedido</h2><button id="closeCart" class="close" type="button" aria-label="Fechar">×</button></div>
             <div id="cartLines"></div>
+            @if(!isset($table))
+                <label style="display:block;margin-top:18px;font-weight:700">Como deseja receber?</label>
+                <select id="serviceChannel" style="width:100%;margin-top:8px;padding:12px;border:1px solid var(--line);border-radius:12px">@if($venue->pickup_enabled)<option value="pickup">Retirar no estabelecimento</option>@endif @if($venue->delivery_enabled)<option value="delivery">Receber por delivery</option>@endif</select>
+                @if($venue->delivery_enabled)<div id="deliveryFields" style="display:none"><select id="deliveryZone" style="width:100%;margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:12px"><option value="">Selecione a região de entrega</option>@foreach($deliveryZones as $zone)<option value="{{ $zone->id }}">{{ $zone->name }} · R$ {{ number_format((float)$zone->fee,2,',','.') }}</option>@endforeach</select><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><input id="postalCode" inputmode="numeric" maxlength="9" placeholder="CEP" style="margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:12px"><input id="number" maxlength="30" placeholder="Número" style="margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:12px"></div><input id="street" maxlength="150" placeholder="Rua" style="width:100%;margin-top:8px;padding:12px;border:1px solid var(--line);border-radius:12px"><input id="neighborhood" maxlength="100" placeholder="Bairro" style="width:100%;margin-top:8px;padding:12px;border:1px solid var(--line);border-radius:12px"><div style="display:grid;grid-template-columns:1fr 80px;gap:8px"><input id="city" maxlength="100" placeholder="Município" style="margin-top:8px;padding:12px;border:1px solid var(--line);border-radius:12px"><input id="state" maxlength="2" placeholder="UF" style="margin-top:8px;padding:12px;border:1px solid var(--line);border-radius:12px;text-transform:uppercase"></div><input id="complement" maxlength="100" placeholder="Complemento" style="width:100%;margin-top:8px;padding:12px;border:1px solid var(--line);border-radius:12px"><input id="reference" maxlength="150" placeholder="Referência" style="width:100%;margin-top:8px;padding:12px;border:1px solid var(--line);border-radius:12px"></div>@endif
+                <select id="paymentMethod" style="width:100%;margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:12px"><option value="pix">PIX</option><option value="cash">Dinheiro</option><option value="debit">Cartão de débito</option><option value="credit">Cartão de crédito</option></select>
+                <input id="changeFor" type="number" min="0" step="0.01" placeholder="Troco para (opcional)" style="width:100%;margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:12px">
+                <input id="couponCode" maxlength="40" placeholder="Cupom (opcional)" style="width:100%;margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:12px;text-transform:uppercase">
+            @endif
             <label style="display:block;margin-top:18px;font-weight:700">Comanda individual <small style="display:block;color:var(--muted);font-weight:400">Informe seu nome apenas se quiser separar sua conta das demais pessoas da mesa.</small></label>
             <input id="customerName" maxlength="80" placeholder="Seu nome (opcional)" style="width:100%;margin-top:8px;padding:12px;border:1px solid var(--line);border-radius:12px">
+            <input id="customerPhone" inputmode="tel" maxlength="20" placeholder="WhatsApp com DDD (opcional)" style="width:100%;margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:12px">
+            <label style="display:flex;gap:8px;align-items:flex-start;margin-top:10px;color:var(--muted);font-size:13px"><input id="whatsappConsent" type="checkbox" style="margin-top:3px"> Quero receber pelo WhatsApp as atualizações deste pedido.</label>
             <textarea id="orderNotes" maxlength="500" rows="2" placeholder="Observações do pedido (opcional)" style="width:100%;margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:12px;font:inherit"></textarea>
             <div id="notice" class="notice"></div>
             <button id="checkout" class="checkout" type="button">Enviar pedido para a cozinha</button>
@@ -64,6 +76,7 @@
             const lines = document.getElementById('cartLines');
             const notice = document.getElementById('notice');
             const checkout = document.getElementById('checkout');
+            let coordinates = null;
             const escapeHtml = value => { const div = document.createElement('div'); div.textContent = value; return div.innerHTML; };
 
             function render() {
@@ -80,17 +93,30 @@
             button.addEventListener('click', () => panel.classList.add('open'));
             document.getElementById('closeCart').addEventListener('click', () => panel.classList.remove('open'));
             panel.addEventListener('click', event => { if (event.target === panel) panel.classList.remove('open'); });
+            const channel = document.getElementById('serviceChannel');
+            const deliveryFields = document.getElementById('deliveryFields');
+            if (channel && deliveryFields) { const toggleDelivery = () => deliveryFields.style.display = channel.value === 'delivery' ? 'block' : 'none'; channel.addEventListener('change', toggleDelivery); toggleDelivery(); }
+            const postalCode = document.getElementById('postalCode');
+            if (postalCode) postalCode.addEventListener('input', async () => { const cep = postalCode.value.replace(/\D/g,''); if (cep.length !== 8) return; postalCode.value = cep.slice(0,5)+'-'+cep.slice(5); try { const data = await fetch('https://viacep.com.br/ws/'+cep+'/json/').then(r=>r.json()); if(data.erro) return; document.getElementById('street').value=data.logradouro||''; document.getElementById('neighborhood').value=data.bairro||''; document.getElementById('city').value=data.localidade||''; document.getElementById('state').value=data.uf||''; } catch (_) {} });
             checkout.addEventListener('click', async () => {
                 checkout.disabled = true; notice.style.display = 'none';
                 try {
-                    const response = await fetch(@json(route('public.qr-order', $table->qr_token)), {method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content}, body:JSON.stringify({customer_name:document.getElementById('customerName').value, notes:document.getElementById('orderNotes').value, items:[...cart.values()].map(item => ({product_id:item.id, quantity:item.quantity}))})});
-                    if (!response.ok) throw new Error('Não foi possível enviar o pedido. Tente novamente.');
+                    @if($venue->geofence_enabled)
+                    if (!coordinates) coordinates = await new Promise((resolve, reject) => navigator.geolocation ? navigator.geolocation.getCurrentPosition(p => resolve({latitude:p.coords.latitude,longitude:p.coords.longitude,location_accuracy:p.coords.accuracy}), () => reject(new Error('Autorize a localização para pedir nesta mesa.')), {enableHighAccuracy:true,timeout:12000,maximumAge:30000}) : reject(new Error('Seu navegador não oferece localização.')));
+                    @endif
+                    const phone = document.getElementById('customerPhone').value;
+                    const consent = document.getElementById('whatsappConsent').checked;
+                    if (consent && !phone.trim()) throw new Error('Informe o WhatsApp para receber atualizações.');
+                    const payload = {...coordinates, channel:channel?.value, customer_name:document.getElementById('customerName').value, customer_phone:phone, whatsapp_consent:consent, payment_method:document.getElementById('paymentMethod')?.value, change_for:document.getElementById('changeFor')?.value||null, coupon_code:document.getElementById('couponCode')?.value||null, delivery_zone_id:document.getElementById('deliveryZone')?.value||null, postal_code:postalCode?.value, street:document.getElementById('street')?.value, number:document.getElementById('number')?.value, complement:document.getElementById('complement')?.value, neighborhood:document.getElementById('neighborhood')?.value, city:document.getElementById('city')?.value, state:document.getElementById('state')?.value, reference:document.getElementById('reference')?.value, notes:document.getElementById('orderNotes').value, items:[...cart.values()].map(item => ({product_id:item.id, quantity:item.quantity}))};
+                    const response = await fetch(@json($orderEndpoint), {method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content}, body:JSON.stringify(payload)});
+                    const data = await response.json(); if (!response.ok) throw new Error(data.message || Object.values(data.errors||{})[0]?.[0] || 'Não foi possível enviar o pedido. Tente novamente.');
                     cart.clear(); render(); notice.className = 'notice'; notice.textContent = 'Pedido enviado com sucesso! A cozinha já recebeu.'; notice.style.display = 'block'; checkout.textContent = 'Pedido enviado';
+                    if (data.tracking_url) setTimeout(() => window.location.href = data.tracking_url, 900);
                 } catch (error) { notice.className = 'notice error'; notice.textContent = error.message; notice.style.display = 'block'; checkout.disabled = false; }
             });
             render();
         })();
     </script>
-@endisset
+@endif
 </body>
 </html>

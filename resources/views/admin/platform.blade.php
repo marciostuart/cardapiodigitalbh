@@ -1,16 +1,23 @@
 <x-app-layout>
-    <x-slot name="header"><h2 class="text-xl font-semibold">Administração da plataforma</h2></x-slot>
-    <div class="mx-auto max-w-7xl py-8 sm:px-6 lg:px-8">
-        <div class="rounded-2xl bg-slate-900 p-7 text-white"><div class="flex flex-wrap items-end justify-between gap-4"><div><p class="text-sm font-bold text-emerald-300">OWNER</p><h1 class="mt-2 text-3xl font-bold">Estabelecimentos e planos</h1><p class="mt-2 text-slate-300">Gerencie clientes, planos, suspensões e acesso de suporte.</p></div><a href="{{ route('admin.email-templates.index') }}" class="rounded-xl bg-white px-4 py-3 text-sm font-bold text-slate-900">Editar e-mails transacionais</a></div></div>
-        @if(session('status'))<div class="mt-4 rounded bg-emerald-50 p-3 text-emerald-800">{{ session('status') }}</div>@endif
-        <div class="mt-6 overflow-x-auto rounded-xl bg-white shadow"><table class="w-full text-left">
-            <thead class="bg-slate-50 text-sm"><tr><th class="p-4">Estabelecimento</th><th class="p-4">Endereço</th><th class="p-4">Plano e status</th><th class="p-4">Ações</th></tr></thead>
-            <tbody>@forelse($tenants as $tenant)<tr class="border-t">
-                <td class="p-4 font-semibold">{{ $tenant->name }}<small class="block text-slate-500">Cadastrado em {{ $tenant->created_at->format('d/m/Y') }}</small></td>
-                <td class="p-4 text-slate-500">{{ $tenant->venues->first()?->subdomain }}.cardapiodigitalbh.com.br</td>
-                <td class="p-4"><form class="flex flex-wrap gap-2" method="post" action="{{ route('admin.plan.update', $tenant) }}">@csrf @method('PATCH')<select name="plan" class="rounded border-slate-300 text-sm"><option value="free" @selected($tenant->plan === 'free')>Grátis</option><option value="essencial" @selected($tenant->plan === 'essencial')>Essencial</option><option value="pro" @selected($tenant->plan === 'pro')>Pro</option></select><select name="status" class="rounded border-slate-300 text-sm"><option value="active" @selected($tenant->status === 'active')>Ativo</option><option value="suspended" @selected($tenant->status === 'suspended')>Suspenso</option></select><button class="rounded bg-emerald-600 px-3 py-2 text-sm font-semibold text-white">Salvar</button></form></td>
-                <td class="p-4"><form method="post" action="{{ route('admin.impersonate', $tenant) }}">@csrf<button class="rounded bg-slate-900 px-3 py-2 text-sm text-white">Acessar como cliente</button></form></td>
-            </tr>@empty<tr><td class="p-6 text-slate-500" colspan="4">Nenhum estabelecimento cadastrado.</td></tr>@endforelse</tbody>
+    <x-slot name="header"><div><h2 class="text-xl font-bold">Estabelecimentos</h2><p class="text-sm text-slate-500">Planos, situação, WhatsApp e acesso de suporte.</p></div></x-slot>
+    <div class="py-8"><div class="mx-auto max-w-7xl space-y-5 px-4 sm:px-6 lg:px-8">
+        @if(session('status'))<div class="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900">{{ session('status') }}</div>@endif
+        @if($errors->any())<div class="rounded-xl border border-red-200 bg-red-50 p-4 text-red-900">{{ $errors->first() }}</div>@endif
+        <div class="flex flex-wrap gap-3">
+            <a href="{{ route('platform.dashboard') }}" class="rounded-xl bg-slate-900 px-4 py-2.5 font-semibold text-white">Dashboard Owner</a>
+            <a href="{{ route('admin.plans.index') }}" class="rounded-xl border border-slate-300 bg-white px-4 py-2.5 font-semibold">Planos e recursos</a>
+            <a href="{{ route('admin.email-templates.index') }}" class="rounded-xl border border-slate-300 bg-white px-4 py-2.5 font-semibold">E-mails</a>
+        </div>
+        <form class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200"><div class="flex gap-2"><input name="search" value="{{ request('search') }}" placeholder="Buscar estabelecimento ou slug" class="min-w-0 flex-1 rounded-xl border-slate-300"><button class="rounded-xl bg-emerald-600 px-5 font-bold text-white">Buscar</button></div></form>
+        <div class="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-slate-200"><table class="w-full min-w-[1000px] text-left text-sm">
+            <thead class="bg-slate-50"><tr><th class="p-4">Estabelecimento</th><th class="p-4">Plano e situação</th><th class="p-4">WhatsApp</th><th class="p-4">Suporte</th></tr></thead>
+            <tbody>@forelse($tenants as $tenant)<tr class="border-t align-top">
+                <td class="p-4"><strong>{{ $tenant->name }}</strong><a class="mt-1 block text-emerald-700" target="_blank" rel="noopener" href="https://{{ $tenant->venues->first()?->subdomain }}.cardapiodigitalbh.com.br">{{ $tenant->venues->first()?->subdomain }}.cardapiodigitalbh.com.br</a><small class="text-slate-500">Desde {{ $tenant->created_at->format('d/m/Y') }}</small></td>
+                <td class="p-4"><form class="flex flex-wrap gap-2" method="post" action="{{ route('admin.plan.update', $tenant) }}">@csrf @method('PATCH')<select name="plan" class="rounded-lg border-slate-300">@foreach(\App\Models\Plan::where('active', true)->orderBy('position')->get() as $plan)<option value="{{ $plan->slug }}" @selected($tenant->plan === $plan->slug)>{{ $plan->name }}</option>@endforeach</select><select name="status" class="rounded-lg border-slate-300"><option value="active" @selected($tenant->status === 'active')>Ativo</option><option value="suspended" @selected($tenant->status === 'suspended')>Suspenso</option></select><button class="rounded-lg bg-emerald-600 px-3 py-2 font-semibold text-white">Salvar</button></form></td>
+                <td class="p-4"><span class="inline-flex rounded-full px-3 py-1 text-xs font-bold {{ $tenant->evolutionInstance?->status === 'connected' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-700' }}">{{ $tenant->evolutionInstance?->status ?? 'não configurado' }}</span>@if($tenant->evolutionInstance)<form method="post" action="{{ route('admin.whatsapp.reset', $tenant) }}" class="mt-3" onsubmit="return confirm('Destruir somente a instância WhatsApp de {{ addslashes($tenant->name) }}?')">@csrf @method('DELETE')<button class="rounded-lg bg-red-600 px-3 py-2 text-xs font-bold text-white">Reset Whats</button></form>@endif</td>
+                <td class="p-4"><form method="post" action="{{ route('admin.impersonate', $tenant) }}">@csrf<button class="rounded-lg bg-slate-900 px-3 py-2 font-semibold text-white">Acessar como cliente</button></form></td>
+            </tr>@empty<tr><td colspan="4" class="p-8 text-center text-slate-500">Nenhum estabelecimento cadastrado.</td></tr>@endforelse</tbody>
         </table></div>
-    </div>
+        {{ $tenants->links() }}
+    </div></div>
 </x-app-layout>

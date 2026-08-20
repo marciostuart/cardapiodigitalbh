@@ -17,6 +17,8 @@ Copie `.env.example` para `.env`, execute `php artisan key:generate`, `php artis
 
 O Traefik recebe o dominio raiz e os subdominios. Caddy atende HTTP internamente e o PHP-FPM executa Laravel. O worker processa filas no Redis.
 
+Para a Evolution API, configure somente no ambiente de produção: `EVOLUTION_API_URL`, `EVOLUTION_API_KEY` e `EVOLUTION_WEBHOOK_SECRET`. O webhook deve apontar para `https://cardapiodigitalbh.com.br/webhooks/evolution` e enviar o segredo no cabeçalho `X-Webhook-Secret`.
+
 ## Validacao
 
 ```

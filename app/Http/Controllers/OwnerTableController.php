@@ -33,7 +33,8 @@ class OwnerTableController extends Controller
     {
         $venue = $request->user()->tenant?->venues()->firstOrFail();
         abort_unless($table->venue_id === $venue->id, 404);
-        $result = (new SvgWriter)->write(new QrCode(route('public.qr-menu', $table->qr_token), size: 360, margin: 16));
+        $url = route('public.tenant-table', ['subdomain' => $venue->subdomain, 'token' => $table->qr_token]);
+        $result = (new SvgWriter)->write(new QrCode($url, size: 360, margin: 16));
 
         return response($result->getString(), 200, [
             'Content-Type' => $result->getMimeType(),

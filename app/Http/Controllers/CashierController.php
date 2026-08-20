@@ -6,6 +6,7 @@ use App\Http\Requests\StorePaymentRequest;
 use App\Models\Tab;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Services\WhatsappNotifier;
 
 class CashierController extends Controller
 {
@@ -36,6 +37,10 @@ class CashierController extends Controller
             $payment = $tab->payments()->create(['venue_id' => $venue->id, 'method' => $request->validated('method'), 'amount' => $amount, 'reference' => $request->validated('reference'), 'paid_at' => now()]);
             if (($paid + $amount + 0.009) >= $due) {
                 $tab->update(['status' => 'closed', 'closed_at' => now()]);
+                $tab->orders()->whereNotIn('status', ['cancelled', 'refunded'])->update(['status' => 'completed']);
+                foreach ($tab->orders()->where('status', 'completed')->get() as $completedOrder) {
+                    DB::afterCommit(fn () => app(WhatsappNotifier::class)->queue($completedOrder, 'order_completed'));
+                }
                 $hasOtherOpenTabs = Tab::where('dining_table_id', $tab->dining_table_id)
                     ->where('status', 'open')
                     ->whereKeyNot($tab->id)

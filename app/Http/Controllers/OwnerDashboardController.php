@@ -11,7 +11,7 @@ class OwnerDashboardController extends Controller
     public function __invoke(Request $request)
     {
         if ($request->user()->role === 'platform_owner') {
-            return redirect()->route('admin.platform');
+            return redirect()->route('platform.dashboard');
         }
         if ($request->user()->role === 'kitchen') {
             return redirect()->route('kds.index');

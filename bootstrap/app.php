@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->validateCsrfTokens(except: ['webhooks/evolution']);
         $middleware->alias([
             'tenant' => ResolveTenant::class,
             'venue.access' => EnsureVenueMembership::class,

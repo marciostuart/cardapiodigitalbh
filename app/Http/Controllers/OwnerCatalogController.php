@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Support\CatalogOrdering;
 use Illuminate\Http\Request;
 
 class OwnerCatalogController extends Controller
@@ -20,7 +21,14 @@ class OwnerCatalogController extends Controller
     {
         $venue = $this->venue($request);
 
-        return view('owner.catalog', ['venue' => $venue, 'categories' => ProductCategory::where('venue_id', $venue->id)->with('products')->orderBy('name')->get()]);
+        return view('owner.catalog', [
+            'venue' => $venue,
+            'categories' => ProductCategory::where('venue_id', $venue->id)
+                ->with(['products' => fn ($query) => CatalogOrdering::apply($query, $venue->catalog_sort_mode)])
+                ->orderBy('position')
+                ->orderBy('name')
+                ->get(),
+        ]);
     }
 
     public function storeCategory(Request $request)
@@ -54,8 +62,9 @@ class OwnerCatalogController extends Controller
     public function storeProduct(Request $request)
     {
         $venue = $this->venue($request);
-        $data = $request->validate(['product_category_id' => ['required', 'integer'], 'name' => ['required', 'string', 'max:120'], 'description' => ['nullable', 'string', 'max:1000'], 'price' => ['required', 'numeric', 'min:0'], 'station' => ['nullable', 'in:kitchen,bar']]);
+        $data = $request->validate(['product_category_id' => ['required', 'integer'], 'name' => ['required', 'string', 'max:120'], 'sku' => ['nullable', 'string', 'max:60'], 'description' => ['nullable', 'string', 'max:1000'], 'price' => ['required', 'numeric', 'min:0'], 'station' => ['nullable', 'in:kitchen,bar'], 'position' => ['nullable', 'integer', 'min:0'], 'track_stock' => ['nullable', 'boolean'], 'stock_on_hand' => ['nullable', 'numeric', 'min:0'], 'low_stock_threshold' => ['nullable', 'numeric', 'min:0']]);
         abort_unless(ProductCategory::whereKey($data['product_category_id'])->where('venue_id', $venue->id)->exists(), 422);
+        $data['position'] ??= ((int) Product::where('product_category_id', $data['product_category_id'])->max('position')) + 10;
         Product::create($data + ['venue_id' => $venue->id, 'active' => true]);
 
         return back()->with('status', 'Produto cadastrado.');
@@ -68,10 +77,15 @@ class OwnerCatalogController extends Controller
         $data = $request->validate([
             'product_category_id' => ['required', 'integer'],
             'name' => ['required', 'string', 'max:120'],
+            'sku' => ['nullable', 'string', 'max:60'],
             'description' => ['nullable', 'string', 'max:1000'],
             'price' => ['required', 'numeric', 'min:0'],
             'station' => ['required', 'in:kitchen,bar'],
             'active' => ['required', 'boolean'],
+            'position' => ['required', 'integer', 'min:0'],
+            'track_stock' => ['nullable', 'boolean'],
+            'stock_on_hand' => ['nullable', 'numeric', 'min:0'],
+            'low_stock_threshold' => ['nullable', 'numeric', 'min:0'],
         ]);
         abort_unless(ProductCategory::whereKey($data['product_category_id'])->where('venue_id', $venue->id)->exists(), 422);
         $product->update($data);

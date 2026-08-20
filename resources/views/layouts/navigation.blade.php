@@ -17,9 +17,14 @@
                     </x-nav-link>
                     @if(Auth::user()->role === 'owner')
                         <x-nav-link :href="route('owner.catalog')" :active="request()->routeIs('owner.catalog')">Cardápio</x-nav-link>
+                        <x-nav-link :href="route('owner.orders.index')" :active="request()->routeIs('owner.orders.*')">Pedidos</x-nav-link>
                         <x-nav-link :href="route('owner.tables')" :active="request()->routeIs('owner.tables')">Mesas</x-nav-link>
+                        <x-nav-link :href="route('owner.inventory.index')" :active="request()->routeIs('owner.inventory.*')">Estoque</x-nav-link>
+                        <x-nav-link :href="route('owner.schedules.index')" :active="request()->routeIs('owner.schedules.*')">Horários</x-nav-link>
+                        <x-nav-link :href="route('owner.commerce.index')" :active="request()->routeIs('owner.commerce.*')">Vendas</x-nav-link>
                         <x-nav-link :href="route('owner.team')" :active="request()->routeIs('owner.team*')">Equipe</x-nav-link>
                         <x-nav-link :href="route('owner.settings')" :active="request()->routeIs('owner.settings*')">Configurações</x-nav-link>
+                        <x-nav-link :href="route('owner.whatsapp.index')" :active="request()->routeIs('owner.whatsapp.*')">WhatsApp</x-nav-link>
                         <x-nav-link :href="route('operations.index')" :active="request()->routeIs('operations.*')">Operação</x-nav-link>
                     @elseif(Auth::user()->role === 'waiter')
                         <x-nav-link :href="route('operations.index')" :active="request()->routeIs('operations.*')">Salão</x-nav-link>
@@ -28,7 +33,10 @@
                     @elseif(Auth::user()->role === 'cashier')
                         <x-nav-link :href="route('cashier.index')" :active="request()->routeIs('cashier.*')">Caixa</x-nav-link>
                     @elseif(Auth::user()->role === 'platform_owner')
+                        <x-nav-link :href="route('platform.dashboard')" :active="request()->routeIs('platform.dashboard')">Owner</x-nav-link>
                         <x-nav-link :href="route('admin.platform')" :active="request()->routeIs('admin.platform')">Administração</x-nav-link>
+                        <x-nav-link :href="route('admin.plans.index')" :active="request()->routeIs('admin.plans.*')">Planos</x-nav-link>
+                        <x-nav-link :href="route('admin.whatsapp-templates.index')" :active="request()->routeIs('admin.whatsapp-templates.*')">WhatsApp</x-nav-link>
                         <x-nav-link :href="route('admin.email-templates.index')" :active="request()->routeIs('admin.email-templates.*')">E-mails</x-nav-link>
                     @endif
                 </div>
@@ -93,9 +101,14 @@
             </x-responsive-nav-link>
             @if(Auth::user()->role === 'owner')
                 <x-responsive-nav-link :href="route('owner.catalog')" :active="request()->routeIs('owner.catalog')">Cardápio</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('owner.orders.index')" :active="request()->routeIs('owner.orders.*')">Pedidos</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('owner.tables')" :active="request()->routeIs('owner.tables')">Mesas</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('owner.inventory.index')" :active="request()->routeIs('owner.inventory.*')">Estoque</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('owner.schedules.index')" :active="request()->routeIs('owner.schedules.*')">Horários</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('owner.commerce.index')" :active="request()->routeIs('owner.commerce.*')">Vendas</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('owner.team')" :active="request()->routeIs('owner.team*')">Equipe</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('owner.settings')" :active="request()->routeIs('owner.settings*')">Configurações</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('owner.whatsapp.index')" :active="request()->routeIs('owner.whatsapp.*')">WhatsApp</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('operations.index')" :active="request()->routeIs('operations.*')">Operação</x-responsive-nav-link>
             @elseif(Auth::user()->role === 'waiter')
                 <x-responsive-nav-link :href="route('operations.index')" :active="request()->routeIs('operations.*')">Salão</x-responsive-nav-link>
@@ -104,7 +117,10 @@
             @elseif(Auth::user()->role === 'cashier')
                 <x-responsive-nav-link :href="route('cashier.index')" :active="request()->routeIs('cashier.*')">Caixa</x-responsive-nav-link>
             @elseif(Auth::user()->role === 'platform_owner')
+                <x-responsive-nav-link :href="route('platform.dashboard')" :active="request()->routeIs('platform.dashboard')">Owner</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.platform')" :active="request()->routeIs('admin.platform')">Administração</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.plans.index')" :active="request()->routeIs('admin.plans.*')">Planos</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.whatsapp-templates.index')" :active="request()->routeIs('admin.whatsapp-templates.*')">WhatsApp</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.email-templates.index')" :active="request()->routeIs('admin.email-templates.*')">E-mails</x-responsive-nav-link>
             @endif
         </div>

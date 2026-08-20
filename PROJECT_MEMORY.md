@@ -28,6 +28,17 @@ Plataforma SaaS independente para restaurantes, bares e lanchonetes: cardápio d
 - Owner da plataforma pode ativar/suspender estabelecimentos; a suspensão bloqueia login, cardápio público e novos pedidos QR, mantendo o acesso por impersonação para suporte.
 - Salão, KDS e caixa possuem atualização automática; uma mesa só é liberada quando a última comanda individual é quitada.
 - SEO: preservar as URLs indexadas `/cardapio-digital-em-belo-horizonte`, `/termos-de-uso` e `/politica-de-privacidade`; sitemap e robots publicados no domínio principal.
+- Owner da plataforma possui dashboard executivo próprio em `/owner`, separado da gestão de estabelecimentos em `/admin`; KPIs, falhas e auditoria são persistidos.
+- Planos são entidades administráveis, com preço, limites e capacidades; os slugs iniciais continuam `free`, `essencial` e `pro`.
+- Impersonação de cliente registra início/fim e exibe um banner permanente de modo suporte.
+- Cada estabelecimento escolhe ordenação manual ou por popularidade dentro de cada categoria. O padrão é `popularity`, calculado pela quantidade vendida em pedidos aceitos/concluídos; `position` desempata.
+- Evolution API v2.3.7: uma instância isolada por tenant, conexão por QR, consulta de estado, outbox idempotente, retentativas e templates globais com personalização por estabelecimento.
+- O Owner da plataforma dispõe de `Reset Whats`, que destrói somente o nome de instância associado ao tenant selecionado e registra auditoria.
+- Estoque suporta produto acabado, insumos, ficha técnica, reserva transacional, consumo idempotente, devolução antes do preparo, ajustes e alertas mínimos.
+- Funcionamento automático suporta múltiplos intervalos, horários após meia-noite e abertura/fechamento manual temporário.
+- Geofence opcional valida latitude/longitude no servidor e aceita raio entre 20 e 1.000 metros.
+- Cardápio público aceita mesa, retirada e delivery; inclui clientes, endereço ViaCEP, regiões/taxas, pedido mínimo, cupons, troco e acompanhamento por token público.
+- Gestão de pedidos aplica uma máquina de estados progressiva e dispara eventos transacionais do WhatsApp quando houver consentimento.
 
 ## Padrões obrigatórios
 
@@ -37,6 +48,10 @@ Plataforma SaaS independente para restaurantes, bares e lanchonetes: cardápio d
 - Todo deploy deve: testes locais, build da imagem, migration quando aplicável, atualização apenas da stack e smoke test HTTP.
 - Segredos ficam somente em `/opt/cardapiodigitalbh/.env`; nunca Git/logs/documentação.
 - Atualizar este arquivo em mudanças arquiteturais, incidentes e decisões relevantes.
+- Toda integração externa deve usar outbox/idempotência; falha de mensagem nunca reverte pedido ou pagamento.
+- Nunca desabilitar validação TLS. A chave global da Evolution permanece apenas no ambiente de produção.
+- `Reset Whats` sempre recebe um `Tenant` autorizado, usa exclusivamente o `instance_name` persistido desse tenant e jamais executa exclusão em lote.
+- Estoque deve ser alterado dentro de transação e com bloqueio pessimista; reprocessamento de evento não pode baixar duas vezes.
 
 ## Produção e deploy
 
@@ -67,3 +82,22 @@ Plataforma SaaS independente para restaurantes, bares e lanchonetes: cardápio d
 1. Adotar a stack pelo Portainer para controle Total quando o produto estiver estável.
 2. Decidir quando tornar a verificação de e-mail obrigatória; o template e a infraestrutura de envio já estão preparados.
 3. Integrar o MinIO para fotos de produtos quando as credenciais e o bucket exclusivos do projeto forem definidos.
+4. Completar variações/adicionais, banners, Web Push, agente de impressão, relatórios exportáveis e exceções de calendário.
+5. Homologar Mercado Pago por estabelecimento somente após estabilização do núcleo operacional.
+6. Em etapa posterior, implementar cobrança SaaS, marketplace, anúncios, afiliados e vouchers.
+
+## Matriz de paridade do legado
+
+| Área | Estado | Evidência/observação |
+|---|---|---|
+| Catálogo, categorias e ordem manual | Implementado/testado | CRUD existente e campo `position` |
+| Ordem por popularidade por categoria | Implementado/testado | histórico de itens vendidos; padrão para novos venues |
+| Mesas, QR e comandas | Implementado/testado | URL canônica no subdomínio do estabelecimento |
+| Estoque de produto e insumos | Implementado/testado | reserva, consumo e proteção contra venda excedente |
+| Horários e fechamento automático | Implementado/testado | inclui intervalo após meia-noite |
+| Geofence | Implementado/testado | Haversine no servidor; liberação temporária ainda pendente |
+| Retirada, delivery, clientes, CEP, frete e cupons | Implementado/testado | totais recalculados no servidor |
+| Evolution e Reset Whats | Implementado/testado localmente | teste contratual usa API simulada; homologação real pendente |
+| Variações, banners, impressão, Web Push e relatórios | Planejado | próximo lote operacional |
+| Mercado Pago por estabelecimento | Planejado | liberar por feature flag após piloto |
+| Marketplace, afiliados, anúncios e vouchers | Planejado | não bloqueia o lançamento operacional |

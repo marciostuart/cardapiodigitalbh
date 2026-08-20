@@ -41,7 +41,7 @@ class AdminPlatformTest extends TestCase
 
         $this->assertAuthenticatedAs($customerOwner);
 
-        $this->post(route('admin.leave'))->assertRedirect(route('admin.platform'));
+        $this->post(route('admin.leave'))->assertRedirect(route('platform.dashboard'));
         $this->assertAuthenticatedAs($platformOwner);
     }
 

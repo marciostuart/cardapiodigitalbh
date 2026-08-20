@@ -17,4 +17,9 @@ class Tenant extends Model
     {
         return $this->hasMany(Venue::class);
     }
+
+    public function evolutionInstance()
+    {
+        return $this->hasOne(EvolutionInstance::class);
+    }
 }

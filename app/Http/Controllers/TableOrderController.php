@@ -7,7 +7,12 @@ use App\Models\DiningTable;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Tab;
+use App\Services\InventoryService;
+use App\Services\WhatsappNotifier;
+use App\Support\Geofence;
+use App\Support\VenueAvailability;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class TableOrderController extends Controller
 {
@@ -32,6 +37,8 @@ class TableOrderController extends Controller
     private function createOrder(StoreTableOrderRequest $request, DiningTable $table)
     {
         $venue = $table->venue()->firstOrFail();
+        abort_unless(VenueAvailability::isOpen($venue), 422, 'O estabelecimento está fechado neste momento.');
+        Geofence::assertInside($venue, $request->validated('latitude'), $request->validated('longitude'));
 
         return DB::transaction(function () use ($request, $table, $venue) {
             $table = DiningTable::lockForUpdate()->findOrFail($table->id);
@@ -46,7 +53,7 @@ class TableOrderController extends Controller
             $ids = collect($request->validated('items'))->pluck('product_id')->unique();
             $products = Product::where('venue_id', $venue->id)->where('active', true)->whereIn('id', $ids)->get()->keyBy('id');
             abort_unless($products->count() === $ids->count(), 422, 'Produto indisponível para este estabelecimento.');
-            $order = Order::create(['venue_id' => $venue->id, 'tab_id' => $tab->id, 'channel' => 'table', 'status' => 'pending', 'subtotal' => 0, 'total' => 0, 'notes' => $request->validated('notes')]);
+            $order = Order::create(['venue_id' => $venue->id, 'tab_id' => $tab->id, 'public_token' => Str::random(48), 'channel' => 'table', 'status' => 'pending', 'customer_name' => $customerName, 'customer_phone' => $request->validated('customer_phone'), 'whatsapp_consent' => (bool) $request->validated('whatsapp_consent', false), 'subtotal' => 0, 'total' => 0, 'notes' => $request->validated('notes')]);
             $subtotal = 0;
             foreach ($request->validated('items') as $line) {
                 $p = $products[$line['product_id']];
@@ -55,6 +62,8 @@ class TableOrderController extends Controller
                 $order->items()->create(['product_id' => $p->id, 'name_snapshot' => $p->name, 'unit_price' => $p->price, 'quantity' => $line['quantity'], 'total' => $total, 'station' => $p->station, 'status' => 'pending']);
             }
             $order->update(['subtotal' => $subtotal, 'total' => $subtotal]);
+            app(InventoryService::class)->reserve($order);
+            DB::afterCommit(fn () => app(WhatsappNotifier::class)->queue($order->fresh(), 'order_received'));
 
             return response()->json($order->load('items'), 201);
         });

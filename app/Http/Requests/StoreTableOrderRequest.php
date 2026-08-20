@@ -24,6 +24,11 @@ class StoreTableOrderRequest extends FormRequest
     {
         return [
             'customer_name' => ['nullable', 'string', 'max:80'],
+            'customer_phone' => ['nullable', 'string', 'max:20', 'regex:/^[0-9() +\-]{10,20}$/'],
+            'whatsapp_consent' => ['nullable', 'boolean'],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
+            'location_accuracy' => ['nullable', 'numeric', 'min:0', 'max:10000'],
             'notes' => ['nullable', 'string', 'max:500'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.product_id' => ['required', 'integer', 'exists:products,id'],

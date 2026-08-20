@@ -2,28 +2,44 @@
 
 use App\Http\Controllers\Admin\EmailTemplateController;
 use App\Http\Controllers\Admin\PlatformController;
+use App\Http\Controllers\Admin\PlatformDashboardController;
+use App\Http\Controllers\Admin\PlanController;
+use App\Http\Controllers\Admin\WhatsappSupportController;
+use App\Http\Controllers\Admin\WhatsappTemplateController;
 use App\Http\Controllers\CashierController;
 use App\Http\Controllers\KitchenDisplayController;
 use App\Http\Controllers\OperationsDashboardController;
 use App\Http\Controllers\OwnerCatalogController;
 use App\Http\Controllers\OwnerDashboardController;
 use App\Http\Controllers\OwnerSettingsController;
+use App\Http\Controllers\OwnerInventoryController;
+use App\Http\Controllers\OwnerScheduleController;
+use App\Http\Controllers\OwnerCommerceController;
+use App\Http\Controllers\OwnerOrderController;
 use App\Http\Controllers\OwnerTableController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicMenuController;
+use App\Http\Controllers\PublicOrderController;
 use App\Http\Controllers\QrMenuController;
 use App\Http\Controllers\TableOrderController;
 use App\Http\Controllers\TeamController;
+use App\Http\Controllers\WhatsappIntegrationController;
+use App\Http\Controllers\EvolutionWebhookController;
 use Illuminate\Support\Facades\Route;
 
 Route::domain('{subdomain}.cardapiodigitalbh.com.br')->middleware('tenant')->group(function () {
     Route::get('/', [PublicMenuController::class, 'show'])->name('public.menu');
     Route::get('/menu', fn () => redirect('/'))->name('public.menu.legacy');
+    Route::get('/mesa/{token}', [QrMenuController::class, 'show'])->name('public.tenant-table');
+    Route::post('/mesa/{token}/pedidos', [TableOrderController::class, 'storeByToken'])->middleware('throttle:30,1')->name('public.tenant-table-order');
+    Route::post('/pedidos', [PublicOrderController::class, 'store'])->middleware('throttle:30,1')->name('public.orders.store');
+    Route::get('/pedido/{token}', [PublicOrderController::class, 'track'])->name('public.order.track');
 });
 
 Route::get('/', function () {
     return view('marketing.home');
 });
+Route::post('/webhooks/evolution', EvolutionWebhookController::class)->name('webhooks.evolution');
 
 Route::view('/cardapio-digital-em-belo-horizonte', 'marketing.local-seo')->name('marketing.local-seo');
 Route::view('/termos-de-uso', 'marketing.terms')->name('marketing.terms');
@@ -52,9 +68,16 @@ Route::get('/dashboard', OwnerDashboardController::class)
 
 Route::middleware(['auth', 'account.active'])->group(function () {
     Route::middleware('platform.owner')->group(function () {
+        Route::get('/owner', PlatformDashboardController::class)->name('platform.dashboard');
         Route::get('/admin', [PlatformController::class, 'index'])->name('admin.platform');
         Route::post('/admin/estabelecimentos/{tenant}/acessar', [PlatformController::class, 'impersonate'])->name('admin.impersonate');
         Route::patch('/admin/estabelecimentos/{tenant}/plano', [PlatformController::class, 'updatePlan'])->name('admin.plan.update');
+        Route::delete('/admin/estabelecimentos/{tenant}/whatsapp', [WhatsappSupportController::class, 'reset'])->name('admin.whatsapp.reset');
+        Route::get('/admin/planos', [PlanController::class, 'index'])->name('admin.plans.index');
+        Route::post('/admin/planos', [PlanController::class, 'store'])->name('admin.plans.store');
+        Route::patch('/admin/planos/{plan}', [PlanController::class, 'update'])->name('admin.plans.update');
+        Route::get('/admin/whatsapp/modelos', [WhatsappTemplateController::class, 'index'])->name('admin.whatsapp-templates.index');
+        Route::patch('/admin/whatsapp/modelos/{template}', [WhatsappTemplateController::class, 'update'])->name('admin.whatsapp-templates.update');
         Route::get('/admin/emails', [EmailTemplateController::class, 'index'])->name('admin.email-templates.index');
         Route::post('/admin/emails/teste', [EmailTemplateController::class, 'sendTest'])->name('admin.email-templates.test');
         Route::patch('/admin/emails/{template}', [EmailTemplateController::class, 'update'])->name('admin.email-templates.update');
@@ -77,6 +100,25 @@ Route::middleware(['auth', 'account.active'])->group(function () {
         Route::patch('/painel/equipe/{member}/senha', [TeamController::class, 'resetPassword'])->name('owner.team.password');
         Route::get('/painel/configuracoes', [OwnerSettingsController::class, 'edit'])->name('owner.settings');
         Route::patch('/painel/configuracoes', [OwnerSettingsController::class, 'update'])->name('owner.settings.update');
+        Route::get('/painel/estoque', [OwnerInventoryController::class, 'index'])->name('owner.inventory.index');
+        Route::post('/painel/estoque', [OwnerInventoryController::class, 'store'])->name('owner.inventory.store');
+        Route::patch('/painel/estoque/{inventoryItem}', [OwnerInventoryController::class, 'adjust'])->name('owner.inventory.adjust');
+        Route::post('/painel/produtos/{product}/ficha-tecnica', [OwnerInventoryController::class, 'recipe'])->name('owner.inventory.recipe');
+        Route::get('/painel/horarios', [OwnerScheduleController::class, 'index'])->name('owner.schedules.index');
+        Route::post('/painel/horarios', [OwnerScheduleController::class, 'store'])->name('owner.schedules.store');
+        Route::delete('/painel/horarios/{schedule}', [OwnerScheduleController::class, 'destroy'])->name('owner.schedules.destroy');
+        Route::patch('/painel/horarios/funcionamento', [OwnerScheduleController::class, 'override'])->name('owner.schedules.override');
+        Route::get('/painel/vendas', [OwnerCommerceController::class, 'index'])->name('owner.commerce.index');
+        Route::post('/painel/cupons', [OwnerCommerceController::class, 'storeCoupon'])->name('owner.coupons.store');
+        Route::patch('/painel/cupons/{coupon}', [OwnerCommerceController::class, 'updateCoupon'])->name('owner.coupons.update');
+        Route::post('/painel/regioes-entrega', [OwnerCommerceController::class, 'storeZone'])->name('owner.delivery-zones.store');
+        Route::patch('/painel/regioes-entrega/{zone}', [OwnerCommerceController::class, 'updateZone'])->name('owner.delivery-zones.update');
+        Route::get('/painel/pedidos', [OwnerOrderController::class, 'index'])->name('owner.orders.index');
+        Route::patch('/painel/pedidos/{order}', [OwnerOrderController::class, 'update'])->name('owner.orders.update');
+        Route::get('/painel/integracoes/whatsapp', [WhatsappIntegrationController::class, 'index'])->name('owner.whatsapp.index');
+        Route::post('/painel/integracoes/whatsapp/conectar', [WhatsappIntegrationController::class, 'connect'])->name('owner.whatsapp.connect');
+        Route::post('/painel/integracoes/whatsapp/atualizar', [WhatsappIntegrationController::class, 'refresh'])->name('owner.whatsapp.refresh');
+        Route::patch('/painel/integracoes/whatsapp/modelos/{event}', [WhatsappIntegrationController::class, 'updateTemplate'])->name('owner.whatsapp.templates.update');
     });
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
