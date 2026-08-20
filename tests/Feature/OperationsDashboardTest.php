@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\DiningTable;
 use App\Models\Tenant;
+use App\Models\User;
 use App\Models\Venue;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -26,7 +27,9 @@ class OperationsDashboardTest extends TestCase
             'qr_token' => (string) str()->uuid(),
         ]);
 
-        $this->get('/operacao')
+        $user = User::factory()->create(['tenant_id' => $tenant->id]);
+
+        $this->actingAs($user)->get('/operacao')
             ->assertOk()
             ->assertSee('Bistro Central')
             ->assertSee('Mesa 12')

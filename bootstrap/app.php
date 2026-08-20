@@ -12,7 +12,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->alias(['tenant' => \App\Http\Middleware\ResolveTenant::class]);
+        $middleware->alias([
+            'tenant' => \App\Http\Middleware\ResolveTenant::class,
+            'venue.access' => \App\Http\Middleware\EnsureVenueMembership::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
