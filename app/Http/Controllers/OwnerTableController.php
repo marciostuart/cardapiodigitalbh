@@ -18,7 +18,11 @@ class OwnerTableController extends Controller
     {
         $venue = $request->user()->tenant?->venues()->firstOrFail();
         $data = $request->validate(['code' => ['required','string','max:30'], 'name' => ['nullable','string','max:80']]);
+        $firstTable = ! DiningTable::where('venue_id', $venue->id)->exists();
         DiningTable::create($data + ['venue_id' => $venue->id, 'qr_token' => (string) Str::uuid()]);
-        return back()->with('status', 'Mesa cadastrada.');
+
+        return $firstTable
+            ? redirect()->route('owner.catalog')->with('status', 'Mesa criada. Agora cadastre a primeira categoria e os produtos.')
+            : back()->with('status', 'Mesa cadastrada.');
     }
 }
