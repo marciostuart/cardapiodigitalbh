@@ -10,6 +10,12 @@ class PublicMenuController extends Controller
     {
         $venue = $request->attributes->get('venue');
         abort_unless($venue, 404);
-        return response()->json(['venue' => $venue->only('name', 'subdomain')]);
+        return view('public.menu', [
+            'venue' => $venue,
+            'categories' => \App\Models\ProductCategory::where('venue_id', $venue->id)
+                ->where('active', true)
+                ->with(['products' => fn ($query) => $query->where('active', true)->orderBy('position')])
+                ->orderBy('position')->get(),
+        ]);
     }
 }
