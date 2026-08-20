@@ -34,4 +34,12 @@ class TenantResolutionTest extends TestCase
         $this->get('http://casa-teste.cardapiodigitalbh.com.br/menu')
             ->assertRedirect('http://casa-teste.cardapiodigitalbh.com.br');
     }
+
+    public function test_suspended_tenant_public_menu_is_not_available(): void
+    {
+        $tenant = Tenant::create(['name' => 'Casa Suspensa', 'slug' => 'casa-suspensa', 'status' => 'suspended']);
+        Venue::create(['tenant_id' => $tenant->id, 'name' => 'Casa Suspensa', 'subdomain' => 'casa-suspensa']);
+
+        $this->get('http://casa-suspensa.cardapiodigitalbh.com.br/')->assertNotFound();
+    }
 }

@@ -50,6 +50,16 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        $user = Auth::user();
+        if ($user->role !== 'platform_owner' && $user->tenant && $user->tenant->status !== 'active') {
+            Auth::guard('web')->logout();
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'email' => 'Esta conta está inativa. Entre em contato com o suporte.',
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 

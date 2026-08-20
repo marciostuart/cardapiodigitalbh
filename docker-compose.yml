@@ -5,6 +5,14 @@ services:
     env_file: .env
     restart: unless-stopped
     networks: [360Network, internal]
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+      update_config:
+        parallelism: 1
+        order: start-first
+        failure_action: rollback
   web:
     build:
       context: .
@@ -13,7 +21,20 @@ services:
     restart: unless-stopped
     depends_on: [app]
     networks: [360Network, internal]
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/up"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
     deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+      update_config:
+        parallelism: 1
+        order: start-first
+        failure_action: rollback
       labels:
         - traefik.enable=true
         - traefik.docker.network=360Network
@@ -30,6 +51,14 @@ services:
     env_file: .env
     restart: unless-stopped
     networks: [360Network, internal]
+    deploy:
+      restart_policy:
+        condition: any
+        delay: 5s
+      update_config:
+        parallelism: 1
+        order: start-first
+        failure_action: rollback
 networks:
   360Network:
     external: true

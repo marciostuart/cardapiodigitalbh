@@ -10,7 +10,7 @@
             <article class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200"><span class="text-sm text-slate-500">Comandas abertas</span><strong class="mt-2 block text-3xl">{{ $openTabsCount }}</strong></article>
             <article class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200"><span class="text-sm text-slate-500">Vendas de hoje</span><strong class="mt-2 block text-3xl">R$ {{ number_format((float) $todaySales, 2, ',', '.') }}</strong></article>
         </section>
-        <section><div class="mb-3 flex items-center justify-between"><h2 class="text-xl font-bold">Mapa de mesas</h2><span class="text-xs text-slate-500">Atualize a página para sincronizar</span></div>
+        <section><div class="mb-3 flex items-center justify-between"><h2 class="text-xl font-bold">Mapa de mesas</h2><span class="text-xs text-slate-500">Atualização automática</span></div>
             <div class="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
                 @forelse($tables as $table)
                     <article class="rounded-2xl border-l-4 {{ $table->status === 'occupied' ? 'border-amber-400' : 'border-emerald-500' }} bg-white p-5 shadow-sm ring-1 ring-slate-200"><div class="flex items-start justify-between gap-2"><h3 class="font-bold">Mesa {{ $table->code }}</h3><span class="rounded-full px-2 py-1 text-[11px] font-bold {{ $table->status === 'occupied' ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700' }}">{{ $table->status === 'occupied' ? 'Ocupada' : 'Livre' }}</span></div><p class="mt-5 text-xs text-slate-500">{{ $table->tabs->first()?->code ? 'Comanda '.$table->tabs->first()->code : 'Sem comanda aberta' }}</p></article>
@@ -18,4 +18,5 @@
             </div>
         </section>
     </div></div>
+    <script>setInterval(() => { if (!document.hidden) window.location.reload(); }, 20000);</script>
 </x-app-layout>

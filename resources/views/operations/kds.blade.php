@@ -22,4 +22,5 @@
             @endforelse
         </div>
     </div></div>
+    <script>setInterval(() => { if (!document.hidden && !['SELECT', 'INPUT'].includes(document.activeElement?.tagName)) window.location.reload(); }, 15000);</script>
 </x-app-layout>

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -50,5 +51,18 @@ class AuthenticationTest extends TestCase
 
         $this->assertGuest();
         $response->assertRedirect('/');
+    }
+
+    public function test_user_from_suspended_tenant_cannot_authenticate(): void
+    {
+        $tenant = Tenant::create(['name' => 'Suspenso', 'slug' => 'suspenso', 'status' => 'suspended']);
+        $user = User::factory()->create(['tenant_id' => $tenant->id]);
+
+        $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ])->assertSessionHasErrors('email');
+
+        $this->assertGuest();
     }
 }

@@ -36,7 +36,13 @@ class CashierController extends Controller
             $payment = $tab->payments()->create(['venue_id' => $venue->id, 'method' => $request->validated('method'), 'amount' => $amount, 'reference' => $request->validated('reference'), 'paid_at' => now()]);
             if (($paid + $amount + 0.009) >= $due) {
                 $tab->update(['status' => 'closed', 'closed_at' => now()]);
-                $tab->diningTable?->update(['status' => 'available']);
+                $hasOtherOpenTabs = Tab::where('dining_table_id', $tab->dining_table_id)
+                    ->where('status', 'open')
+                    ->whereKeyNot($tab->id)
+                    ->exists();
+                if (! $hasOtherOpenTabs) {
+                    $tab->diningTable?->update(['status' => 'available']);
+                }
             }
 
             return ['payment' => $payment, 'due' => $due, 'paid' => $paid + $amount, 'tab_status' => $tab->fresh()->status];

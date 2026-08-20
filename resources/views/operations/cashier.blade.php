@@ -19,4 +19,5 @@
             <div class="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center text-slate-500">Nenhuma comanda aberta.</div>
         @endforelse
     </div></div>
+    <script>setInterval(() => { if (!document.hidden && !['SELECT', 'INPUT'].includes(document.activeElement?.tagName)) window.location.reload(); }, 20000);</script>
 </x-app-layout>

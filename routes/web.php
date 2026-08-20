@@ -46,10 +46,10 @@ Route::get('/m/{token}', [QrMenuController::class, 'show'])->name('public.qr-men
 Route::post('/m/{token}/orders', [TableOrderController::class, 'storeByToken'])->middleware('throttle:30,1')->name('public.qr-order');
 
 Route::get('/dashboard', OwnerDashboardController::class)
-    ->middleware(['auth'])
+    ->middleware(['auth', 'account.active'])
     ->name('dashboard');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'account.active'])->group(function () {
     Route::middleware('platform.owner')->group(function () {
         Route::get('/admin', [PlatformController::class, 'index'])->name('admin.platform');
         Route::post('/admin/estabelecimentos/{tenant}/acessar', [PlatformController::class, 'impersonate'])->name('admin.impersonate');
@@ -82,7 +82,7 @@ Route::middleware('auth')->group(function () {
 require __DIR__.'/auth.php';
 
 Route::middleware('tenant')->post('/tables/{table}/orders', [TableOrderController::class, 'store']);
-Route::middleware(['auth', 'tenant', 'venue.access'])->group(function () {
+Route::middleware(['auth', 'account.active', 'tenant', 'venue.access'])->group(function () {
     Route::middleware('role:owner,cashier')->group(function () {
         Route::get('/caixa', [CashierController::class, 'index'])->name('cashier.index');
         Route::post('/tabs/{tab}/payments', [CashierController::class, 'pay'])->name('cashier.pay');

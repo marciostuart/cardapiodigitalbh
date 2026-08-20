@@ -22,7 +22,9 @@ class TableOrderController extends Controller
 
     public function storeByToken(StoreTableOrderRequest $request, string $token)
     {
-        $table = DiningTable::where('qr_token', $token)->firstOrFail();
+        $table = DiningTable::where('qr_token', $token)
+            ->whereHas('venue.tenant', fn ($query) => $query->where('status', 'active'))
+            ->firstOrFail();
 
         return $this->createOrder($request, $table);
     }

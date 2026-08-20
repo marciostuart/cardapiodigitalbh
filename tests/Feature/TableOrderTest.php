@@ -59,4 +59,18 @@ class TableOrderTest extends TestCase
         $this->assertDatabaseHas(Tab::class, ['dining_table_id' => $table->id, 'customer_name' => 'Ana']);
         $this->assertDatabaseHas('orders', ['notes' => 'Sem cebola']);
     }
+
+    public function test_suspended_tenant_cannot_receive_qr_orders(): void
+    {
+        $tenant = Tenant::create(['name' => 'Suspenso', 'slug' => 'suspenso', 'status' => 'suspended']);
+        $venue = Venue::create(['tenant_id' => $tenant->id, 'name' => 'Suspenso', 'subdomain' => 'suspenso']);
+        $category = ProductCategory::create(['venue_id' => $venue->id, 'name' => 'Lanches']);
+        $product = Product::create(['venue_id' => $venue->id, 'product_category_id' => $category->id, 'name' => 'X-Salada', 'price' => 20]);
+        $table = DiningTable::create(['venue_id' => $venue->id, 'code' => '02', 'qr_token' => fake()->uuid]);
+
+        $this->get('/m/'.$table->qr_token)->assertNotFound();
+        $this->postJson('/m/'.$table->qr_token.'/orders', [
+            'items' => [['product_id' => $product->id, 'quantity' => 1]],
+        ])->assertNotFound();
+    }
 }

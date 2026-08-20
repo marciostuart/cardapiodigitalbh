@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureAccountActive;
 use App\Http\Middleware\EnsurePlatformOwner;
 use App\Http\Middleware\EnsureRole;
 use App\Http\Middleware\EnsureVenueMembership;
@@ -20,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'tenant' => ResolveTenant::class,
             'venue.access' => EnsureVenueMembership::class,
             'platform.owner' => EnsurePlatformOwner::class,
+            'account.active' => EnsureAccountActive::class,
             'role' => EnsureRole::class,
         ]);
     })

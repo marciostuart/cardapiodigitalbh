@@ -23,7 +23,9 @@ class ResolveTenant
             $slug = explode('.', $host)[0];
         }
         if ($slug) {
-            $request->attributes->set('venue', Venue::where('subdomain', $slug)->firstOrFail());
+            $request->attributes->set('venue', Venue::where('subdomain', $slug)
+                ->whereHas('tenant', fn ($query) => $query->where('status', 'active'))
+                ->firstOrFail());
         } elseif ($request->user()?->tenant_id) {
             $request->attributes->set('venue', $request->user()->tenant?->venues()->first());
         }
