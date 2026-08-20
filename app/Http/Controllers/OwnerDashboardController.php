@@ -10,6 +10,19 @@ class OwnerDashboardController extends Controller
 {
     public function __invoke(Request $request)
     {
+        if ($request->user()->role === 'platform_owner') {
+            return redirect()->route('admin.platform');
+        }
+        if ($request->user()->role === 'kitchen') {
+            return redirect()->route('kds.index');
+        }
+        if ($request->user()->role === 'cashier') {
+            return redirect()->route('cashier.index');
+        }
+        if ($request->user()->role === 'waiter') {
+            return redirect()->route('operations.index');
+        }
+
         $tenant = $request->user()->tenant;
         $venue = $tenant?->venues()->first();
 

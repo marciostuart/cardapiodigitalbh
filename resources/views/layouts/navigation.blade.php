@@ -15,10 +15,17 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
-                    @if(Auth::user()->tenant_id)
+                    @if(Auth::user()->role === 'owner')
                         <x-nav-link :href="route('owner.catalog')" :active="request()->routeIs('owner.catalog')">Cardápio</x-nav-link>
                         <x-nav-link :href="route('owner.tables')" :active="request()->routeIs('owner.tables')">Mesas</x-nav-link>
-                        <x-nav-link href="/operacao" :active="request()->is('operacao')">Operação</x-nav-link>
+                        <x-nav-link :href="route('owner.team')" :active="request()->routeIs('owner.team*')">Equipe</x-nav-link>
+                        <x-nav-link :href="route('operations.index')" :active="request()->routeIs('operations.*')">Operação</x-nav-link>
+                    @elseif(Auth::user()->role === 'waiter')
+                        <x-nav-link :href="route('operations.index')" :active="request()->routeIs('operations.*')">Salão</x-nav-link>
+                    @elseif(Auth::user()->role === 'kitchen')
+                        <x-nav-link :href="route('kds.index')" :active="request()->routeIs('kds.*')">Cozinha</x-nav-link>
+                    @elseif(Auth::user()->role === 'cashier')
+                        <x-nav-link :href="route('cashier.index')" :active="request()->routeIs('cashier.*')">Caixa</x-nav-link>
                     @elseif(Auth::user()->role === 'platform_owner')
                         <x-nav-link :href="route('admin.platform')" :active="request()->routeIs('admin.*')">Administração</x-nav-link>
                     @endif
@@ -82,10 +89,17 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
-            @if(Auth::user()->tenant_id)
+            @if(Auth::user()->role === 'owner')
                 <x-responsive-nav-link :href="route('owner.catalog')" :active="request()->routeIs('owner.catalog')">Cardápio</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('owner.tables')" :active="request()->routeIs('owner.tables')">Mesas</x-responsive-nav-link>
-                <x-responsive-nav-link href="/operacao" :active="request()->is('operacao')">Operação</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('owner.team')" :active="request()->routeIs('owner.team*')">Equipe</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('operations.index')" :active="request()->routeIs('operations.*')">Operação</x-responsive-nav-link>
+            @elseif(Auth::user()->role === 'waiter')
+                <x-responsive-nav-link :href="route('operations.index')" :active="request()->routeIs('operations.*')">Salão</x-responsive-nav-link>
+            @elseif(Auth::user()->role === 'kitchen')
+                <x-responsive-nav-link :href="route('kds.index')" :active="request()->routeIs('kds.*')">Cozinha</x-responsive-nav-link>
+            @elseif(Auth::user()->role === 'cashier')
+                <x-responsive-nav-link :href="route('cashier.index')" :active="request()->routeIs('cashier.*')">Caixa</x-responsive-nav-link>
             @elseif(Auth::user()->role === 'platform_owner')
                 <x-responsive-nav-link :href="route('admin.platform')" :active="request()->routeIs('admin.*')">Administração</x-responsive-nav-link>
             @endif

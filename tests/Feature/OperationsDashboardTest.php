@@ -27,7 +27,7 @@ class OperationsDashboardTest extends TestCase
             'qr_token' => (string) str()->uuid(),
         ]);
 
-        $user = User::factory()->create(['tenant_id' => $tenant->id]);
+        $user = User::factory()->create(['tenant_id' => $tenant->id, 'role' => 'owner']);
 
         $this->actingAs($user)->get('/operacao')
             ->assertOk()

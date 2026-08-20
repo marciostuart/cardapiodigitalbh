@@ -21,6 +21,7 @@ Plataforma SaaS independente para restaurantes, bares e lanchonetes: cardápio d
 - Cardápio público no domínio raiz do tenant (`https://{slug}.cardapiodigitalbh.com.br`) e por QR (`/m/{token}`).
 - Pedido público por QR com carrinho; preço e total sempre recalculados no servidor.
 - Operação: mapa de mesas, KDS visual, avanço de itens, comandas, pagamentos manuais e liberação de mesa.
+- Equipe: owner cria acessos de garçom, cozinha e caixa; cada função possui rotas limitadas ao trabalho correspondente.
 
 ## Padrões obrigatórios
 
@@ -55,5 +56,4 @@ Plataforma SaaS independente para restaurantes, bares e lanchonetes: cardápio d
 
 1. Habilitar HTTPS wildcard para subdomínios por DNS challenge.
 2. Configurar SMTP real, recuperação de senha e verificação de e-mail.
-3. Criar gestão de equipe/garçons e permissões por função.
-4. Adotar a stack pelo Portainer para controle Total quando o produto estiver estável.
+3. Adotar a stack pelo Portainer para controle Total quando o produto estiver estável.

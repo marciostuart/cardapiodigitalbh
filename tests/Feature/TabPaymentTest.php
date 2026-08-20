@@ -35,7 +35,7 @@ class TabPaymentTest extends TestCase
     {
         $tenant = Tenant::create(['name' => 'Bistrô', 'slug' => 'bistro']);
         $venue = Venue::create(['tenant_id' => $tenant->id, 'name' => 'Bistrô', 'subdomain' => 'localhost']);
-        $user = User::factory()->create(['tenant_id' => $tenant->id]);
+        $user = User::factory()->create(['tenant_id' => $tenant->id, 'role' => 'owner']);
         $table = DiningTable::create(['venue_id' => $venue->id, 'code' => '1', 'status' => 'occupied', 'qr_token' => fake()->uuid]);
         $tab = Tab::create(['venue_id' => $venue->id, 'dining_table_id' => $table->id, 'code' => 'M1', 'status' => 'open', 'opened_at' => now()]);
         Order::create(['venue_id' => $venue->id, 'tab_id' => $tab->id, 'channel' => 'table', 'status' => 'ready', 'subtotal' => 30, 'total' => 30]);
