@@ -1,7 +1,7 @@
 services:
   app:
     build: .
-    image: cardapiodigitalbh:latest
+    image: cardapiodigitalbh:${CARDAPIO_IMAGE_TAG:-latest}
     env_file: .env
     restart: unless-stopped
     networks: [360Network, internal]
@@ -17,7 +17,7 @@ services:
     build:
       context: .
       target: web
-    image: cardapiodigitalbh-web:latest
+    image: cardapiodigitalbh-web:${CARDAPIO_IMAGE_TAG:-latest}
     restart: unless-stopped
     depends_on: [app]
     networks: [360Network, internal]
@@ -46,7 +46,7 @@ services:
         - traefik.http.services.cardapio.loadbalancer.server.port=8080
   worker:
     build: .
-    image: cardapiodigitalbh:latest
+    image: cardapiodigitalbh:${CARDAPIO_IMAGE_TAG:-latest}
     command: php artisan queue:work redis --sleep=1 --tries=3 --max-time=3600
     env_file: .env
     restart: unless-stopped
