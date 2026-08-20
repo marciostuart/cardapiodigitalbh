@@ -20,6 +20,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('platform.owner')->group(function () {
         Route::get('/admin', [\App\Http\Controllers\Admin\PlatformController::class, 'index'])->name('admin.platform');
         Route::post('/admin/estabelecimentos/{tenant}/acessar', [\App\Http\Controllers\Admin\PlatformController::class, 'impersonate'])->name('admin.impersonate');
+        Route::patch('/admin/estabelecimentos/{tenant}/plano', [\App\Http\Controllers\Admin\PlatformController::class, 'updatePlan'])->name('admin.plan.update');
     });
     Route::post('/admin/retornar', [\App\Http\Controllers\Admin\PlatformController::class, 'leave'])->name('admin.leave');
     Route::get('/painel/cardapio', [\App\Http\Controllers\OwnerCatalogController::class, 'index'])->name('owner.catalog');
