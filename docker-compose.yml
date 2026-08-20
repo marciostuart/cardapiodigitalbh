@@ -20,6 +20,8 @@ services:
         - traefik.http.routers.cardapio.rule=Host(`cardapiodigitalbh.com.br`) || HostRegexp(`{subdomain:[a-z0-9-]+}.cardapiodigitalbh.com.br`)
         - traefik.http.routers.cardapio.entrypoints=websecure
         - traefik.http.routers.cardapio.tls=true
+        - traefik.http.routers.cardapio.tls.certresolver=letsencryptresolver
+        - traefik.http.routers.cardapio.tls.domains[0].main=cardapiodigitalbh.com.br
         - traefik.http.services.cardapio.loadbalancer.server.port=8080
   worker:
     build: .
