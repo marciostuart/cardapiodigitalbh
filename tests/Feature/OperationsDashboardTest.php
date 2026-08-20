@@ -20,7 +20,11 @@ class OperationsDashboardTest extends TestCase
             'name' => 'Bistro Central',
             'subdomain' => 'bistro',
         ]);
-        DiningTable::create(['venue_id' => $venue->id, 'code' => '12']);
+        DiningTable::create([
+            'venue_id' => $venue->id,
+            'code' => '12',
+            'qr_token' => (string) str()->uuid(),
+        ]);
 
         $this->get('/operacao', ['HOST' => 'bistro.localhost'])
             ->assertOk()
