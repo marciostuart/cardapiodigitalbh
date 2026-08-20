@@ -3,6 +3,11 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
+Route::domain('{subdomain}.cardapiodigitalbh.com.br')->middleware('tenant')->group(function () {
+    Route::get('/', [\App\Http\Controllers\PublicMenuController::class, 'show'])->name('public.menu');
+    Route::get('/menu', fn () => redirect('/'))->name('public.menu.legacy');
+});
+
 Route::get('/', function () {
     return view('marketing.home');
 });
