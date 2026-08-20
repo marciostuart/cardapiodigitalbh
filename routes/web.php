@@ -1,31 +1,33 @@
 <?php
 
 use App\Http\Controllers\Admin\EmailTemplateController;
+use App\Http\Controllers\Admin\PlanController;
 use App\Http\Controllers\Admin\PlatformController;
 use App\Http\Controllers\Admin\PlatformDashboardController;
-use App\Http\Controllers\Admin\PlanController;
 use App\Http\Controllers\Admin\WhatsappSupportController;
 use App\Http\Controllers\Admin\WhatsappTemplateController;
 use App\Http\Controllers\CashierController;
+use App\Http\Controllers\EvolutionWebhookController;
 use App\Http\Controllers\KitchenDisplayController;
 use App\Http\Controllers\OperationsDashboardController;
+use App\Http\Controllers\OwnerBannerController;
 use App\Http\Controllers\OwnerCatalogController;
-use App\Http\Controllers\OwnerDashboardController;
-use App\Http\Controllers\OwnerSettingsController;
-use App\Http\Controllers\OwnerInventoryController;
-use App\Http\Controllers\OwnerScheduleController;
 use App\Http\Controllers\OwnerCommerceController;
+use App\Http\Controllers\OwnerDashboardController;
+use App\Http\Controllers\OwnerInventoryController;
 use App\Http\Controllers\OwnerOrderController;
 use App\Http\Controllers\OwnerReportController;
+use App\Http\Controllers\OwnerScheduleController;
+use App\Http\Controllers\OwnerSettingsController;
 use App\Http\Controllers\OwnerTableController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PublicMediaController;
 use App\Http\Controllers\PublicMenuController;
 use App\Http\Controllers\PublicOrderController;
 use App\Http\Controllers\QrMenuController;
 use App\Http\Controllers\TableOrderController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\WhatsappIntegrationController;
-use App\Http\Controllers\EvolutionWebhookController;
 use Illuminate\Support\Facades\Route;
 
 Route::domain('{subdomain}.cardapiodigitalbh.com.br')->middleware('tenant')->group(function () {
@@ -35,6 +37,7 @@ Route::domain('{subdomain}.cardapiodigitalbh.com.br')->middleware('tenant')->gro
     Route::post('/mesa/{token}/pedidos', [TableOrderController::class, 'storeByToken'])->middleware('throttle:30,1')->name('public.tenant-table-order');
     Route::post('/pedidos', [PublicOrderController::class, 'store'])->middleware('throttle:30,1')->name('public.orders.store');
     Route::get('/pedido/{token}', [PublicOrderController::class, 'track'])->name('public.order.track');
+    Route::get('/media/{category}/{filename}', PublicMediaController::class)->name('public.media');
 });
 
 Route::get('/', function () {
@@ -107,6 +110,9 @@ Route::middleware(['auth', 'account.active'])->group(function () {
         Route::patch('/painel/equipe/{member}/senha', [TeamController::class, 'resetPassword'])->name('owner.team.password');
         Route::get('/painel/configuracoes', [OwnerSettingsController::class, 'edit'])->name('owner.settings');
         Route::patch('/painel/configuracoes', [OwnerSettingsController::class, 'update'])->name('owner.settings.update');
+        Route::post('/painel/configuracoes/banners', [OwnerBannerController::class, 'store'])->name('owner.banners.store');
+        Route::patch('/painel/configuracoes/banners/{banner}', [OwnerBannerController::class, 'update'])->name('owner.banners.update');
+        Route::delete('/painel/configuracoes/banners/{banner}', [OwnerBannerController::class, 'destroy'])->name('owner.banners.destroy');
         Route::get('/painel/estoque', [OwnerInventoryController::class, 'index'])->name('owner.inventory.index');
         Route::post('/painel/estoque', [OwnerInventoryController::class, 'store'])->name('owner.inventory.store');
         Route::patch('/painel/estoque/{inventoryItem}', [OwnerInventoryController::class, 'adjust'])->name('owner.inventory.adjust');

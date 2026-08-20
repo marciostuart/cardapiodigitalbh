@@ -26,7 +26,7 @@ class OrderLineBuilder
                 abort_if($count < $group->minimum || $count > $group->maximum, 422, "Selecione entre {$group->minimum} e {$group->maximum} opção(ões) em {$group->name}.");
             }
 
-            $options = $validOptions->map(fn ($option) => ['id' => $option->id, 'name' => $option->name, 'price' => (float) $option->price])->values()->all();
+            $options = $validOptions->map(fn ($option) => ['id' => $option->id, 'name' => $option->name, 'description' => $option->description, 'price' => (float) $option->price])->values()->all();
             $unitPrice = (float) $product->price + collect($options)->sum('price');
             $quantity = (int) $line['quantity'];
 

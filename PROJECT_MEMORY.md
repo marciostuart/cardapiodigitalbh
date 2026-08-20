@@ -41,6 +41,8 @@ Plataforma SaaS independente para restaurantes, bares e lanchonetes: cardápio d
 - Cardápio público aceita mesa, retirada e delivery; inclui clientes, endereço ViaCEP, regiões/taxas, pedido mínimo, cupons, troco e acompanhamento por token público.
 - Gestão de pedidos aplica uma máquina de estados progressiva e dispara eventos transacionais do WhatsApp quando houver consentimento.
 - Produtos aceitam grupos de variações/adicionais com seleção mínima e máxima. O preço e o pertencimento de cada opção são validados no servidor e gravados como snapshot no item do pedido.
+- Mídias usam MinIO/S3 privado no bucket exclusivo `cardapiodigitalbh`, com credencial limitada ao bucket e prefixos `tenants/{tenant_id}/logos`, `products` e `banners`. Nomes de arquivo usam slug SEO mais sufixo aleatório; a aplicação publica as imagens pelo subdomínio correto com cache.
+- Identidade visual, logo, cores e banners são administrados em Configurações. O slug pode ser alterado quando disponível, mas exige confirmação explícita sobre a quebra de URLs e QR Codes antigos.
 
 ## Padrões obrigatórios
 
@@ -83,7 +85,7 @@ Plataforma SaaS independente para restaurantes, bares e lanchonetes: cardápio d
 
 1. Adotar a stack pelo Portainer para controle Total quando o produto estiver estável.
 2. Decidir quando tornar a verificação de e-mail obrigatória; o template e a infraestrutura de envio já estão preparados.
-3. Integrar o MinIO para fotos de produtos quando as credenciais e o bucket exclusivos do projeto forem definidos.
+3. Monitorar o crescimento e definir política de retenção/ciclo de vida do bucket MinIO.
 4. Completar banners, Web Push e agente de impressão.
 5. Homologar Mercado Pago por estabelecimento somente após estabilização do núcleo operacional.
 6. Em etapa posterior, implementar cobrança SaaS, marketplace, anúncios, afiliados e vouchers.

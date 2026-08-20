@@ -27,7 +27,7 @@ class CatalogManagementTest extends TestCase
             'name' => 'Clássico',
             'price' => '29.90',
             'station' => 'kitchen',
-        ])->assertRedirect();
+        ])->assertRedirect()->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas(Product::class, ['venue_id' => $venue->id, 'name' => 'Clássico', 'price' => 29.90]);
     }
@@ -63,7 +63,7 @@ class CatalogManagementTest extends TestCase
         $this->actingAs($user)->patch('/painel/configuracoes', [
             'name' => 'Novo Nome',
             'timezone' => 'America/Sao_Paulo',
-        ])->assertRedirect();
+        ])->assertRedirect()->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas(Venue::class, ['id' => $venue->id, 'name' => 'Novo Nome', 'subdomain' => 'slug-permanente']);
     }

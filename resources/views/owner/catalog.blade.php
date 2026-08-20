@@ -26,7 +26,7 @@
                     <button class="mt-4 rounded-xl bg-slate-900 px-5 py-2.5 font-semibold text-white hover:bg-slate-700">Adicionar categoria</button>
                 </form>
 
-                <form method="post" action="{{ route('owner.products.store') }}" class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+                <form method="post" enctype="multipart/form-data" action="{{ route('owner.products.store') }}" class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
                     @csrf
                     <h3 class="text-lg font-bold text-slate-900">Novo produto</h3>
                     @if($categories->isEmpty())
@@ -40,6 +40,7 @@
                             <input name="position" type="number" min="0" step="1" class="rounded-xl border-slate-300" placeholder="Ordem manual (opcional)">
                             <select name="station" class="rounded-xl border-slate-300"><option value="kitchen">Cozinha</option><option value="bar">Bar</option></select>
                             <textarea name="description" class="rounded-xl border-slate-300 sm:col-span-2" rows="2" maxlength="1000" placeholder="Descrição opcional"></textarea>
+                            <input name="image" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="rounded-xl border-slate-300 sm:col-span-2">
                             <label class="flex items-center gap-2 text-sm"><input type="hidden" name="track_stock" value="0"><input type="checkbox" name="track_stock" value="1"> Controlar estoque do produto</label>
                             <input name="stock_on_hand" type="number" min="0" step="0.001" placeholder="Estoque atual" class="rounded-xl border-slate-300">
                             <input name="low_stock_threshold" type="number" min="0" step="0.001" placeholder="Alerta mínimo" class="rounded-xl border-slate-300">
@@ -61,7 +62,7 @@
 
                         <div class="mt-4 space-y-3">
                             @forelse($category->products as $product)
-                                <form method="post" action="{{ route('owner.products.update', $product) }}" class="grid gap-3 rounded-xl bg-slate-50 p-4 md:grid-cols-12 md:items-center">
+                                <form method="post" enctype="multipart/form-data" action="{{ route('owner.products.update', $product) }}" class="grid gap-3 rounded-xl bg-slate-50 p-4 md:grid-cols-12 md:items-center">
                                     @csrf @method('patch')
                                     <select name="product_category_id" class="rounded-lg border-slate-300 md:col-span-2">@foreach($categories as $option)<option value="{{ $option->id }}" @selected($option->id === $product->product_category_id)>{{ $option->name }}</option>@endforeach</select>
                                     <input name="name" value="{{ $product->name }}" class="rounded-lg border-slate-300 md:col-span-2" required>
@@ -75,6 +76,7 @@
                                     <input name="stock_on_hand" value="{{ $product->stock_on_hand }}" type="number" min="0" step="0.001" title="Estoque atual" class="rounded-lg border-slate-300 md:col-span-1">
                                     <input name="low_stock_threshold" value="{{ $product->low_stock_threshold }}" type="number" min="0" step="0.001" title="Alerta mínimo" class="rounded-lg border-slate-300 md:col-span-1">
                                     <button class="rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white md:col-span-1">Salvar produto</button>
+                                    <input name="image" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="text-xs md:col-span-4">
                                 </form>
                                 <details class="rounded-xl border border-slate-200 bg-white p-4">
                                     <summary class="cursor-pointer font-bold text-slate-800">Variações e adicionais · {{ $product->optionGroups->count() }} grupo(s)</summary>
@@ -91,14 +93,16 @@
                                                 <p class="mt-2 text-xs text-slate-500">Mínimo {{ $group->minimum }} · máximo {{ $group->maximum }} escolhas</p>
                                                 <div class="mt-3 space-y-2">
                                                     @foreach($group->options as $option)
-                                                        <form method="post" action="{{ route('owner.options.update', $option) }}" class="grid gap-2 sm:grid-cols-5">@csrf @method('patch')
+                                                        <form method="post" action="{{ route('owner.options.update', $option) }}" class="grid gap-2 sm:grid-cols-6">@csrf @method('patch')
                                                             <input name="name" value="{{ $option->name }}" required class="rounded-lg border-slate-300 sm:col-span-2">
+                                                            <input name="description" value="{{ $option->description }}" placeholder="Descrição" class="rounded-lg border-slate-300">
                                                             <input name="price" value="{{ $option->price }}" type="number" min="0" step="0.01" required class="rounded-lg border-slate-300">
                                                             <select name="active" class="rounded-lg border-slate-300"><option value="1" @selected($option->active)>Ativa</option><option value="0" @selected(!$option->active)>Pausada</option></select>
                                                             <button class="rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold">Salvar opção</button>
                                                         </form>
                                                     @endforeach
-                                                    <form method="post" action="{{ route('owner.options.store', $group) }}" class="grid gap-2 sm:grid-cols-5">@csrf
+                                                    <form method="post" action="{{ route('owner.options.store', $group) }}" class="grid gap-2 sm:grid-cols-6">@csrf
+                                                        <input name="description" placeholder="Descrição opcional" class="rounded-lg border-slate-300">
                                                         <input name="name" placeholder="Nova opção" required class="rounded-lg border-slate-300 sm:col-span-2"><input name="price" type="number" min="0" step="0.01" value="0" required class="rounded-lg border-slate-300"><button class="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-bold text-white sm:col-span-2">Adicionar opção</button>
                                                     </form>
                                                 </div>
