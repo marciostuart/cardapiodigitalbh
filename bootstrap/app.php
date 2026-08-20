@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'tenant' => \App\Http\Middleware\ResolveTenant::class,
             'venue.access' => \App\Http\Middleware\EnsureVenueMembership::class,
+            'platform.owner' => \App\Http\Middleware\EnsurePlatformOwner::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

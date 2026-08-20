@@ -17,6 +17,11 @@ Route::get('/dashboard', \App\Http\Controllers\OwnerDashboardController::class)
     ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    Route::middleware('platform.owner')->group(function () {
+        Route::get('/admin', [\App\Http\Controllers\Admin\PlatformController::class, 'index'])->name('admin.platform');
+        Route::post('/admin/estabelecimentos/{tenant}/acessar', [\App\Http\Controllers\Admin\PlatformController::class, 'impersonate'])->name('admin.impersonate');
+    });
+    Route::post('/admin/retornar', [\App\Http\Controllers\Admin\PlatformController::class, 'leave'])->name('admin.leave');
     Route::get('/painel/cardapio', [\App\Http\Controllers\OwnerCatalogController::class, 'index'])->name('owner.catalog');
     Route::post('/painel/categorias', [\App\Http\Controllers\OwnerCatalogController::class, 'storeCategory'])->name('owner.categories.store');
     Route::post('/painel/produtos', [\App\Http\Controllers\OwnerCatalogController::class, 'storeProduct'])->name('owner.products.store');
