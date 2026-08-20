@@ -6,7 +6,9 @@ use App\Models\EmailTemplate;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Venue;
+use App\Notifications\WelcomeToCardapio;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class AdminPlatformTest extends TestCase
@@ -79,5 +81,15 @@ class AdminPlatformTest extends TestCase
         $customer = User::factory()->create(['role' => 'owner']);
 
         $this->actingAs($customer)->get(route('admin.email-templates.index'))->assertForbidden();
+    }
+
+    public function test_platform_owner_can_queue_a_test_email(): void
+    {
+        Notification::fake();
+        $platformOwner = User::factory()->create(['role' => 'platform_owner']);
+
+        $this->actingAs($platformOwner)->post(route('admin.email-templates.test'))->assertRedirect();
+
+        Notification::assertSentTo($platformOwner, WelcomeToCardapio::class);
     }
 }

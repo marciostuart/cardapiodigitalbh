@@ -56,6 +56,7 @@ Route::middleware(['auth', 'account.active'])->group(function () {
         Route::post('/admin/estabelecimentos/{tenant}/acessar', [PlatformController::class, 'impersonate'])->name('admin.impersonate');
         Route::patch('/admin/estabelecimentos/{tenant}/plano', [PlatformController::class, 'updatePlan'])->name('admin.plan.update');
         Route::get('/admin/emails', [EmailTemplateController::class, 'index'])->name('admin.email-templates.index');
+        Route::post('/admin/emails/teste', [EmailTemplateController::class, 'sendTest'])->name('admin.email-templates.test');
         Route::patch('/admin/emails/{template}', [EmailTemplateController::class, 'update'])->name('admin.email-templates.update');
     });
     Route::post('/admin/retornar', [PlatformController::class, 'leave'])->name('admin.leave');

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\EmailTemplate;
+use App\Notifications\WelcomeToCardapio;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -31,5 +32,12 @@ class EmailTemplateController extends Controller
         $template->update($data);
 
         return back()->with('status', 'Template de e-mail atualizado.');
+    }
+
+    public function sendTest(Request $request): RedirectResponse
+    {
+        $request->user()->notify(new WelcomeToCardapio('Estabelecimento de demonstração'));
+
+        return back()->with('status', 'E-mail de teste enfileirado para '.$request->user()->email.'.');
     }
 }

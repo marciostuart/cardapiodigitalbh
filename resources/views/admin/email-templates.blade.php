@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header"><div><h2 class="text-xl font-bold">E-mails transacionais</h2><p class="text-sm text-slate-500">Edite as mensagens enviadas automaticamente pela plataforma.</p></div></x-slot>
     <div class="py-8"><div class="mx-auto max-w-6xl space-y-6 px-4 sm:px-6 lg:px-8">
-        <div class="rounded-2xl bg-slate-900 p-6 text-white"><h1 class="text-2xl font-bold">Comunicação padronizada</h1><p class="mt-2 text-sm text-slate-300">O visual HTML é responsivo e protegido. Você edita o conteúdo; a identidade visual permanece consistente.</p><p class="mt-3 text-xs text-emerald-300">Variáveis disponíveis: @{{name}}, @{{venue_name}}, @{{app_name}} e @{{expire_minutes}}.</p></div>
+        <div class="rounded-2xl bg-slate-900 p-6 text-white"><div class="flex flex-wrap items-end justify-between gap-5"><div><h1 class="text-2xl font-bold">Comunicação padronizada</h1><p class="mt-2 text-sm text-slate-300">O visual HTML é responsivo e protegido. Você edita o conteúdo; a identidade visual permanece consistente.</p><p class="mt-3 text-xs text-emerald-300">Variáveis disponíveis: @{{name}}, @{{venue_name}}, @{{app_name}} e @{{expire_minutes}}.</p></div><form method="post" action="{{ route('admin.email-templates.test') }}">@csrf<button class="rounded-xl bg-white px-4 py-3 text-sm font-bold text-slate-900">Enviar teste para meu e-mail</button></form></div></div>
         @if(session('status'))<div class="rounded-xl bg-emerald-50 p-3 text-emerald-800">{{ session('status') }}</div>@endif
         @if($errors->any())<div class="rounded-xl bg-red-50 p-3 text-red-800">{{ $errors->first() }}</div>@endif
         @foreach($templates as $template)
