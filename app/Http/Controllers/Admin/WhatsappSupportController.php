@@ -27,6 +27,6 @@ class WhatsappSupportController extends Controller
             AuditLog::create(['actor_id' => $request->user()->id, 'tenant_id' => $tenant->id, 'action' => 'whatsapp.instance_reset', 'subject_type' => EvolutionInstance::class, 'subject_id' => $instance->id, 'metadata' => ['instance' => $instance->instance_name], 'ip_address' => $request->ip(), 'user_agent' => $request->userAgent()]);
             $instance->delete();
         });
-        return back()->with('status', 'Reset Whats concluído somente para '.$tenant->name.'. O estabelecimento já pode conectar novamente.');
+        return back()->with('status', 'WhatsApp redefinido somente para '.$tenant->name.'. O estabelecimento já pode conectar novamente.');
     }
 }

@@ -15,7 +15,7 @@
                     <label class="text-sm font-semibold text-slate-700">Texto do botão<input name="action_text" value="{{ old('action_text', $template->action_text) }}" maxlength="80" class="mt-1 block w-full rounded-xl border-slate-300"></label>
                     <label class="text-sm font-semibold text-slate-700">Rodapé<input name="footer" value="{{ old('footer', $template->footer) }}" maxlength="500" class="mt-1 block w-full rounded-xl border-slate-300"></label>
                 </div>
-                <button class="mt-5 rounded-xl bg-emerald-600 px-5 py-3 font-bold text-white">Salvar template</button>
+                <button class="mt-5 rounded-xl bg-emerald-600 px-5 py-3 font-bold text-white">Salvar modelo</button>
             </form>
         @endforeach
     </div></div>

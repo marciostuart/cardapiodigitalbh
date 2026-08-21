@@ -35,4 +35,21 @@ class StorePublicOrderRequest extends FormRequest
             'items.*.option_ids.*' => ['integer'],
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'delivery_zone_id.required_if' => 'Selecione a região de entrega para receber o pedido no endereço informado.',
+            'postal_code.required_if' => 'Informe o CEP para a entrega.',
+            'postal_code.regex' => 'Informe um CEP válido com oito números.',
+            'street.required_if' => 'Informe a rua para a entrega.',
+            'number.required_if' => 'Informe o número do endereço de entrega.',
+            'neighborhood.required_if' => 'Informe o bairro para a entrega.',
+            'city.required_if' => 'Informe o município para a entrega.',
+            'state.required_if' => 'Informe a sigla do estado para a entrega.',
+            'state.size' => 'Informe a sigla do estado com duas letras, como MG.',
+            'items.required' => 'Adicione pelo menos um item ao pedido antes de continuar.',
+            'items.min' => 'Adicione pelo menos um item ao pedido antes de continuar.',
+        ];
+    }
 }

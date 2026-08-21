@@ -31,7 +31,7 @@ class EmailTemplateController extends Controller
 
         $template->update($data);
 
-        return back()->with('status', 'Template de e-mail atualizado.');
+        return back()->with('status', 'Modelo de e-mail atualizado.');
     }
 
     public function sendTest(Request $request): RedirectResponse

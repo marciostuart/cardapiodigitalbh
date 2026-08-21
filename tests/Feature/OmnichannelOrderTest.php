@@ -52,6 +52,36 @@ class OmnichannelOrderTest extends TestCase
         $this->assertDatabaseCount('customers', 0);
     }
 
+    public function test_delivery_accepts_optional_contact_and_explains_missing_address_data_in_portuguese(): void
+    {
+        [, $venue, $product] = $this->catalog('delivery-optional-contact');
+        $venue->update(['delivery_enabled' => true]);
+        $zone = DeliveryZone::create(['venue_id' => $venue->id, 'name' => 'Centro', 'fee' => 7]);
+
+        $basePayload = [
+            'channel' => 'delivery',
+            'payment_method' => 'pix',
+            'items' => [['product_id' => $product->id, 'quantity' => 1]],
+        ];
+
+        $this->postJson('http://delivery-optional-contact.cardapiodigitalbh.com.br/pedidos', $basePayload)
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['delivery_zone_id'])
+            ->assertJsonPath('errors.delivery_zone_id.0', 'Selecione a região de entrega para receber o pedido no endereço informado.');
+
+        $this->postJson('http://delivery-optional-contact.cardapiodigitalbh.com.br/pedidos', $basePayload + [
+            'delivery_zone_id' => $zone->id,
+            'postal_code' => '30110-000',
+            'street' => 'Rua A',
+            'number' => '10',
+            'neighborhood' => 'Centro',
+            'city' => 'Belo Horizonte',
+            'state' => 'MG',
+        ])->assertCreated();
+
+        $this->assertDatabaseHas('orders', ['venue_id' => $venue->id, 'customer_name' => null, 'customer_phone' => null]);
+    }
+
     public function test_owner_cannot_update_an_order_from_another_tenant(): void
     {
         [$tenantA, $venueA, $productA] = $this->catalog('tenant-one');

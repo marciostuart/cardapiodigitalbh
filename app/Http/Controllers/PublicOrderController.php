@@ -36,9 +36,10 @@ class PublicOrderController extends Controller
             $address = null;
             $zone = null;
             if ($channel === 'delivery') {
-                $zone = DeliveryZone::whereKey($request->validated('delivery_zone_id'))->where('venue_id', $venue->id)->where('active', true)->firstOrFail();
+                $zone = DeliveryZone::whereKey($request->validated('delivery_zone_id'))->where('venue_id', $venue->id)->where('active', true)->first();
+                abort_unless($zone, 422, 'A região de entrega selecionada não está disponível. Escolha outra região para continuar.');
                 $address = collect($request->validated())->only(['postal_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state', 'reference'])->all();
-                $customer->addresses()->create($address);
+                if ($customer) $customer->addresses()->create($address);
             }
 
             $lines = OrderLineBuilder::build($venue->id, $request->validated('items'));
