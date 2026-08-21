@@ -94,6 +94,7 @@ Plataforma SaaS independente para restaurantes, bares e lanchonetes: cardápio d
 | 2026-08-20 | Atendentes precisavam interpretar um seletor de etapas antes de operar um pedido | O seletor foi substituído por ações diretas: Aceitar/Recusar, Em produção/Cancelar, Pedido pronto/Cancelar, Saiu para entrega/Concluído/Cancelar. Recusar ou cancelar abre modal e exige a confirmação final. |
 | 2026-08-20 | Atendimento precisava consultar e corrigir pedidos sem perder rastreabilidade operacional | Todo pedido ganhou página de detalhes. Pedidos abertos permitem notas gerais, de cozinha e de entrega, ajuste de quantidade, itens e opcionais com total recalculado e ajuste de estoque/reserva; concluídos e cancelados são somente leitura. |
 | 2026-08-20 | A vitrine desktop não comunicava claramente que havia mais produtos na categoria | O carrossel passou a usar flexibilidade controlada: até quatro cards completos no desktop e uma prévia lateral do quinto; as setas avançam a lista. No celular permanece um card principal e parte do próximo. |
+| 2026-08-20 | As setas do carrossel ficavam distantes dos produtos e não indicavam corretamente os limites da navegação | Os controles agora ficam sobre as extremidades da linha. Eles avaliam a rolagem real: no início só surge avançar, durante a navegação surgem os dois sentidos e, no fim, só voltar permanece visível. |
 
 ## Estado consolidado em 2026-08-20
 
@@ -108,7 +109,7 @@ Plataforma SaaS independente para restaurantes, bares e lanchonetes: cardápio d
 - PWA: manifesto e service worker são específicos do tenant. O app guarda home e mídias acessadas; uma nova versão apresenta “Atualizar”. A verificação periódica é a cada cinco minutos para equilibrar atualização e consumo de recursos.
 - Administração: `/owner` é o painel executivo da plataforma; `/admin` é a gestão de tenants/planos/impersonação e suporte. O painel do lojista usa `/painel/*`. O Owner pode redefinir somente a instância WhatsApp do tenant selecionado. GTM global é configurado pelo Owner; o lojista usa campos validados para Analytics e Pixel da Meta, nunca scripts arbitrários.
 - Catálogo de demonstração: importação autorizada de Paulin Lanches concluída com 83 produtos, 8 categorias, 83 imagens e 173 opções. Tratar como dados de demonstração do tenant existente; manter consistência e não importar novamente sem necessidade.
-- Qualidade: no último conjunto validado, `php artisan test` passou com 79 testes e 261 asserções. Sempre repetir testes, compilação das views e smoke test dos endereços afetados antes de afirmar publicação.
+- Qualidade: no último conjunto validado, `php artisan test` passou com 80 testes e 268 asserções. Sempre repetir testes, compilação das views e smoke test dos endereços afetados antes de afirmar publicação.
 
 ## Pendências pós-lançamento
 
