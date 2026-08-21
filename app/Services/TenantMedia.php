@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 
 class TenantMedia
 {
-    private const CATEGORIES = ['logos', 'products', 'banners', 'seo'];
+    private const CATEGORIES = ['logos', 'products', 'banners', 'covers', 'seo'];
 
     public function __construct(private readonly ImageOptimizer $optimizer) {}
 

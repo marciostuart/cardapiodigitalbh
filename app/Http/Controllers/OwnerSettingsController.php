@@ -30,6 +30,7 @@ class OwnerSettingsController extends Controller
             'primary_color' => ['sometimes', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'secondary_color' => ['sometimes', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'logo' => ['nullable', File::image()->max(12 * 1024)],
+            'cover' => ['nullable', File::image()->max(20 * 1024)],
             'seo_title' => ['nullable', 'string', 'max:70'],
             'seo_description' => ['nullable', 'string', 'max:160'],
             'seo_keywords' => ['nullable', 'string', 'max:255'],
@@ -58,7 +59,7 @@ class OwnerSettingsController extends Controller
                 unset($settings[$key]);
             }
         }
-        unset($data['confirm_slug_change'], $data['logo'], $data['seo_image'], $data['seo_title'], $data['seo_description'], $data['seo_keywords'], $data['google_analytics_id'], $data['meta_pixel_id']);
+        unset($data['confirm_slug_change'], $data['logo'], $data['cover'], $data['seo_image'], $data['seo_title'], $data['seo_description'], $data['seo_keywords'], $data['google_analytics_id'], $data['meta_pixel_id']);
         if ($request->hasFile('logo')) {
             $old = $venue->logo_path;
             $data['logo_path'] = $media->store($tenant, $request->file('logo'), 'logos', $data['name'].' logo cardapio digital');
@@ -67,6 +68,11 @@ class OwnerSettingsController extends Controller
         if ($request->hasFile('seo_image')) {
             $old = $settings['seo_image_path'] ?? null;
             $settings['seo_image_path'] = $media->store($tenant, $request->file('seo_image'), 'seo', $data['name'].' imagem de compartilhamento');
+            $media->delete($old, $tenant);
+        }
+        if ($request->hasFile('cover')) {
+            $old = $settings['cover_path'] ?? null;
+            $settings['cover_path'] = $media->store($tenant, $request->file('cover'), 'covers', $data['name'].' capa do cardapio');
             $media->delete($old, $tenant);
         }
         $data['settings'] = $settings;

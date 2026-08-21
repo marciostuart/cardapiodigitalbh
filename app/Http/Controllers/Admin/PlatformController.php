@@ -9,6 +9,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class PlatformController extends Controller
@@ -47,7 +48,17 @@ class PlatformController extends Controller
 
     public function impersonate(Request $request, Tenant $tenant)
     {
-        $user = User::where('tenant_id', $tenant->id)->where('role', 'owner')->firstOrFail();
+        $user = User::where('tenant_id', $tenant->id)->where('role', 'owner')->first();
+        if (! $user) {
+            $user = User::create([
+                'tenant_id' => $tenant->id,
+                'name' => $tenant->name,
+                'email' => 'proprietario+'.Str::slug($tenant->slug).'@cardapiodigitalbh.com.br',
+                'password' => Str::random(48),
+                'role' => 'owner',
+                'active' => true,
+            ]);
+        }
         $platformOwnerId = Auth::id();
         $this->audit($request, $tenant, 'tenant.impersonation_started', ['customer_owner_id' => $user->id]);
         $request->session()->put('impersonator_id', $platformOwnerId);
