@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Venue extends Model
 {
-    protected $fillable = ['tenant_id', 'name', 'subdomain', 'timezone', 'logo_path', 'primary_color', 'secondary_color', 'catalog_sort_mode', 'geofence_enabled', 'latitude', 'longitude', 'geofence_radius_meters', 'manual_open_state', 'manual_open_until', 'table_service_enabled', 'pickup_enabled', 'delivery_enabled', 'minimum_order', 'settings'];
+    protected $fillable = ['tenant_id', 'name', 'subdomain', 'timezone', 'logo_path', 'primary_color', 'secondary_color', 'catalog_sort_mode', 'catalog_display_mode', 'geofence_enabled', 'latitude', 'longitude', 'geofence_radius_meters', 'manual_open_state', 'manual_open_until', 'table_service_enabled', 'pickup_enabled', 'delivery_enabled', 'minimum_order', 'settings'];
 
     protected function casts(): array
     {

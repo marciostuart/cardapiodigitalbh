@@ -38,6 +38,7 @@ class OwnerSettingsController extends Controller
             'meta_pixel_id' => ['nullable', 'regex:/^[0-9]{5,20}$/'],
             'timezone' => ['required', 'in:America/Sao_Paulo,America/Manaus,America/Cuiaba,America/Belem,America/Fortaleza,America/Recife'],
             'catalog_sort_mode' => ['sometimes', 'in:manual,popularity'],
+            'catalog_display_mode' => ['sometimes', 'in:cards,list'],
             'geofence_enabled' => ['sometimes', 'boolean'],
             'latitude' => ['nullable', 'numeric', 'between:-90,90', 'required_if:geofence_enabled,1'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180', 'required_if:geofence_enabled,1'],

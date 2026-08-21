@@ -84,11 +84,14 @@
             }
         }
     </style>
+    <style>
+        .catalog-list .product-carousel{display:block}.catalog-list .product-carousel .slider-controls{display:none}.catalog-list .product-track{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;overflow:visible;padding:2px 0 14px}.catalog-list .product-card{display:grid;grid-template-columns:minmax(150px,220px) minmax(0,1fr);flex:none;width:100%;min-height:170px;border-radius:14px}.catalog-list .product-photo-link{aspect-ratio:4/3;height:100%;min-height:150px}.catalog-list .product-body{padding:14px}.catalog-list .product-description{min-height:0}.catalog-list .product-purchase{margin-top:auto}.catalog-list .category-head .view-all{display:none}@media(max-width:720px){.catalog-list .product-track{grid-template-columns:1fr}.catalog-list .product-card{grid-template-columns:130px minmax(0,1fr);min-height:140px}.catalog-list .product-photo-link{min-height:140px}.catalog-list .product-body{padding:12px}.catalog-list .product-description{font-size:13px}.catalog-list .product-price{font-size:17px}}
+    </style>
 </head>
 <body>
 @include('layouts.tracking-body')
 @include('public.partials.header', ['isMenu' => true])
-<main id="inicio" class="wrap">
+<main id="inicio" class="wrap catalog-{{ $venue->catalog_display_mode ?? 'cards' }}">
     @if($banners->isNotEmpty())<section style="display:grid;gap:12px;margin-top:18px">@foreach($banners as $banner)<a @if($banner->link_url)href="{{ $banner->link_url }}" rel="noopener"@endif style="display:block;overflow:hidden;border-radius:20px;background:white"><img src="{{ route('public.media',['subdomain'=>$venue->subdomain,'category'=>'banners','filename'=>basename($banner->image_path)]) }}" alt="{{ $banner->title }} - {{ $venue->name }}" style="width:100%;max-height:260px;object-fit:cover"><span style="display:block;padding:12px 16px"><strong>{{ $banner->title }}</strong>@if($banner->description)<small style="display:block;color:var(--muted)">{{ $banner->description }}</small>@endif</span></a>@endforeach</section>@endif
 
     @forelse($categories as $category)
