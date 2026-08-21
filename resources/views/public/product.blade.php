@@ -584,7 +584,7 @@
                     <strong>Personalize seu pedido</strong>
 
                     @foreach($product->optionGroups as $group)
-                        <section class="option-group">
+                        <section class="option-group" data-min="{{ $group->minimum }}" data-max="{{ $group->maximum }}">
                             <h3>{{ $group->name }}</h3>
                             <small>{{ $group->minimum ? 'Escolha no mínimo '.$group->minimum : 'Opcional' }} · máximo {{ $group->maximum }}</small>
 
@@ -660,6 +660,14 @@
     });
     document.querySelector('.buy')?.addEventListener('click', event => {
         event.preventDefault();
+        for (const group of document.querySelectorAll('.option-group')) {
+            const selectedInGroup = [...group.querySelectorAll('input:checked')];
+            const minimum = Number(group.dataset.min || 0);
+            if (selectedInGroup.length < minimum) {
+                alert(`Selecione pelo menos ${minimum} opção(ões) em ${group.querySelector('h3')?.textContent || 'este grupo'}.`);
+                return;
+            }
+        }
         const selected = [...document.querySelectorAll('.option-row input:checked')].map(input => ({id:Number(input.value), name:input.closest('.option-row')?.querySelector('.option-copy strong')?.textContent?.trim() || '', price:Number((input.closest('.option-row')?.querySelector('.option-price')?.textContent || '').replace(/[^0-9,]/g,'').replace(',','.')) || 0}));
         const ids = selected.map(option => option.id).sort((a,b)=>a-b); const key = '{{ $product->id }}-'+ids.join('-');
         const items = JSON.parse(localStorage.getItem('cardapiodigitalbh_cart') || '[]'); const current = items.find(item => item.key === key);
@@ -667,6 +675,16 @@
         localStorage.setItem('cardapiodigitalbh_cart', JSON.stringify(items));
         renderProductCart();
     });
+    document.querySelectorAll('.option-group').forEach(group => group.addEventListener('change', event => {
+        const input = event.target;
+        if (!(input instanceof HTMLInputElement) || input.type !== 'checkbox' || !input.checked) return;
+        const maximum = Number(group.dataset.max || 0);
+        const checked = [...group.querySelectorAll('input:checked')];
+        if (maximum > 0 && checked.length > maximum) {
+            const oldest = checked.find(item => item !== input);
+            if (oldest) oldest.checked = false;
+        }
+    }));
     const productCartBar=document.getElementById('productCartBar');
     function renderProductCart(){const items=JSON.parse(localStorage.getItem('cardapiodigitalbh_cart')||'[]');const count=items.reduce((s,i)=>s+Number(i.quantity||0),0);const total=items.reduce((s,i)=>s+Number(i.price||0)*Number(i.quantity||0),0);productCartBar.classList.toggle('visible',count>0);document.getElementById('productCartCount').textContent=count+(count===1?' item':' itens');document.getElementById('productCartTotal').textContent=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(total)}
     productCartBar?.addEventListener('click',()=>{location.href='{{ route('public.menu',['subdomain'=>$venue->subdomain]) }}'});window.addEventListener('storage',renderProductCart);renderProductCart();
