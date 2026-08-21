@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Models\PlatformSetting;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Symfony\Component\HttpFoundation\Response;
 
 class InjectGlobalTracking
@@ -13,7 +14,7 @@ class InjectGlobalTracking
     {
         $response = $next($request);
         $contentType = (string) $response->headers->get('Content-Type');
-        $containerId = PlatformSetting::value('gtm_container_id');
+        $containerId = Schema::hasTable('platform_settings') ? PlatformSetting::value('gtm_container_id') : null;
 
         if (! $containerId || ! str_contains($contentType, 'text/html') || $response->isRedirection()) {
             return $response;
