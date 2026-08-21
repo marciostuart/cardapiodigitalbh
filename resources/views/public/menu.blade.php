@@ -45,6 +45,45 @@
             .product-carousel.expanded .product-card { flex:0 0 calc((100% - 12px) / 2); }
         }
     </style>
+    <style>
+        /* Override final: em "Ver tudo", os cards não mudam de largura e as setas somem. */
+        @media (min-width: 900px) {
+            .product-carousel.expanded .product-track {
+                display: flex !important;
+                flex-wrap: wrap !important;
+                justify-content: flex-start !important;
+                align-content: flex-start;
+                overflow: visible !important;
+                gap: 20px !important;
+                padding: 2px 0 14px !important;
+            }
+            .product-carousel.expanded .product-card {
+                flex: 0 0 clamp(220px, calc((100% - 60px) / 4.35), 310px) !important;
+                max-width: clamp(220px, calc((100% - 60px) / 4.35), 310px) !important;
+            }
+            .product-carousel.expanded .slider-controls {
+                display: none !important;
+            }
+        }
+        @media (max-width: 899px) {
+            .product-carousel.expanded .product-track {
+                display: flex !important;
+                flex-wrap: wrap !important;
+                justify-content: flex-start !important;
+                align-content: flex-start;
+                overflow: visible !important;
+                gap: 12px !important;
+                padding: 2px 0 14px !important;
+            }
+            .product-carousel.expanded .product-card {
+                flex: 0 0 calc((100% - 12px) / 2) !important;
+                max-width: calc((100% - 12px) / 2) !important;
+            }
+            .product-carousel.expanded .slider-controls {
+                display: none !important;
+            }
+        }
+    </style>
 </head>
 <body>
 @include('layouts.tracking-body')
