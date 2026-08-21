@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Coupon;
 use App\Models\DeliveryZone;
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\Tenant;
@@ -58,6 +59,23 @@ class OmnichannelOrderTest extends TestCase
         $ownerA = User::factory()->create(['tenant_id' => $tenantA->id, 'role' => 'owner']);
         $orderB = $venueB->hasMany(\App\Models\Order::class)->create(['status' => 'pending', 'subtotal' => 10, 'total' => 10]);
         $this->actingAs($ownerA)->patch(route('owner.orders.update', $orderB), ['status' => 'accepted'])->assertNotFound();
+    }
+
+    public function test_owner_can_only_apply_the_next_order_statuses(): void
+    {
+        [$tenant, $venue] = $this->catalog('order-statuses');
+        $owner = User::factory()->create(['tenant_id' => $tenant->id, 'role' => 'owner']);
+        $order = Order::create(['venue_id' => $venue->id, 'status' => 'pending', 'subtotal' => 10, 'total' => 10]);
+
+        $this->actingAs($owner)->patch(route('owner.orders.update', $order), ['status' => 'preparing'])
+            ->assertRedirect()
+            ->assertSessionHasErrors('status');
+
+        $this->actingAs($owner)->patch(route('owner.orders.update', $order), ['status' => 'accepted'])
+            ->assertRedirect()
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => 'accepted']);
     }
 
     private function catalog(string $slug): array
