@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTableOrderRequest;
 use App\Models\DiningTable;
+use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Tab;
@@ -13,6 +14,7 @@ use App\Support\Geofence;
 use App\Support\VenueAvailability;
 use App\Support\OrderLineBuilder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class TableOrderController extends Controller
@@ -43,7 +45,10 @@ class TableOrderController extends Controller
 
         return DB::transaction(function () use ($request, $table, $venue) {
             $table = DiningTable::lockForUpdate()->findOrFail($table->id);
-            $customerName = trim((string) $request->validated('customer_name', '')) ?: null;
+            $consumer = Auth::guard('consumer')->user();
+            $customerName = $consumer?->name ?: (trim((string) $request->validated('customer_name', '')) ?: null);
+            $customerPhone = $consumer?->phone ?: $request->validated('customer_phone');
+            $customer = $customerPhone ? Customer::updateOrCreate(['venue_id' => $venue->id, 'phone' => $customerPhone], ['name' => $customerName ?: 'Cliente', 'email' => $consumer?->email, 'last_order_at' => now()]) : null;
             $tabQuery = Tab::where('dining_table_id', $table->id)->where('status', 'open');
             $customerName ? $tabQuery->where('customer_name', $customerName) : $tabQuery->whereNull('customer_name');
             $tab = $tabQuery->lockForUpdate()->first();
@@ -52,7 +57,7 @@ class TableOrderController extends Controller
                 $table->update(['status' => 'occupied']);
             }
             $lines = OrderLineBuilder::build($venue->id, $request->validated('items'));
-            $order = Order::create(['venue_id' => $venue->id, 'tab_id' => $tab->id, 'public_token' => Str::random(48), 'channel' => 'table', 'status' => 'pending', 'customer_name' => $customerName, 'customer_phone' => $request->validated('customer_phone'), 'whatsapp_consent' => (bool) $request->validated('whatsapp_consent', false), 'subtotal' => 0, 'total' => 0, 'notes' => $request->validated('notes')]);
+            $order = Order::create(['venue_id' => $venue->id, 'tab_id' => $tab->id, 'customer_id' => $customer?->id, 'consumer_account_id' => $consumer?->id, 'public_token' => Str::random(48), 'channel' => 'table', 'status' => 'pending', 'customer_name' => $customerName, 'customer_phone' => $customerPhone, 'whatsapp_consent' => (bool) $request->validated('whatsapp_consent', false), 'subtotal' => 0, 'total' => 0, 'notes' => $request->validated('notes')]);
             $subtotal = 0;
             foreach ($lines as $line) {
                 $p = $line['product'];

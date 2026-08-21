@@ -14,6 +14,7 @@ use App\Services\WhatsappNotifier;
 use App\Support\VenueAvailability;
 use App\Support\OrderLineBuilder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class PublicOrderController extends Controller
@@ -27,18 +28,20 @@ class PublicOrderController extends Controller
         abort_if($channel === 'delivery' && ! $venue->delivery_enabled, 422, 'Delivery indisponível.');
 
         $order = DB::transaction(function () use ($request, $venue, $channel) {
-            $rawPhone = $request->validated('customer_phone');
+            $consumer = Auth::guard('consumer')->user()?->loadMissing('defaultAddress');
+            $rawPhone = $consumer?->phone ?: $request->validated('customer_phone');
             $phone = $rawPhone ? $this->normalizePhone($rawPhone) : null;
             abort_if($rawPhone && ! $phone, 422, 'Informe um WhatsApp válido com DDD.');
             abort_if($request->boolean('whatsapp_consent') && ! $phone, 422, 'Informe um WhatsApp válido para receber as atualizações.');
-            $customerName = trim((string) $request->validated('customer_name', '')) ?: null;
-            $customer = $phone ? Customer::updateOrCreate(['venue_id' => $venue->id, 'phone' => $phone], ['name' => $customerName ?: 'Cliente', 'marketing_consent' => (bool) $request->validated('marketing_consent', false), 'last_order_at' => now()]) : null;
+            $customerName = $consumer?->name ?: (trim((string) $request->validated('customer_name', '')) ?: null);
+            $customer = $phone ? Customer::updateOrCreate(['venue_id' => $venue->id, 'phone' => $phone], ['name' => $customerName ?: 'Cliente', 'email' => $consumer?->email, 'marketing_consent' => (bool) $request->validated('marketing_consent', false), 'last_order_at' => now()]) : null;
             $address = null;
             $zone = null;
             if ($channel === 'delivery') {
                 $zone = DeliveryZone::whereKey($request->validated('delivery_zone_id'))->where('venue_id', $venue->id)->where('active', true)->first();
                 abort_unless($zone, 422, 'A região de entrega selecionada não está disponível. Escolha outra região para continuar.');
-                $address = collect($request->validated())->only(['postal_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state', 'reference'])->all();
+                $address = collect($request->validated())->only(['postal_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state', 'reference'])->filter(fn ($value) => $value !== null && $value !== '')->all();
+                if (count($address) < 6 && $consumer?->defaultAddress) $address = $consumer->defaultAddress->only(['postal_code', 'street', 'number', 'complement', 'neighborhood', 'city', 'state', 'reference']);
                 if ($customer) $customer->addresses()->create($address);
             }
 
@@ -51,7 +54,7 @@ class PublicOrderController extends Controller
             $changeFor = $request->validated('change_for');
             abort_if($changeFor !== null && (float) $changeFor + 0.009 < $total, 422, 'O valor para troco deve ser maior que o total.');
 
-            $order = Order::create(['venue_id' => $venue->id, 'customer_id' => $customer?->id, 'delivery_zone_id' => $zone?->id, 'public_token' => Str::random(48), 'channel' => $channel, 'status' => 'pending', 'customer_name' => $customerName, 'customer_phone' => $phone, 'whatsapp_consent' => (bool) $request->validated('whatsapp_consent', false), 'delivery_address' => $address, 'coupon_code' => $coupon?->code, 'discount' => $discount, 'delivery_fee' => $fee, 'payment_method' => $request->validated('payment_method'), 'change_for' => $changeFor, 'subtotal' => $subtotal, 'total' => $total, 'notes' => $request->validated('notes')]);
+            $order = Order::create(['venue_id' => $venue->id, 'customer_id' => $customer?->id, 'consumer_account_id' => $consumer?->id, 'delivery_zone_id' => $zone?->id, 'public_token' => Str::random(48), 'channel' => $channel, 'status' => 'pending', 'customer_name' => $customerName, 'customer_phone' => $phone, 'whatsapp_consent' => (bool) $request->validated('whatsapp_consent', false), 'delivery_address' => $address, 'coupon_code' => $coupon?->code, 'discount' => $discount, 'delivery_fee' => $fee, 'payment_method' => $request->validated('payment_method'), 'change_for' => $changeFor, 'subtotal' => $subtotal, 'total' => $total, 'notes' => $request->validated('notes')]);
             foreach ($lines as $line) {
                 $product = $line['product'];
                 $order->items()->create(['product_id' => $product->id, 'name_snapshot' => $product->name, 'unit_price' => $line['unit_price'], 'quantity' => $line['quantity'], 'total' => $line['total'], 'station' => $product->station, 'status' => 'pending', 'options_snapshot' => $line['options']]);

@@ -1,5 +1,6 @@
 @php
-    $customerFirstName = collect(explode(' ', trim((string) session('public_customer_name'))))->filter()->first();
+    $consumer = auth('consumer')->user();
+    $customerFirstName = collect(explode(' ', trim((string) ($consumer?->name ?: session('public_customer_name')))))->filter()->first();
     $menuUrl = route('public.menu', ['subdomain' => $venue->subdomain]);
 @endphp
 <style>.mobile-store-meta{display:none}@media(max-width:720px){.store-topbar{display:none}.store-header-main{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px}.store-brand{grid-column:1;min-width:0}.mobile-store-meta{grid-column:2;display:flex;flex-direction:column;align-items:flex-end;gap:5px;color:inherit;font-size:12px;font-weight:800;line-height:1.1;text-align:right;white-space:nowrap}.mobile-store-meta span:last-child{font-size:11px}.header-search{grid-column:1/-1;margin-top:0}}</style>
@@ -14,6 +15,7 @@
         <label class="header-search"><input id="productSearch" type="search" placeholder="Digite sua busca..." aria-label="Buscar produtos" data-menu-url="{{ $menuUrl }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="6"></circle><path d="m16 16 4 4"></path></svg></label>
     </div>
 </header>
+@if($consumer)<form method="post" action="{{ route('public.consumer.logout', ['subdomain' => $venue->subdomain]) }}" style="position:absolute;right:max(16px,calc((100% - 1400px)/2));top:38px;z-index:3">@csrf<button type="submit" style="border:0;background:transparent;color:#66747d;font:12px inherit;cursor:pointer">Sair da conta</button></form>@endif
 <nav id="selectedCategoryRail" class="category-rail" aria-label="Categorias do cardápio">
     @if($isMenu ?? false)
         <button type="button" class="active" data-category-choice="all">Todas</button>@foreach($categories as $category)<button type="button" data-category-choice="{{ $category->id }}">{{ $category->name }}</button>@endforeach
