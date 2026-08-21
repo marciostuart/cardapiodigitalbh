@@ -87,6 +87,7 @@ Plataforma SaaS independente para restaurantes, bares e lanchonetes: cardápio d
 | 2026-08-20 | Upload de produto acima de 8 MB era rejeitado antes de chegar ao Laravel | Limites do PHP elevados com margem controlada; validação em 12 MB e pipeline GD/WebP 75% adicionados à imagem Docker. |
 | 2026-08-20 | Upload era concluído, mas a rota pública da imagem retornava 404 | O parâmetro de domínio `{subdomain}` estava deslocando os argumentos do controller invocável; assinatura corrigida e coberta por teste de streaming privado. |
 | 2026-08-20 | Catálogo de demonstração precisava reproduzir o cardápio autorizado de Paulin Lanches | Importação idempotente executada no estabelecimento existente `paulinlanches`, visitando 83 páginas de produtos autorizadas, preservando 8 categorias, preços vigentes e variações. As imagens foram processadas no pipeline WebP/MinIO do tenant. Evidências: 83 produtos, 83 imagens, 173 opções; cardápio e imagem WebP retornaram HTTP 200. |
+| 2026-08-20 | Estabelecimentos precisavam gerir descoberta orgânica e mensuração sem inserir scripts livres | Configurações agora armazenam título SEO, meta descrição, palavras-chave, imagem social WebP/MinIO, Google Analytics e Pixel da Meta por estabelecimento. O Owner controla um único ID GTM validado para a plataforma. Logo do estabelecimento é usada como favicon WebP e ícone de tela inicial. |
 
 ## Pendências pós-lançamento
 
