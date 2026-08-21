@@ -65,6 +65,7 @@ class ConsumerAccountController extends Controller
     public function logout(Request $request)
     {
         Auth::guard('consumer')->logout();
+        $request->session()->forget('public_customer_name');
         $request->session()->regenerateToken();
 
         return $request->expectsJson() ? response()->json(['message' => 'Você saiu da sua conta.']) : back();
