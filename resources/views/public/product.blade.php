@@ -647,7 +647,7 @@
 </main>
 
 @include('public.partials.footer')
-<button id="productCartBar" class="product-cart-bar" type="button"><span class="cart-leading"><span class="cart-bag" aria-hidden="true">🛍</span><span><strong id="productCartCount">0 itens</strong><small>Revisar pedido</small></span></span><span id="productCartTotal" class="cart-total">R$ 0,00</span></button>
+<button id="productCartBar" class="product-cart-bar" type="button"><span class="cart-leading"><span class="cart-bag" aria-hidden="true"><svg class="cart-bag-icon" viewBox="0 0 36 36"><path d="M8 13h20l2 17H6l2-17Z"/><path d="M13 14V10a5 5 0 0 1 10 0v4"/></svg></span><span><strong id="productCartCount">0 itens</strong><small>Revisar pedido</small></span></span><span id="productCartTotal" class="cart-total">R$ 0,00</span></button>
 <style>.product-cart-bar{position:fixed;z-index:10;left:50%;bottom:14px;transform:translateX(-50%);width:min(744px,calc(100% - 28px));border:0;border-radius:18px;background:var(--brand);color:#fff;padding:15px 18px;display:none;align-items:center;justify-content:space-between;gap:14px;box-shadow:0 16px 50px #0a3d2d55;cursor:pointer}.product-cart-bar.visible{display:flex}.product-cart-bar .cart-leading{display:flex;align-items:center;gap:10px;text-align:left}.product-cart-bar .cart-bag{font-size:25px;line-height:1}.product-cart-bar strong{display:block}.product-cart-bar small{color:#c9f3e3}.product-cart-bar .cart-total{font-size:18px;font-weight:900}@media(max-width:720px){.product-cart-bar{width:calc(100% - 28px);bottom:12px}}</style>
 
 <script>
@@ -706,6 +706,6 @@
     function renderProductCart(){const items=JSON.parse(localStorage.getItem('cardapiodigitalbh_cart')||'[]');const count=items.reduce((s,i)=>s+Number(i.quantity||0),0);const total=items.reduce((s,i)=>s+Number(i.price||0)*Number(i.quantity||0),0);productCartBar.classList.toggle('visible',count>0);document.getElementById('productCartCount').textContent=count+(count===1?' item':' itens');document.getElementById('productCartTotal').textContent=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(total)}
     productCartBar?.addEventListener('click',()=>{location.href='{{ route('public.menu',['subdomain'=>$venue->subdomain]) }}'});window.addEventListener('storage',renderProductCart);renderProductCart();
 </script>
-<style>@media(min-width:721px){.wrap{max-width:1170px!important}}</style>
+<style>@media(min-width:721px){.wrap{max-width:1170px!important}}.product-cart-bar .cart-bag{display:grid;place-items:center;width:32px;height:32px}.product-cart-bar .cart-bag-icon{width:30px;height:30px;fill:currentColor;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.product-cart-bar .cart-bag-icon path:first-child{fill:currentColor}.product-cart-bar .cart-bag-icon path:last-child{fill:none}</style>
 </body>
 </html>
