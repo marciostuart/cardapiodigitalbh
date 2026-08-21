@@ -91,6 +91,13 @@
     </style>
     <style>.cart-leading{display:flex;align-items:center;gap:10px;text-align:left}.cart-bag{font-size:25px;line-height:1}.cart{padding:14px 18px}@media(max-width:720px){.cart{width:calc(100% - 28px);bottom:12px}}</style>
     <style>@media(max-width:899px){.product-track .product-card,.product-carousel.expanded .product-card{width:calc((100% - 12px)/2)!important;max-width:calc((100% - 12px)/2)!important;flex:0 0 calc((100% - 12px)/2)!important}.product-carousel.expanded .product-track{gap:12px!important}}.category-selected .category-head .view-all{display:none!important}.category-selected .product-carousel{display:block!important}.category-selected .product-carousel .slider-controls{display:none!important}.category-selected .product-track{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));overflow:visible!important;scroll-snap-type:none!important}.category-selected .product-card{width:auto!important;max-width:none!important;flex:none!important}@media(max-width:899px){.category-selected .product-track{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px!important}.category-selected .product-card{width:auto!important;max-width:none!important}}</style>
+<style>
+.cart-summary{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
+.cart-summary-title{font-weight:800;margin-bottom:8px}
+.cart-summary-line{display:flex;justify-content:space-between;gap:16px;padding:7px 0;color:var(--ink)}
+.cart-summary-line small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.cart-total-row{display:flex;justify-content:space-between;gap:16px;margin-top:10px;padding-top:12px;border-top:2px solid var(--brand);font-size:18px;font-weight:900}
+</style>
 </head>
 <body>
 @include('layouts.tracking-body')
@@ -158,6 +165,7 @@
     <div id="cartPanel" class="panel" role="dialog" aria-modal="true" aria-label="Seu pedido">
         <div class="sheet sheet-custom"><div class="sheet-strip"><span>Seu pedido</span><button id="closeCart" class="close" type="button" aria-label="Fechar">×</button></div><div class="sheet-scroll">
             <div id="cartLines"></div>
+            <div id="cartSummary" class="cart-summary" aria-live="polite"></div>
             @if(!isset($table))
                 <label style="display:block;margin-top:18px;font-weight:700">Como deseja receber?</label>
                 <select id="serviceChannel" style="width:100%;margin-top:8px;padding:12px;border:1px solid var(--line);border-radius:12px">@if($venue->pickup_enabled)<option value="pickup">Retirar no estabelecimento</option>@endif @if($venue->delivery_enabled)<option value="delivery">Receber por entrega</option>@endif</select>
@@ -206,6 +214,7 @@
                 document.getElementById('cartCount').textContent = count + (count === 1 ? ' item' : ' itens');
                 document.getElementById('cartTotal').textContent = money(total);
                 lines.innerHTML = entries.map(item => `<div class="cart-line"><div><strong>${escapeHtml(item.name)}</strong>${item.optionNames.length ? `<small style="display:block;color:var(--muted)">${escapeHtml(item.optionNames.join(', '))}</small>` : ''}<div>${money(item.price * item.quantity)}</div></div><div class="cart-actions"><button type="button" class="remove-item" data-remove="${item.key}">Remover</button><div class="qty"><button type="button" data-less="${item.key}" aria-label="Diminuir quantidade de ${escapeHtml(item.name)}">−</button><b>${item.quantity}</b><button type="button" data-more="${item.key}" aria-label="Aumentar quantidade de ${escapeHtml(item.name)}">+</button></div></div></div>`).join('');
+                document.getElementById('cartSummary').innerHTML = entries.length ? `<div class="cart-summary-title">Resumo do pedido</div>${entries.map(item => `<div class="cart-summary-line"><span>${escapeHtml(item.name)} <small>${item.quantity} × ${money(item.price)}</small></span><strong>${money(item.price * item.quantity)}</strong></div>`).join('')}<div class="cart-total-row"><span>Total do pedido</span><strong>${money(total)}</strong></div>` : '';
             }
             function addItem(product, selected = [], quantity = 1) { const optionIds = selected.map(option => option.id).sort((a,b)=>a-b); const key = product.id+'-'+optionIds.join('-'); const price = product.price + selected.reduce((sum, option) => sum + option.price, 0); const current = cart.get(key) || {key,id:product.id,name:product.name,price,optionIds,optionNames:selected.map(option=>option.name),quantity:0}; current.quantity += Math.max(1, Math.min(99, Number(quantity) || 1)); cart.set(key,current); localStorage.setItem('cardapiodigitalbh_cart', JSON.stringify([...cart.values()])); render(); }
             let customQuantity = 1;
