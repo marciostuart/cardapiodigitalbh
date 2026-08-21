@@ -625,7 +625,7 @@
             <h2>Geralmente comprados juntos</h2>
             <div class="related-grid">
                 @foreach($relatedProducts as $related)
-                    <article class="related-card" data-related-product='@json(['id'=>$related->id,'name'=>$related->name,'price'=>(float)$related->price,'has_options'=>$related->optionGroups->isNotEmpty()])'>
+                    <article class="related-card" data-related-id="{{ $related->id }}" data-related-name="{{ $related->name }}" data-related-price="{{ (float) $related->price }}" data-related-options="{{ $related->optionGroups->isNotEmpty() ? '1' : '0' }}">
                         <a href="{{ route('public.product', ['subdomain' => $venue->subdomain, 'product' => $related]) }}" style="display:block;text-decoration:none;color:inherit">
                         @php($relatedImage = $related->image_path ?: $related->images->first()?->path)
                         @if($relatedImage)
@@ -664,7 +664,7 @@
     });
     document.querySelectorAll('.related-card').forEach(card => card.querySelector('.related-buy')?.addEventListener('click', event => {
         event.preventDefault();
-        const product = JSON.parse(card.dataset.relatedProduct);
+        const product = {id:Number(card.dataset.relatedId),name:card.dataset.relatedName,price:Number(card.dataset.relatedPrice||0),has_options:card.dataset.relatedOptions==='1'};
         if (product.has_options) { location.href = card.querySelector('a')?.href || '{{ route('public.menu',['subdomain'=>$venue->subdomain]) }}'; return; }
         const quantity = Math.max(1, Math.min(99, Number(card.querySelector('.related-quantity')?.value) || 1));
         const items = JSON.parse(localStorage.getItem('cardapiodigitalbh_cart') || '[]');
