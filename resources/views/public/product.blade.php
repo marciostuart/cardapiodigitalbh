@@ -643,6 +643,8 @@
 </main>
 
 @include('public.partials.footer')
+<button id="productCartBar" class="product-cart-bar" type="button"><span><strong id="productCartCount">0 itens</strong><small>Revisar pedido</small></span><b id="productCartTotal">R$ 0,00</b></button>
+<style>.product-cart-bar{display:none;position:fixed;z-index:30;left:50%;bottom:14px;transform:translateX(-50%);width:min(744px,calc(100% - 28px));border:0;border-radius:18px;background:var(--brand);color:#fff;padding:14px 18px;align-items:center;justify-content:space-between;box-shadow:0 16px 50px #0a3d2d55;cursor:pointer}.product-cart-bar.visible{display:flex}.product-cart-bar span{display:block;text-align:left}.product-cart-bar small{display:block;color:#d9f7ea;font-size:11px}.product-cart-bar b{font-size:18px}</style>
 
 <script>
     document.querySelectorAll('.thumb').forEach(thumb => thumb.addEventListener('click', () => {
@@ -663,7 +665,11 @@
         const items = JSON.parse(localStorage.getItem('cardapiodigitalbh_cart') || '[]'); const current = items.find(item => item.key === key);
         if (current) current.quantity += 1; else items.push({key,id:{{ $product->id }},name:@json($product->name),price:{{ (float)$product->price }} + selected.reduce((sum,o)=>sum+o.price,0),optionIds:ids,optionNames:selected.map(o=>o.name),quantity:1});
         localStorage.setItem('cardapiodigitalbh_cart', JSON.stringify(items));
+        renderProductCart();
     });
+    const productCartBar=document.getElementById('productCartBar');
+    function renderProductCart(){const items=JSON.parse(localStorage.getItem('cardapiodigitalbh_cart')||'[]');const count=items.reduce((s,i)=>s+Number(i.quantity||0),0);const total=items.reduce((s,i)=>s+Number(i.price||0)*Number(i.quantity||0),0);productCartBar.classList.toggle('visible',count>0);document.getElementById('productCartCount').textContent=count+(count===1?' item':' itens');document.getElementById('productCartTotal').textContent=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(total)}
+    productCartBar?.addEventListener('click',()=>{location.href='{{ route('public.menu',['subdomain'=>$venue->subdomain]) }}'});window.addEventListener('storage',renderProductCart);renderProductCart();
 </script>
 </body>
 </html>
