@@ -97,6 +97,7 @@ Plataforma SaaS independente para restaurantes, bares e lanchonetes: cardápio d
 | 2026-08-20 | As setas do carrossel ficavam distantes dos produtos e não indicavam corretamente os limites da navegação | Os controles agora ficam sobre as extremidades da linha. Eles avaliam a rolagem real: no início só surge avançar, durante a navegação surgem os dois sentidos e, no fim, só voltar permanece visível. |
 | 2026-08-20 | A página de produto e o acompanhamento não ofereciam a mesma navegação da vitrine | Cabeçalho, busca, categorias e rodapé foram centralizados em componentes públicos. Produto passa a sugerir itens comprados junto com base em pedidos válidos, com itens complementares como contingência. |
 | 2026-08-21 | Avaliação de desempenho apontou peso e trabalho desnecessário na primeira dobra, além de oportunidade de descoberta por IA | Somente a primeira imagem recebe prioridade alta; categorias fora da dobra usam contenção de renderização e o GTM passa a carregar na primeira interação ou em ociosidade. Cada domínio público expõe `llms.txt` em Markdown e o cardápio publica dados estruturados de restaurante. |
+| 2026-08-21 | A prévia lateral e o degradê do carrossel reduziram a clareza visual no desktop | O desktop exibe quatro cards completos. As setas ficam fora da coluna dos produtos, usam a cor primária do estabelecimento e a categoria pode ser expandida por “Ver tudo →” em grade sem rolagem horizontal. |
 
 ## Estado consolidado em 2026-08-20
 
