@@ -33,24 +33,7 @@
 </head>
 <body>
 @include('layouts.tracking-body')
-@php
-    $customerFirstName = collect(explode(' ', trim((string) session('public_customer_name'))))->filter()->first();
-@endphp
-<div class="store-topbar"><div class="store-topbar-inner"><span>Olá{{ $customerFirstName ? ' '.$customerFirstName : '' }}</span><span>{{ ($isOpen ?? true) ? 'Estabelecimento aberto' : 'Estabelecimento fechado' }}</span></div></div>
-<header class="store-header">
-    <div class="store-header-main">
-        <a class="store-brand" href="#inicio" aria-label="Início do cardápio">
-            @if($venue->logo_path)
-                <img class="store-logo" src="{{ route('public.media',['subdomain'=>$venue->subdomain,'category'=>'logos','filename'=>basename($venue->logo_path)]) }}" alt="Logo {{ $venue->name }}">
-            @else
-                <span class="store-logo" aria-hidden="true"></span>
-            @endif
-            <span class="store-brand-text">{{ $venue->name }}</span>
-        </a>
-        <label class="header-search"><input id="productSearch" type="search" placeholder="Digite sua busca..." aria-label="Buscar produtos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="6"></circle><path d="m16 16 4 4"></path></svg></label>
-    </div>
-</header>
-<nav id="selectedCategoryRail" class="category-rail" aria-label="Categorias do cardápio"><button type="button" class="active" data-category-choice="all">Todas</button>@foreach($categories as $category)<button type="button" data-category-choice="{{ $category->id }}">{{ $category->name }}</button>@endforeach</nav>
+@include('public.partials.header', ['isMenu' => true])
 <main id="inicio" class="wrap">
     @if($banners->isNotEmpty())<section style="display:grid;gap:12px;margin-top:18px">@foreach($banners as $banner)<a @if($banner->link_url)href="{{ $banner->link_url }}" rel="noopener"@endif style="display:block;overflow:hidden;border-radius:20px;background:white"><img src="{{ route('public.media',['subdomain'=>$venue->subdomain,'category'=>'banners','filename'=>basename($banner->image_path)]) }}" alt="{{ $banner->title }} - {{ $venue->name }}" style="width:100%;max-height:260px;object-fit:cover"><span style="display:block;padding:12px 16px"><strong>{{ $banner->title }}</strong>@if($banner->description)<small style="display:block;color:var(--muted)">{{ $banner->description }}</small>@endif</span></a>@endforeach</section>@endif
 
@@ -92,6 +75,7 @@
         <p class="empty">Este cardápio ainda está sendo preparado.</p>
     @endforelse
 </main>
+@include('public.partials.footer')
 
 @if(isset($table) || $venue->pickup_enabled || $venue->delivery_enabled)
     @php($orderEndpoint = isset($table) ? route('public.tenant-table-order', ['subdomain' => $venue->subdomain, 'token' => $table->qr_token]) : route('public.orders.store', ['subdomain' => $venue->subdomain]))
@@ -157,7 +141,7 @@
             document.querySelectorAll('[data-product]').forEach(el => el.addEventListener('click', () => { const product=JSON.parse(el.dataset.product); product.groups.length ? openCustomizer(product) : addItem(product); }));
             document.querySelectorAll('.product-track').forEach(track=>{const carousel=track.closest('.product-carousel');const previous=carousel?.querySelector('[data-slide="prev"]');const next=carousel?.querySelector('[data-slide="next"]');if(!previous||!next)return;const updateControls=()=>{const maximum=Math.max(0,track.scrollWidth-track.clientWidth);previous.hidden=track.scrollLeft<=2;next.hidden=track.scrollLeft>=maximum-2;};previous.addEventListener('click',()=>track.scrollBy({left:-Math.round(track.clientWidth*.82),behavior:'smooth'}));next.addEventListener('click',()=>track.scrollBy({left:Math.round(track.clientWidth*.82),behavior:'smooth'}));track.addEventListener('scroll',updateControls,{passive:true});new ResizeObserver(updateControls).observe(track);requestAnimationFrame(updateControls);});
             const search=document.getElementById('productSearch');
-            if(search) search.addEventListener('input',()=>{const term=search.value.toLocaleLowerCase('pt-BR').trim();document.querySelectorAll('[data-category]').forEach(category=>{let visible=0;category.querySelectorAll('[data-product-card]').forEach(card=>{const match=!term||card.dataset.search.toLocaleLowerCase('pt-BR').includes(term);card.classList.toggle('filtered-out',!match);if(match)visible++;});category.classList.toggle('filtered-out',visible===0);});});
+            if(search){search.addEventListener('input',()=>{const term=search.value.toLocaleLowerCase('pt-BR').trim();document.querySelectorAll('[data-category]').forEach(category=>{let visible=0;category.querySelectorAll('[data-product-card]').forEach(card=>{const match=!term||card.dataset.search.toLocaleLowerCase('pt-BR').includes(term);card.classList.toggle('filtered-out',!match);if(match)visible++;});category.classList.toggle('filtered-out',visible===0);});});const requestedSearch=new URLSearchParams(location.search).get('busca');if(requestedSearch){search.value=requestedSearch;search.dispatchEvent(new Event('input'));}}
             const selectedCategoryRail=document.getElementById('selectedCategoryRail');
             const chooseCategory=choice=>{const all=choice==='all';document.querySelectorAll('[data-category]').forEach(section=>section.classList.toggle('selection-hidden',!all&&section.id!==`categoria-${choice}`));document.querySelectorAll('#selectedCategoryRail [data-category-choice]').forEach(button=>button.classList.toggle('active',button.dataset.categoryChoice===choice));if(!all){document.getElementById(`categoria-${choice}`)?.scrollIntoView({behavior:'smooth',block:'start'});}else{document.getElementById('inicio')?.scrollIntoView({behavior:'smooth',block:'start'});}};
             if(selectedCategoryRail){document.querySelectorAll('#selectedCategoryRail [data-category-choice]').forEach(button=>button.addEventListener('click',()=>chooseCategory(button.dataset.categoryChoice)));}

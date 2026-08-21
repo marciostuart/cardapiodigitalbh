@@ -8,6 +8,7 @@ use App\Models\Customer;
 use App\Models\DeliveryZone;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\ProductCategory;
 use App\Services\InventoryService;
 use App\Services\WhatsappNotifier;
 use App\Support\VenueAvailability;
@@ -71,7 +72,9 @@ class PublicOrderController extends Controller
     {
         $order = Order::where('public_token', $token)->with(['items', 'venue'])->firstOrFail();
         abort_unless($order->venue->subdomain === $subdomain, 404);
-        return view('public.order-track', compact('order'));
+        $venue = $order->venue;
+        $categories = ProductCategory::where('venue_id', $venue->id)->where('active', true)->orderBy('position')->get();
+        return view('public.order-track', compact('order', 'venue', 'categories') + ['isOpen' => VenueAvailability::isOpen($venue)]);
     }
 
     private function coupon(int $venueId, ?string $code, float $subtotal): array
