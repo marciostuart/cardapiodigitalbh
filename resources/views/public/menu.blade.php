@@ -51,7 +51,7 @@
             .product-carousel.expanded .product-track {
                 display: flex !important;
                 flex-wrap: wrap !important;
-                justify-content: flex-start !important;
+                justify-content: center !important;
                 align-content: flex-start;
                 overflow: visible !important;
                 gap: 20px !important;
@@ -69,7 +69,7 @@
             .product-carousel.expanded .product-track {
                 display: flex !important;
                 flex-wrap: wrap !important;
-                justify-content: flex-start !important;
+                justify-content: center !important;
                 align-content: flex-start;
                 overflow: visible !important;
                 gap: 12px !important;
