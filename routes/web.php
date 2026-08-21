@@ -76,6 +76,7 @@ Route::middleware(['auth', 'account.active'])->group(function () {
     Route::middleware('platform.owner')->group(function () {
         Route::get('/owner', PlatformDashboardController::class)->name('platform.dashboard');
         Route::get('/admin', [PlatformController::class, 'index'])->name('admin.platform');
+        Route::patch('/admin/mensuracao', [PlatformController::class, 'updateMeasurement'])->name('admin.measurement.update');
         Route::post('/admin/estabelecimentos/{tenant}/acessar', [PlatformController::class, 'impersonate'])->name('admin.impersonate');
         Route::patch('/admin/estabelecimentos/{tenant}/plano', [PlatformController::class, 'updatePlan'])->name('admin.plan.update');
         Route::delete('/admin/estabelecimentos/{tenant}/whatsapp', [WhatsappSupportController::class, 'reset'])->name('admin.whatsapp.reset');

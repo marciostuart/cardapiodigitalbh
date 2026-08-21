@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
+use App\Models\PlatformSetting;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -19,7 +20,20 @@ class PlatformController extends Controller
                 $search = '%'.$request->string('search')->trim().'%';
                 $query->where(fn ($inner) => $inner->where('name', 'like', $search)->orWhere('slug', 'like', $search));
             })->latest()->paginate(30)->withQueryString();
-        return view('admin.platform', compact('tenants'));
+        $gtmId = PlatformSetting::value('gtm_container_id');
+
+        return view('admin.platform', compact('tenants', 'gtmId'));
+    }
+
+    public function updateMeasurement(Request $request)
+    {
+        $data = $request->validate([
+            'gtm_container_id' => ['nullable', 'regex:/^GTM-[A-Z0-9]{4,20}$/'],
+        ]);
+
+        PlatformSetting::putValue('gtm_container_id', $data['gtm_container_id'] ?? null);
+
+        return back()->with('status', 'Configuração global de mensuração atualizada.');
     }
 
     public function updatePlan(Request $request, Tenant $tenant)

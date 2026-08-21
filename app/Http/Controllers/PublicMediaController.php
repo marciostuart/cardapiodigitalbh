@@ -9,7 +9,7 @@ class PublicMediaController extends Controller
 {
     public function __invoke(Request $request, string $subdomain, string $category, string $filename)
     {
-        abort_unless(in_array($category, ['logos', 'products', 'banners'], true) && preg_match('/^[a-z0-9][a-z0-9._-]+$/', $filename), 404, 'Nome de mídia inválido.');
+        abort_unless(in_array($category, ['logos', 'products', 'banners', 'seo'], true) && preg_match('/^[a-z0-9][a-z0-9._-]+$/', $filename), 404, 'Nome de mídia inválido.');
         $venue = $request->attributes->get('venue');
         abort_unless($venue, 404, 'Estabelecimento da mídia não encontrado.');
         $path = "tenants/{$venue->tenant_id}/{$category}/{$filename}";
