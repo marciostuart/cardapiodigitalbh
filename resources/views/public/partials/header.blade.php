@@ -16,6 +16,7 @@
         </a>
         <div class="mobile-store-meta" aria-label="Status do estabelecimento"><span>Olá{{ $customerFirstName ? ' '.$customerFirstName : '' }}@if($hasPublicIdentity)<form class="consumer-logout-form" method="post" action="{{ route('public.consumer.logout', ['subdomain' => $venue->subdomain]) }}">@csrf<button class="consumer-logout" type="submit">(sair)</button></form>@endif</span><span>{{ ($isOpen ?? true) ? 'Estamos abertos' : 'Estamos fechados' }}</span></div>
         <label class="header-search"><input id="productSearch" type="search" placeholder="Digite sua busca..." aria-label="Buscar produtos" data-menu-url="{{ $menuUrl }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="6"></circle><path d="m16 16 4 4"></path></svg></label>
+        <button type="button" class="mobile-search-toggle" aria-label="Abrir busca">⌕</button>
     </div>
 </header>
 <nav id="selectedCategoryRail" class="category-rail" aria-label="Categorias do cardápio">
@@ -25,4 +26,6 @@
         <a class="active" href="{{ $menuUrl }}">Todas</a>@foreach($categories as $category)<a href="{{ $menuUrl }}?categoria={{ $category->id }}#categoria-{{ $category->id }}">{{ $category->name }}</a>@endforeach
     @endif
 </nav>
-<style>.mobile-header-cover{display:none}@media(max-width:720px){.mobile-header-cover{display:block;position:relative;height:156px;overflow:visible;background:#12212b}.mobile-header-cover>img{width:100%;height:156px;object-fit:cover}.mobile-header-logo{position:absolute;left:50%;bottom:-34px;transform:translateX(-50%);width:86px;height:86px;padding:4px;border-radius:50%;background:#fff;box-shadow:0 3px 12px #0003}.mobile-header-logo img{width:100%;height:100%;border-radius:50%;object-fit:cover}.store-header-main{position:relative;padding-top:52px!important}.mobile-menu{display:grid!important}}</style>
+<style>.mobile-header-cover{display:none}.mobile-search-toggle{display:none}@media(max-width:720px){.mobile-header-cover{display:none}.store-header-main{grid-template-columns:minmax(0,1fr) auto!important;padding:12px 16px!important;background:var(--brand);color:#fff}.mobile-menu{display:none!important}.store-brand{grid-column:1;justify-content:flex-start}.mobile-store-meta{grid-column:2}.mobile-search-toggle{display:grid;grid-column:3;place-items:center;width:34px;height:34px;border:0;background:transparent;color:#fff;font-size:28px;line-height:1;cursor:pointer}.header-search{display:none;grid-column:1/-1}.header-search.mobile-search-open{display:flex}.store-header:has(.mobile-search-open) .mobile-search-toggle{color:#fff}}
+</style>
+<script>document.addEventListener('DOMContentLoaded',()=>{const b=document.querySelector('.mobile-search-toggle'),s=document.querySelector('.header-search'),i=document.getElementById('productSearch');if(!b||!s)return;b.addEventListener('click',e=>{e.stopPropagation();s.classList.toggle('mobile-search-open');if(s.classList.contains('mobile-search-open'))i.focus()});document.addEventListener('click',e=>{if(!s.contains(e.target)&&e.target!==b)s.classList.remove('mobile-search-open')})})</script>
