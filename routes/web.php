@@ -22,6 +22,7 @@ use App\Http\Controllers\OwnerSettingsController;
 use App\Http\Controllers\OwnerTableController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicMenuController;
+use App\Http\Controllers\PublicAgentController;
 use App\Http\Controllers\PublicOrderController;
 use App\Http\Controllers\PublicProductController;
 use App\Http\Controllers\PublicPwaController;
@@ -33,6 +34,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::domain('{subdomain}.cardapiodigitalbh.com.br')->middleware('tenant')->group(function () {
     Route::get('/', [PublicMenuController::class, 'show'])->name('public.menu');
+    Route::get('/llms.txt', [PublicAgentController::class, 'tenant'])->name('public.llms');
     Route::get('/menu', fn () => redirect('/'))->name('public.menu.legacy');
     Route::get('/mesa/{token}', [QrMenuController::class, 'show'])->name('public.tenant-table');
     Route::post('/mesa/{token}/pedidos', [TableOrderController::class, 'storeByToken'])->middleware('throttle:30,1')->name('public.tenant-table-order');
@@ -46,6 +48,7 @@ Route::domain('{subdomain}.cardapiodigitalbh.com.br')->middleware('tenant')->gro
 Route::get('/', function () {
     return view('marketing.home');
 });
+Route::get('/llms.txt', [PublicAgentController::class, 'platform'])->name('platform.llms');
 Route::post('/webhooks/evolution', EvolutionWebhookController::class)->name('webhooks.evolution');
 
 Route::view('/cardapio-digital-em-belo-horizonte', 'marketing.local-seo')->name('marketing.local-seo');

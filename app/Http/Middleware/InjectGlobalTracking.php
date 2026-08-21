@@ -28,8 +28,8 @@ class InjectGlobalTracking
         }
 
         $id = json_encode($containerId, JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT | JSON_HEX_TAG);
-        $head = "<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer',{$id});</script>";
-        $body = '<noscript><iframe src="https://www.googletagmanager.com/ns.html?id='.e($containerId).'" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>';
+        $head = "<script>(function(w,d,l,i){var done=false,load=function(){if(done)return;done=true;w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var s=d.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtm.js?id='+i;d.head.appendChild(s);};['pointerdown','keydown','touchstart','scroll'].forEach(function(e){w.addEventListener(e,load,{once:true,passive:true});});if('requestIdleCallback'in w){w.requestIdleCallback(load,{timeout:4000});}else{w.setTimeout(load,4000);}})(window,document,'dataLayer',{$id});</script>";
+        $body = '';
 
         $content = preg_replace('/<\/head>/i', $head.'</head>', $content, 1) ?? $content;
         $content = preg_replace('/<body([^>]*)>/i', '<body$1>'.$body, $content, 1) ?? $content;
