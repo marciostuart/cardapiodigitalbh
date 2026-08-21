@@ -655,6 +655,14 @@
         const term = event.currentTarget.value.trim();
         location.href = event.currentTarget.dataset.menuUrl + (term ? '?busca=' + encodeURIComponent(term) : '');
     });
+    document.querySelector('.buy')?.addEventListener('click', event => {
+        event.preventDefault();
+        const selected = [...document.querySelectorAll('.option-row input:checked')].map(input => ({id:Number(input.value), name:input.closest('.option-row')?.querySelector('.option-copy strong')?.textContent?.trim() || '', price:Number((input.closest('.option-row')?.querySelector('.option-price')?.textContent || '').replace(/[^0-9,]/g,'').replace(',','.')) || 0}));
+        const ids = selected.map(option => option.id).sort((a,b)=>a-b); const key = '{{ $product->id }}-'+ids.join('-');
+        const items = JSON.parse(localStorage.getItem('cardapiodigitalbh_cart') || '[]'); const current = items.find(item => item.key === key);
+        if (current) current.quantity += 1; else items.push({key,id:{{ $product->id }},name:@json($product->name),price:{{ (float)$product->price }} + selected.reduce((sum,o)=>sum+o.price,0),optionIds:ids,optionNames:selected.map(o=>o.name),quantity:1});
+        localStorage.setItem('cardapiodigitalbh_cart', JSON.stringify(items));
+    });
 </script>
 </body>
 </html>
