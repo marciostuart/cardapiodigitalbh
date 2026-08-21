@@ -552,6 +552,7 @@
 @media(min-width:721px){.product{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;align-items:start}.product .related{grid-column:1/-1}}
 .option-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.option-row{grid-template-columns:44px minmax(0,1fr) auto;gap:12px;min-height:62px;padding:0 14px 0 0;border-radius:0;background:#f3f4f3}.option-check{width:44px;height:100%;margin:0;border:0;border-radius:0;background:#e5e7e6}.option-copy{padding:10px 0}.option-price{padding-left:8px}.option-row input:checked + .option-check{background:var(--brand);border-color:var(--brand);box-shadow:none}
 @media(max-width:720px){.option-list{grid-template-columns:1fr}}
+.product-main-quantity{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:16px 0;color:var(--muted);font-weight:800}.product-quantity-control{display:inline-flex;align-items:stretch}.product-quantity-control input{width:42px;height:36px;border:1px solid var(--line);border-right:0;border-radius:9px 0 0 9px;text-align:center;font:inherit;font-weight:800;appearance:textfield;-moz-appearance:textfield}.product-quantity-control input::-webkit-inner-spin-button,.product-quantity-control input::-webkit-outer-spin-button{display:none}.product-quantity-control .quantity-stepper{display:flex;flex-direction:column;width:18px;height:36px;overflow:hidden;border-radius:0 8px 8px 0}.product-quantity-control .quantity-step{display:grid;place-items:center;flex:1;padding:0;border:0;background:var(--brand);color:#fff;font-weight:900;line-height:1;cursor:pointer}.product-quantity-control .quantity-step:first-child{border-bottom:1px solid #ffffff66}
 </style></head>
 <body>
 @include('public.partials.header', ['isMenu' => false])
@@ -596,6 +597,7 @@
             @endif
 
             <p class="price">R$ {{ number_format((float) $product->price, 2, ',', '.') }}</p>
+            <div class="product-main-quantity"><span>Quantidade</span><span class="product-quantity-control"><input type="number" min="1" max="99" value="1" aria-label="Quantidade de {{ $product->name }}" data-product-page-quantity><span class="quantity-stepper"><button type="button" class="quantity-step" data-product-quantity-action="more" aria-label="Aumentar quantidade">+</button><button type="button" class="quantity-step" data-product-quantity-action="less" aria-label="Diminuir quantidade">−</button></span></span></div>
 
             @if($product->optionGroups->isNotEmpty())
                 <div class="options">
@@ -654,7 +656,7 @@
                             <p>{{ $related->description ?: 'Confira este produto no cardápio.' }}</p>
                             <strong>R$ {{ number_format((float) $related->price, 2, ',', '.') }}</strong>
                         </div></a>
-                        <div class="related-actions"><input class="related-quantity" type="number" min="1" max="99" value="1" aria-label="Quantidade de {{ $related->name }}"><button type="button" class="related-buy">{{ $related->optionGroups->isNotEmpty() ? 'Escolher opções' : 'Comprar' }}</button></div>
+                        <div class="related-actions"><span class="product-quantity-control"><input class="related-quantity" type="number" min="1" max="99" value="1" aria-label="Quantidade de {{ $related->name }}"><span class="quantity-stepper"><button type="button" class="quantity-step" data-related-quantity-action="more" aria-label="Aumentar quantidade">+</button><button type="button" class="quantity-step" data-related-quantity-action="less" aria-label="Diminuir quantidade">−</button></span></span><button type="button" class="related-buy">{{ $related->optionGroups->isNotEmpty() ? 'Escolher opções' : 'Comprar' }}</button></div>
                     </article>
                 @endforeach
             </div>
@@ -677,6 +679,17 @@
         if (event.key !== 'Enter') return;
         const term = event.currentTarget.value.trim();
         location.href = event.currentTarget.dataset.menuUrl + (term ? '?busca=' + encodeURIComponent(term) : '');
+    });
+    document.addEventListener('click', event => {
+        const action = event.target.closest('[data-product-quantity-action],[data-related-quantity-action]');
+        if (!action) return;
+        event.preventDefault();
+        event.stopPropagation();
+        const input = action.closest('.product-quantity-control')?.querySelector('input');
+        if (!input) return;
+        const increase = action.dataset.productQuantityAction === 'more' || action.dataset.relatedQuantityAction === 'more';
+        input.value = Math.max(1, Math.min(99, (Number(input.value) || 1) + (increase ? 1 : -1)));
+        input.dispatchEvent(new Event('change', {bubbles: true}));
     });
     document.querySelectorAll('.related-card').forEach(card => card.querySelector('.related-buy')?.addEventListener('click', event => {
         event.preventDefault();
@@ -703,8 +716,9 @@
         }
         const selected = [...document.querySelectorAll('.option-row input:checked')].map(input => ({id:Number(input.value), name:input.closest('.option-row')?.querySelector('.option-copy strong')?.textContent?.trim() || '', price:Number((input.closest('.option-row')?.querySelector('.option-price')?.textContent || '').replace(/[^0-9,]/g,'').replace(',','.')) || 0}));
         const ids = selected.map(option => option.id).sort((a,b)=>a-b); const key = '{{ $product->id }}-'+ids.join('-');
+        const quantity = Math.max(1, Math.min(99, Number(document.querySelector('[data-product-page-quantity]')?.value) || 1));
         const items = JSON.parse(localStorage.getItem('cardapiodigitalbh_cart') || '[]'); const current = items.find(item => item.key === key);
-        if (current) current.quantity += 1; else items.push({key,id:{{ $product->id }},name:@json($product->name),price:{{ (float)$product->price }} + selected.reduce((sum,o)=>sum+o.price,0),optionIds:ids,optionNames:selected.map(o=>o.name),quantity:1});
+        if (current) current.quantity += quantity; else items.push({key,id:{{ $product->id }},name:@json($product->name),price:{{ (float)$product->price }} + selected.reduce((sum,o)=>sum+o.price,0),optionIds:ids,optionNames:selected.map(o=>o.name),quantity});
         localStorage.setItem('cardapiodigitalbh_cart', JSON.stringify(items));
         renderProductCart();
     });
