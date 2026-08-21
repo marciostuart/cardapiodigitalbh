@@ -415,6 +415,8 @@
             color: var(--brand-dark);
         }
 
+        .related-actions{display:flex;align-items:center;gap:8px;margin-top:12px}.related-quantity{width:52px;padding:9px 4px;border:1px solid var(--line);border-radius:9px;text-align:center;font:inherit;font-weight:800}.related-buy{flex:1;border:0;border-radius:10px;background:var(--brand);color:#fff;padding:10px;font:inherit;font-weight:800;cursor:pointer}
+
         @media (min-width: 800px) {
             .product {
                 grid-template-columns: minmax(0, 1.05fr) minmax(340px, .95fr);
@@ -623,7 +625,8 @@
             <h2>Geralmente comprados juntos</h2>
             <div class="related-grid">
                 @foreach($relatedProducts as $related)
-                    <a class="related-card" href="{{ route('public.product', ['subdomain' => $venue->subdomain, 'product' => $related]) }}">
+                    <article class="related-card" data-related-product='@json(['id'=>$related->id,'name'=>$related->name,'price'=>(float)$related->price,'has_options'=>$related->optionGroups->isNotEmpty()])'>
+                        <a href="{{ route('public.product', ['subdomain' => $venue->subdomain, 'product' => $related]) }}" style="display:block;text-decoration:none;color:inherit">
                         @php($relatedImage = $related->image_path ?: $related->images->first()?->path)
                         @if($relatedImage)
                             <img src="{{ route('public.media', ['subdomain' => $venue->subdomain, 'category' => 'products', 'filename' => basename($relatedImage)]) }}" alt="{{ $related->name }}" loading="lazy">
@@ -634,8 +637,9 @@
                             <h3>{{ $related->name }}</h3>
                             <p>{{ $related->description ?: 'Confira este produto no cardápio.' }}</p>
                             <strong>R$ {{ number_format((float) $related->price, 2, ',', '.') }}</strong>
-                        </div>
-                    </a>
+                        </div></a>
+                        <div class="related-actions"><input class="related-quantity" type="number" min="1" max="99" value="1" aria-label="Quantidade de {{ $related->name }}"><button type="button" class="related-buy">{{ $related->optionGroups->isNotEmpty() ? 'Escolher opções' : 'Comprar' }}</button></div>
+                    </article>
                 @endforeach
             </div>
         </section>
@@ -658,6 +662,19 @@
         const term = event.currentTarget.value.trim();
         location.href = event.currentTarget.dataset.menuUrl + (term ? '?busca=' + encodeURIComponent(term) : '');
     });
+    document.querySelectorAll('.related-card').forEach(card => card.querySelector('.related-buy')?.addEventListener('click', event => {
+        event.preventDefault();
+        const product = JSON.parse(card.dataset.relatedProduct);
+        if (product.has_options) { location.href = card.querySelector('a')?.href || '{{ route('public.menu',['subdomain'=>$venue->subdomain]) }}'; return; }
+        const quantity = Math.max(1, Math.min(99, Number(card.querySelector('.related-quantity')?.value) || 1));
+        const items = JSON.parse(localStorage.getItem('cardapiodigitalbh_cart') || '[]');
+        const key = String(product.id) + '-';
+        const current = items.find(item => item.key === key);
+        if (current) current.quantity += quantity;
+        else items.push({key,id:product.id,name:product.name,price:product.price,optionIds:[],optionNames:[],quantity});
+        localStorage.setItem('cardapiodigitalbh_cart', JSON.stringify(items));
+        renderProductCart();
+    }));
     document.querySelector('.buy')?.addEventListener('click', event => {
         event.preventDefault();
         for (const group of document.querySelectorAll('.option-group')) {
