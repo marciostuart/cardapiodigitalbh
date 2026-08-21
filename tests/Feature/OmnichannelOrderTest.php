@@ -78,6 +78,22 @@ class OmnichannelOrderTest extends TestCase
         $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => 'accepted']);
     }
 
+    public function test_owner_can_edit_open_order_details_but_terminal_orders_are_read_only(): void
+    {
+        [$tenant, $venue, $product] = $this->catalog('order-details');
+        $owner = User::factory()->create(['tenant_id' => $tenant->id, 'role' => 'owner']);
+        $order = Order::create(['venue_id' => $venue->id, 'status' => 'pending', 'subtotal' => 25, 'total' => 25]);
+        $order->items()->create(['product_id' => $product->id, 'name_snapshot' => $product->name, 'unit_price' => 25, 'quantity' => 1, 'total' => 25]);
+
+        $this->actingAs($owner)->get(route('owner.orders.show', $order))->assertOk()->assertSee('Detalhes do pedido');
+        $this->actingAs($owner)->patch(route('owner.orders.details.update', $order), ['notes' => 'Sem cebola', 'kitchen_notes' => 'Caprichar', 'delivery_notes' => 'Interfone 12', 'items' => [['product_id' => $product->id, 'quantity' => 2]]])->assertRedirect();
+        $this->assertDatabaseHas('orders', ['id' => $order->id, 'notes' => 'Sem cebola', 'kitchen_notes' => 'Caprichar', 'delivery_notes' => 'Interfone 12', 'subtotal' => 50, 'total' => 50]);
+
+        $order->update(['status' => 'completed']);
+        $this->actingAs($owner)->get(route('owner.orders.show', $order))->assertOk()->assertSee('consulta disponível, sem edição.');
+        $this->actingAs($owner)->patch(route('owner.orders.details.update', $order), ['items' => [['product_id' => $product->id, 'quantity' => 1]]])->assertUnprocessable();
+    }
+
     private function catalog(string $slug): array
     {
         $tenant = Tenant::create(['name' => $slug, 'slug' => $slug]);

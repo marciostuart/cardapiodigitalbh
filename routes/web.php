@@ -136,7 +136,9 @@ Route::middleware(['auth', 'account.active'])->group(function () {
         Route::post('/painel/regioes-entrega', [OwnerCommerceController::class, 'storeZone'])->name('owner.delivery-zones.store');
         Route::patch('/painel/regioes-entrega/{zone}', [OwnerCommerceController::class, 'updateZone'])->name('owner.delivery-zones.update');
         Route::get('/painel/pedidos', [OwnerOrderController::class, 'index'])->name('owner.orders.index');
+        Route::get('/painel/pedidos/{order}', [OwnerOrderController::class, 'show'])->name('owner.orders.show');
         Route::patch('/painel/pedidos/{order}', [OwnerOrderController::class, 'update'])->name('owner.orders.update');
+        Route::patch('/painel/pedidos/{order}/detalhes', [OwnerOrderController::class, 'updateDetails'])->name('owner.orders.details.update');
         Route::get('/painel/relatorios', [OwnerReportController::class, 'index'])->name('owner.reports.index');
         Route::get('/painel/relatorios/pedidos.csv', [OwnerReportController::class, 'csv'])->name('owner.reports.csv');
         Route::get('/painel/integracoes/whatsapp', [WhatsappIntegrationController::class, 'index'])->name('owner.whatsapp.index');

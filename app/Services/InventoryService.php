@@ -9,6 +9,29 @@ use App\Models\StockMovement;
 
 class InventoryService
 {
+    public function adjustEditedOrder(Order $order, $previousItems, array $lines): void
+    {
+        $old = collect($previousItems)->groupBy('product_id')->map(fn ($items) => (float) $items->sum('quantity'));
+        $new = collect($lines)->groupBy(fn ($line) => $line['product']->id)->map(fn ($items) => (float) collect($items)->sum('quantity'));
+        $consumed = $order->status !== 'pending';
+
+        foreach ($old->keys()->merge($new->keys())->unique() as $productId) {
+            $delta = (float) ($new[$productId] ?? 0) - (float) ($old[$productId] ?? 0);
+            if (abs($delta) < 0.0001) continue;
+            $product = Product::with('ingredients')->lockForUpdate()->findOrFail($productId);
+            if ($product->track_stock) $this->adjustEditedBalance($order, $product, $delta, $consumed);
+            foreach ($product->ingredients as $ingredient) $this->adjustEditedBalance($order, InventoryItem::lockForUpdate()->findOrFail($ingredient->id), $delta * (float) $ingredient->pivot->quantity, $consumed, $product);
+        }
+    }
+
+    private function adjustEditedBalance(Order $order, $item, float $delta, bool $consumed, ?Product $product = null): void
+    {
+        $available = (float) $item->stock_on_hand - (float) $item->stock_reserved;
+        if ($delta > 0) $this->ensureAvailable($available, 0, $delta, $item->name);
+        if ($consumed) $item->update(['stock_on_hand' => max(0, (float) $item->stock_on_hand - $delta)]);
+        else $item->update(['stock_reserved' => max(0, (float) $item->stock_reserved + $delta)]);
+        StockMovement::create(['venue_id' => $order->venue_id, 'inventory_item_id' => $item instanceof InventoryItem ? $item->id : null, 'product_id' => $product?->id ?? ($item instanceof Product ? $item->id : null), 'order_id' => $order->id, 'type' => $consumed ? 'order_edit_consume' : 'order_edit_reserve', 'quantity' => $consumed ? -$delta : $delta, 'balance_after' => $consumed ? (float) $item->fresh()->stock_on_hand : (float) $item->fresh()->stock_on_hand - (float) $item->fresh()->stock_reserved, 'notes' => 'Ajuste do pedido pelo atendimento']);
+    }
     public function reserve(Order $order): void
     {
         $order->loadMissing('items.product.ingredients');

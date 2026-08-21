@@ -50,8 +50,9 @@
 
                         <div class="mt-3 text-sm text-slate-700">{{ $order->items->map(fn ($item) => $item->quantity.'× '.$item->name_snapshot)->join(' · ') }}</div>
 
+                        <div class="mt-5 flex flex-wrap gap-2">
+                            <a href="{{ route('owner.orders.show', $order) }}" class="rounded-xl border border-slate-300 bg-white px-4 py-2.5 font-bold text-slate-800 transition hover:bg-slate-50">Detalhes</a>
                         @if($primaryActions || $canCancel)
-                            <div class="mt-5 flex flex-wrap gap-2">
                                 @foreach($primaryActions as $nextStatus => $label)
                                     <form method="post" action="{{ route('owner.orders.update', $order) }}">
                                         @csrf
@@ -69,8 +70,8 @@
                                     </form>
                                     <button type="button" data-cancel-form="cancel-order-{{ $order->id }}" data-order-label="#{{ $order->id }}" data-cancel-label="{{ $cancelLabel }}" class="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 font-bold text-red-700 transition hover:bg-red-100">{{ $cancelLabel }}</button>
                                 @endif
-                            </div>
                         @endif
+                        </div>
                     </article>
                 @endforeach
             </div>
