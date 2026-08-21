@@ -63,6 +63,10 @@ class TableOrderController extends Controller
             app(InventoryService::class)->reserve($order);
             DB::afterCommit(fn () => app(WhatsappNotifier::class)->queue($order->fresh(), 'order_received'));
 
+            if ($customerName) {
+                $request->session()->put('public_customer_name', $customerName);
+            }
+
             return response()->json($order->load('items'), 201);
         });
     }

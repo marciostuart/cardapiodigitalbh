@@ -60,6 +60,10 @@ class PublicOrderController extends Controller
             return $order;
         });
 
+        if ($order->customer_name) {
+            $request->session()->put('public_customer_name', $order->customer_name);
+        }
+
         return response()->json(['order' => $order->load('items'), 'tracking_url' => route('public.order.track', ['subdomain' => $venue->subdomain, 'token' => $order->public_token])], 201);
     }
 
