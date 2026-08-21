@@ -643,8 +643,8 @@
 </main>
 
 @include('public.partials.footer')
-<button id="productCartBar" class="product-cart-bar" type="button"><span><strong id="productCartCount">0 itens</strong><small>Revisar pedido</small></span><b id="productCartTotal">R$ 0,00</b></button>
-<style>.product-cart-bar{display:none;position:fixed;z-index:30;left:50%;bottom:14px;transform:translateX(-50%);width:min(744px,calc(100% - 28px));border:0;border-radius:18px;background:var(--brand);color:#fff;padding:14px 18px;align-items:center;justify-content:space-between;box-shadow:0 16px 50px #0a3d2d55;cursor:pointer}.product-cart-bar.visible{display:flex}.product-cart-bar span{display:block;text-align:left}.product-cart-bar small{display:block;color:#d9f7ea;font-size:11px}.product-cart-bar b{font-size:18px}</style>
+<button id="productCartBar" class="product-cart-bar" type="button"><span class="cart-leading"><span class="cart-bag" aria-hidden="true">🛍</span><span><strong id="productCartCount">0 itens</strong><small>Revisar pedido</small></span></span><b id="productCartTotal">R$ 0,00</b></button>
+<style>.product-cart-bar{display:none;position:fixed;z-index:30;left:50%;bottom:14px;transform:translateX(-50%);width:min(744px,calc(100% - 28px));border:0;border-radius:18px;background:var(--brand);color:#fff;padding:14px 18px;align-items:center;justify-content:space-between;gap:14px;box-shadow:0 16px 50px #0a3d2d55;cursor:pointer}.product-cart-bar.visible{display:flex}.product-cart-bar .cart-leading{display:flex;align-items:center;gap:10px;text-align:left}.product-cart-bar .cart-bag{font-size:25px;line-height:1}.product-cart-bar .cart-leading>span:last-child{display:block}.product-cart-bar small{display:block;color:#d9f7ea;font-size:11px}.product-cart-bar b{font-size:18px}</style>
 
 <script>
     document.querySelectorAll('.thumb').forEach(thumb => thumb.addEventListener('click', () => {
