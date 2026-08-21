@@ -550,6 +550,8 @@
   .product h1{font-size:30px!important;margin-top:24px!important}.buy{width:100%!important}
 }
 @media(min-width:721px){.product{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;align-items:start}.product .related{grid-column:1/-1}}
+.option-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.option-row{grid-template-columns:44px minmax(0,1fr) auto;gap:12px;min-height:62px;padding:0 14px 0 0;border-radius:0;background:#f3f4f3}.option-check{width:44px;height:100%;margin:0;border:0;border-radius:0;background:#e5e7e6}.option-copy{padding:10px 0}.option-price{padding-left:8px}.option-row input:checked + .option-check{background:var(--brand);border-color:var(--brand);box-shadow:none}
+@media(max-width:720px){.option-list{grid-template-columns:1fr}}
 </style></head>
 <body>
 @include('public.partials.header', ['isMenu' => false])
