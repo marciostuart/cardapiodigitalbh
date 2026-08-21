@@ -21,7 +21,7 @@
     @if($venue->logo_path)<link rel="icon" type="image/webp" href="{{ route('public.media',['subdomain'=>$venue->subdomain,'category'=>'logos','filename'=>basename($venue->logo_path)]) }}"><link rel="apple-touch-icon" href="{{ route('public.media',['subdomain'=>$venue->subdomain,'category'=>'logos','filename'=>basename($venue->logo_path)]) }}">@endif
     <link rel="manifest" href="{{ route('public.manifest', ['subdomain' => $venue->subdomain]) }}"><meta name="theme-color" content="{{ $venue->primary_color ?? '#087f5b' }}"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="describedby" type="text/markdown" href="{{ route('public.llms', ['subdomain' => $venue->subdomain]) }}">
-    <script type="application/ld+json">{!! json_encode(['@context' => 'https://schema.org', '@type' => 'Restaurant', 'name' => $venue->name, 'url' => url()->current(), 'image' => $seoImageUrl, 'hasMenu' => url()->current(), 'inLanguage' => 'pt-BR'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) !!}</script>
+    <script type="application/ld+json">{!! json_encode(['@'.'context' => 'https://schema.org', '@'.'type' => 'Restaurant', 'name' => $venue->name, 'url' => url()->current(), 'image' => $seoImageUrl, 'hasMenu' => url()->current(), 'inLanguage' => 'pt-BR'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) !!}</script>
     @include('layouts.tracking-head', ['venue' => $venue])
     <style>
         :root{--ink:#12212b;--muted:#66747d;--brand:{{ $venue->primary_color ?? '#087f5b' }};--brand-dark:{{ $venue->secondary_color ?? '#102b3c' }};--paper:#f5f7f5;--white:#fff;--line:#e4e9e5}
