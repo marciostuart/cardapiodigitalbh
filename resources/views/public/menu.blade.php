@@ -135,6 +135,7 @@
         <p class="empty">Este cardápio ainda está sendo preparado.</p>
     @endforelse
 </main>
+<style>@media(max-width:720px){.menu-cover{display:none}}</style>
 @include('public.partials.footer')
 
 @if(isset($table) || $venue->pickup_enabled || $venue->delivery_enabled)
