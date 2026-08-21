@@ -23,6 +23,19 @@
 
             <div class="grid gap-4">
                 @foreach($orders as $order)
+                    @php
+                        $primaryActions = match ($order->status) {
+                            'pending' => ['accepted' => 'Aceitar'],
+                            'accepted' => ['preparing' => 'Em produção'],
+                            'preparing' => ['ready' => 'Pedido pronto'],
+                            'ready' => ['out_for_delivery' => 'Saiu para entrega', 'completed' => 'Concluído'],
+                            'out_for_delivery' => ['completed' => 'Concluído'],
+                            default => [],
+                        };
+                        $canCancel = in_array('cancelled', $allowedTransitions[$order->status] ?? [], true);
+                        $cancelLabel = $order->status === 'pending' ? 'Recusar pedido' : 'Cancelar pedido';
+                    @endphp
+
                     <article class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
                         <div class="flex flex-wrap justify-between gap-3">
                             <div>
@@ -37,17 +50,26 @@
 
                         <div class="mt-3 text-sm text-slate-700">{{ $order->items->map(fn ($item) => $item->quantity.'× '.$item->name_snapshot)->join(' · ') }}</div>
 
-                        @if($nextStatuses = ($allowedTransitions[$order->status] ?? []))
-                            <form method="post" action="{{ route('owner.orders.update', $order) }}" class="mt-4 flex flex-wrap gap-2">
-                                @csrf
-                                @method('PATCH')
-                                <select name="status" class="rounded-xl border-slate-300">
-                                    @foreach($nextStatuses as $status)
-                                        <option value="{{ $status }}">{{ trans('status.order.'.$status) }}</option>
-                                    @endforeach
-                                </select>
-                                <button class="rounded-xl bg-emerald-600 px-4 py-2 font-bold text-white">Atualizar</button>
-                            </form>
+                        @if($primaryActions || $canCancel)
+                            <div class="mt-5 flex flex-wrap gap-2">
+                                @foreach($primaryActions as $nextStatus => $label)
+                                    <form method="post" action="{{ route('owner.orders.update', $order) }}">
+                                        @csrf
+                                        @method('PATCH')
+                                        <input type="hidden" name="status" value="{{ $nextStatus }}">
+                                        <button class="rounded-xl bg-emerald-600 px-4 py-2.5 font-bold text-white transition hover:bg-emerald-700">{{ $label }}</button>
+                                    </form>
+                                @endforeach
+
+                                @if($canCancel)
+                                    <form id="cancel-order-{{ $order->id }}" method="post" action="{{ route('owner.orders.update', $order) }}" class="hidden">
+                                        @csrf
+                                        @method('PATCH')
+                                        <input type="hidden" name="status" value="cancelled">
+                                    </form>
+                                    <button type="button" data-cancel-form="cancel-order-{{ $order->id }}" data-order-label="#{{ $order->id }}" data-cancel-label="{{ $cancelLabel }}" class="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 font-bold text-red-700 transition hover:bg-red-100">{{ $cancelLabel }}</button>
+                                @endif
+                            </div>
                         @endif
                     </article>
                 @endforeach
@@ -56,4 +78,37 @@
             {{ $orders->links() }}
         </div>
     </div>
+
+    <dialog id="cancelOrderDialog" class="w-[calc(100%-32px)] max-w-md rounded-2xl border-0 p-0 shadow-2xl backdrop:bg-slate-950/60">
+        <div class="p-6">
+            <p class="text-sm font-bold uppercase tracking-wide text-red-600">Confirmação necessária</p>
+            <h2 id="cancelOrderTitle" class="mt-2 text-xl font-bold text-slate-900">Cancelar pedido?</h2>
+            <p id="cancelOrderDescription" class="mt-3 text-sm leading-6 text-slate-600">Esta ação cancela o pedido e não poderá ser desfeita.</p>
+            <div class="mt-6 flex justify-end gap-3">
+                <button id="cancelOrderDismiss" type="button" class="rounded-xl border border-slate-300 px-4 py-2.5 font-bold text-slate-700">Voltar</button>
+                <button id="cancelOrderConfirm" type="button" class="rounded-xl bg-red-600 px-4 py-2.5 font-bold text-white hover:bg-red-700">Confirmar cancelamento</button>
+            </div>
+        </div>
+    </dialog>
+
+    <script>
+        (() => {
+            const dialog = document.getElementById('cancelOrderDialog');
+            const confirmButton = document.getElementById('cancelOrderConfirm');
+            let cancellationForm = null;
+
+            document.querySelectorAll('[data-cancel-form]').forEach(button => button.addEventListener('click', () => {
+                cancellationForm = document.getElementById(button.dataset.cancelForm);
+                const action = button.dataset.cancelLabel;
+                document.getElementById('cancelOrderTitle').textContent = `${action} ${button.dataset.orderLabel}?`;
+                document.getElementById('cancelOrderDescription').textContent = 'Esta ação não poderá ser desfeita. Confirme somente se você tiver certeza.';
+                confirmButton.textContent = `Confirmar: ${action}`;
+                dialog.showModal();
+            }));
+
+            document.getElementById('cancelOrderDismiss').addEventListener('click', () => dialog.close());
+            dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
+            confirmButton.addEventListener('click', () => cancellationForm?.requestSubmit());
+        })();
+    </script>
 </x-app-layout>
