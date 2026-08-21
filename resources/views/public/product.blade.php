@@ -555,6 +555,20 @@
 </style></head>
 <body>
 @include('public.partials.header', ['isMenu' => false])
+<style>
+    /* O cabeçalho público é único em todas as rotas, inclusive no produto. */
+    @media (max-width: 720px) {
+        .store-topbar { display: none !important; }
+        .store-header { background: transparent !important; border: 0 !important; box-shadow: none !important; }
+        .store-header-main { display: grid !important; grid-template-columns: minmax(0, 1fr) auto 34px !important; gap: 10px !important; padding: 12px 16px !important; background: var(--brand) !important; color: #fff !important; }
+        .store-brand { grid-column: 1 !important; justify-content: flex-start !important; color: #fff !important; min-width: 0; }
+        .store-logo { width: 54px !important; height: 54px !important; border-color: #fff !important; }
+        .mobile-store-meta { grid-column: 2 !important; display: flex !important; align-items: flex-end !important; color: #fff !important; }
+        .mobile-search-toggle { display: grid !important; grid-column: 3 !important; place-items: center !important; width: 34px; height: 34px; border: 0; background: transparent; color: #fff; }
+        .header-search { display: none !important; grid-column: 1 / -1 !important; margin: 0 !important; background: #fff !important; }
+        .header-search.mobile-search-open { display: flex !important; }
+    }
+</style>
 
 <main class="wrap">
     <a class="back" href="{{ route('public.menu', ['subdomain' => $venue->subdomain]) }}">← Voltar ao cardápio</a>
