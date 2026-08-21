@@ -26,6 +26,6 @@ class PublicMediaController extends Controller
         return response()->stream(function () use ($stream) {
             fpassthru($stream);
             fclose($stream);
-        }, 200, ['Content-Type' => $contentType, 'Cache-Control' => 'public, max-age=604800, immutable']);
+        }, 200, ['Content-Type' => $contentType, 'Cache-Control' => 'public, max-age=31536000, s-maxage=31536000, immutable', 'CDN-Cache-Control' => 'public, max-age=31536000, immutable', 'Vary' => 'Accept-Encoding']);
     }
 }

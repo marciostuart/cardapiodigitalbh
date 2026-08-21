@@ -14,11 +14,13 @@ class InjectGlobalTracking
     {
         $response = $next($request);
         $contentType = (string) $response->headers->get('Content-Type');
-        $containerId = Schema::hasTable('platform_settings') ? PlatformSetting::value('gtm_container_id') : null;
 
-        if (! $containerId || ! str_contains($contentType, 'text/html') || $response->isRedirection()) {
+        if (! str_contains($contentType, 'text/html') || $response->isRedirection()) {
             return $response;
         }
+
+        $containerId = Schema::hasTable('platform_settings') ? PlatformSetting::value('gtm_container_id') : null;
+        if (! $containerId) return $response;
 
         $content = $response->getContent();
         if (! is_string($content) || str_contains($content, 'googletagmanager.com/gtm.js')) {

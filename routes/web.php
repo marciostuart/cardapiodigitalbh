@@ -21,10 +21,10 @@ use App\Http\Controllers\OwnerScheduleController;
 use App\Http\Controllers\OwnerSettingsController;
 use App\Http\Controllers\OwnerTableController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\PublicMediaController;
 use App\Http\Controllers\PublicMenuController;
 use App\Http\Controllers\PublicOrderController;
 use App\Http\Controllers\PublicProductController;
+use App\Http\Controllers\PublicPwaController;
 use App\Http\Controllers\QrMenuController;
 use App\Http\Controllers\TableOrderController;
 use App\Http\Controllers\TeamController;
@@ -39,7 +39,8 @@ Route::domain('{subdomain}.cardapiodigitalbh.com.br')->middleware('tenant')->gro
     Route::post('/pedidos', [PublicOrderController::class, 'store'])->middleware('throttle:30,1')->name('public.orders.store');
     Route::get('/pedido/{token}', [PublicOrderController::class, 'track'])->name('public.order.track');
     Route::get('/produto/{product}', [PublicProductController::class, 'show'])->name('public.product');
-    Route::get('/media/{category}/{filename}', PublicMediaController::class)->name('public.media');
+    Route::get('/manifest.webmanifest', [PublicPwaController::class, 'manifest'])->name('public.manifest');
+    Route::get('/sw.js', [PublicPwaController::class, 'serviceWorker'])->name('public.service-worker');
 });
 
 Route::get('/', function () {
