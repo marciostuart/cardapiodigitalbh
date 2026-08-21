@@ -531,6 +531,7 @@
         }
     </style>
 <style>
+.mobile-menu,.mobile-search-toggle{display:none!important}
 @media(max-width:720px){
   .store-header{background:transparent!important;border:0!important;box-shadow:none!important}
   .store-header-main{width:100%!important;min-height:0!important;display:grid!important;grid-template-columns:minmax(0,1fr) auto 34px!important;gap:10px!important;padding:12px 16px!important;background:var(--brand)!important}
