@@ -54,7 +54,7 @@ Route::domain('{subdomain}.cardapiodigitalbh.com.br')->middleware('tenant')->gro
 
 Route::get('/', function () {
     return view('marketing.home');
-});
+})->name('marketing.home');
 Route::get('/llms.txt', [PublicAgentController::class, 'platform'])->name('platform.llms');
 Route::post('/webhooks/evolution', EvolutionWebhookController::class)->name('webhooks.evolution');
 
