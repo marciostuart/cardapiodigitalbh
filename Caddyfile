@@ -10,6 +10,9 @@
         -Server
     }
 
+    @publicCheckoutAssets path /css/*
+    header @publicCheckoutAssets Cache-Control "public, max-age=31536000, immutable"
+
     php_fastcgi app:9000
     file_server
 }

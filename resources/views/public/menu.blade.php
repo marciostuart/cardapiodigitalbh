@@ -108,6 +108,7 @@
 .cart-total-row{display:flex;justify-content:space-between;gap:16px;margin-top:10px;padding-top:12px;border-top:2px solid var(--brand);font-size:18px;font-weight:900}
     </style>
     <style>@media(max-width:720px){.catalog-list .product-track,.catalog-list.category-selected .product-track{grid-template-columns:1fr!important}.catalog-list .product-card,.catalog-list.category-selected .product-card{width:100%!important;max-width:none!important}}</style>
+    <link rel="stylesheet" href="{{ asset('css/public-checkout.css') }}?v=20260822">
 </head>
 <body>
 @include('layouts.tracking-body')
