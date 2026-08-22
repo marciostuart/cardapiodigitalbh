@@ -769,7 +769,9 @@
         finally{checkoutLoading=null;}
     }
     productCartBar?.addEventListener('click',event=>{event.preventDefault();openProductCheckout();});
-    window.addEventListener('storage',renderProductCart);renderProductCart();
+    window.addEventListener('storage',renderProductCart);
+    window.addEventListener('cardapiodigitalbh:cart-updated',renderProductCart);
+    renderProductCart();
 </script>
 <style>@media(min-width:721px){.wrap{max-width:1170px!important}}.product-cart-bar .cart-bag{display:grid;place-items:center;width:32px;height:32px}.product-cart-bar .cart-bag-icon{width:30px;height:30px;fill:currentColor;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.product-cart-bar .cart-bag-icon path:first-child{fill:currentColor}.product-cart-bar .cart-bag-icon path:last-child{fill:none}</style>
 </body>
