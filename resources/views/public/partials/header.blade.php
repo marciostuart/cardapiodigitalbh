@@ -40,10 +40,28 @@
     [id^="categoria-"],.category,.product{scroll-margin-top:220px}
     @media(max-width:720px){
         .store-header{top:0}
-        .category-rail{top:78px}
+        /* A altura real do cabeçalho muda ao compactar no mobile. O valor é
+           atualizado pelo script abaixo para manter as categorias coladas. */
+        .category-rail{top:var(--public-header-height,78px);margin-top:0}
         [id^="categoria-"],.category,.product{scroll-margin-top:145px}
     }
 </style>
+<script>
+    (()=>{
+        const syncPublicHeaderHeight=()=>{
+            const header=document.querySelector('.store-header');
+            if(!header||window.innerWidth>720)return;
+            document.documentElement.style.setProperty('--public-header-height',`${Math.ceil(header.getBoundingClientRect().height)}px`);
+        };
+        addEventListener('DOMContentLoaded',()=>{
+            syncPublicHeaderHeight();
+            const header=document.querySelector('.store-header');
+            if(header&&'ResizeObserver'in window)new ResizeObserver(syncPublicHeaderHeight).observe(header);
+            addEventListener('resize',syncPublicHeaderHeight,{passive:true});
+            addEventListener('scroll',syncPublicHeaderHeight,{passive:true});
+        });
+    })();
+</script>
 <style>.mobile-header-cover{display:none}.mobile-search-toggle{display:none}@media(max-width:720px){.mobile-header-cover{display:none}.store-header-main{grid-template-columns:minmax(0,1fr) auto!important;padding:12px 16px!important;background:var(--brand);color:#fff}.mobile-menu{display:none!important}.store-brand{grid-column:1;justify-content:flex-start}.mobile-store-meta{grid-column:2}.mobile-search-toggle{display:grid;grid-column:3;place-items:center;width:34px;height:34px;border:0;background:transparent;color:#fff;font-size:28px;line-height:1;cursor:pointer}.header-search{display:none;grid-column:1/-1}.header-search.mobile-search-open{display:flex}.store-header:has(.mobile-search-open) .mobile-search-toggle{color:#fff}}
 </style>
 <script>document.addEventListener('DOMContentLoaded',()=>{const b=document.querySelector('.mobile-search-toggle'),s=document.querySelector('.header-search'),i=document.getElementById('productSearch');if(!b||!s)return;b.addEventListener('click',e=>{e.stopPropagation();s.classList.toggle('mobile-search-open');if(s.classList.contains('mobile-search-open'))i.focus()});document.addEventListener('click',e=>{if(!s.contains(e.target)&&e.target!==b)s.classList.remove('mobile-search-open')})})</script>
