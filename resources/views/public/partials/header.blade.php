@@ -28,10 +28,29 @@
 </nav>
 <section class="mobile-store-info"><h1>{{ $venue->name }}</h1><p>{{ data_get($venue->settings, 'short_description', data_get($venue->settings, 'description', '')) }}</p></section>
 <style>@media(max-width:720px){.mobile-header-cover{display:block!important;height:156px!important}.mobile-header-cover>img{width:100%;height:156px;object-fit:cover}.mobile-header-logo{display:grid;place-items:center;position:absolute;left:50%;bottom:-48px;transform:translateX(-50%);width:88px;height:88px;padding:4px;border-radius:8px;background:#fff;box-shadow:0 2px 10px #0003}.mobile-header-logo img{width:100%;height:100%;border-radius:6px;object-fit:cover}.store-header-main{position:relative;z-index:3;padding-top:58px!important}.mobile-store-info{display:block;padding:8px 18px 18px;background:#fff;text-align:center}.mobile-store-info h1{margin:0;font-size:22px}.mobile-store-info p{margin:5px 0 0;color:var(--muted);line-height:1.25}.mobile-scrolled .mobile-header-cover{display:none!important}.mobile-scrolled .store-header-main{position:sticky;top:0;padding-top:10px!important}.mobile-scrolled .store-logo{width:44px!important;height:44px!important}.mobile-scrolled .mobile-store-info{display:none}}.mobile-store-info{display:none}</style>
-<script>addEventListener('scroll',()=>document.body.classList.toggle('mobile-scrolled',scrollY>90),{passive:true})</script>
+<script>
+    (()=>{
+        let compact=false;
+        const updateCompactHeader=()=>{
+            if(window.innerWidth>720){
+                if(compact){compact=false;document.body.classList.remove('mobile-scrolled');}
+                return;
+            }
+            /* Histerese: evita alternância quando a compactação altera o scrollY. */
+            const next=compact ? scrollY>40 : scrollY>120;
+            if(next===compact)return;
+            compact=next;
+            document.body.classList.toggle('mobile-scrolled',compact);
+            requestAnimationFrame(()=>window.dispatchEvent(new Event('resize')));
+        };
+        addEventListener('scroll',updateCompactHeader,{passive:true});
+        addEventListener('resize',updateCompactHeader,{passive:true});
+        addEventListener('DOMContentLoaded',updateCompactHeader);
+    })();
+</script>
 <style>@media(max-width:720px){.mobile-store-info{display:block!important}.mobile-scrolled .mobile-store-info{display:none!important}}</style>
 <style>.store-logo{border-radius:6px!important}</style>
-<style>.store-topbar-inner,.store-header-main,.store-header-nav,.category-rail{max-width:1170px!important}</style>
+<style>.store-topbar-inner,.store-header-main,.store-header-nav,.category-rail{max-width:1170px!important}@media(max-width:720px){.category-rail{min-height:42px!important;padding-top:6px!important;padding-bottom:0!important}}</style>
 <style>
     /* Cabeçalho e categorias permanecem acessíveis durante toda a navegação. */
     .store-topbar{position:sticky;top:0;z-index:40}
