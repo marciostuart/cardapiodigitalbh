@@ -770,7 +770,7 @@
                 if(!response.ok)throw new Error('Não foi possível abrir o resumo do pedido.');
                 const html=await response.text();
                 const doc=new DOMParser().parseFromString(html,'text/html');
-                ['accountPanel','customPanel','cartButton','orderSuccessPanel','cartPanel'].forEach(id=>{const node=doc.getElementById(id);if(node){node.id=id;document.body.appendChild(node);}});
+                ['accountPanel','customPanel','cartButton','orderSuccessPanel','cartPanel'].forEach(id=>{const node=doc.getElementById(id);if(node){node.id=id;if(id.endsWith('Panel'))node.classList.add('product-checkout-panel');document.body.appendChild(node);}});
                 const style=document.createElement('style');style.dataset.productCheckout='1';style.textContent=checkoutStyle;document.head.appendChild(style);
                 [...doc.scripts].filter(script=>script.textContent.includes('const cart = new Map')||script.textContent.includes('accountChoice')).forEach(script=>{(new Function(script.textContent))();});
             })();
