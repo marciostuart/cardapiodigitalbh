@@ -773,6 +773,11 @@
                 const doc=new DOMParser().parseFromString(html,'text/html');
                 ['accountPanel','customPanel','cartButton','orderSuccessPanel','cartPanel'].forEach(id=>{const node=doc.getElementById(id);if(node){node.id=id;if(id.endsWith('Panel'))node.classList.add('product-checkout-panel');document.body.appendChild(node);}});
                 const style=document.createElement('style');style.dataset.productCheckout='1';style.textContent=checkoutStyle;document.head.appendChild(style);
+                // A página inicial é a fonte única da verdade para o checkout.
+                // Reutilizamos exatamente sua folha de estilos, evitando variações
+                // de layout quando o modal é aberto em qualquer outra página.
+                const canonicalStyle=[...doc.querySelectorAll('style')].find(element=>element.textContent.includes('.panel{')&&element.textContent.includes('.cart-summary{'));
+                if(canonicalStyle){const sharedStyle=document.createElement('style');sharedStyle.dataset.productCheckoutCanonical='1';sharedStyle.textContent=canonicalStyle.textContent;document.head.appendChild(sharedStyle);}
                 [...doc.scripts].filter(script=>script.textContent.includes('const cart = new Map')||script.textContent.includes('accountChoice')).forEach(script=>{(new Function(script.textContent))();});
             })();
         }
