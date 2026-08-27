@@ -264,7 +264,8 @@
                 /* A referência visual é a base da faixa fixa de categorias.
                    Assim o traço muda no exato momento em que o título chega
                    abaixo do menu, inclusive quando o cabeçalho muda de altura. */
-                const reference=(selectedCategoryRail?.getBoundingClientRect().bottom||0)+2;
+                const anticipation=window.innerWidth<=720?20:60;
+                const reference=(selectedCategoryRail?.getBoundingClientRect().bottom||0)+anticipation;
                 let current=categorySections[0];
                 for(const section of categorySections){
                     if(section.getBoundingClientRect().top<=reference)current=section;
