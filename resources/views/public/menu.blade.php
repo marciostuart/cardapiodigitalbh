@@ -261,9 +261,10 @@
             };
             const syncCategoryByScroll=()=>{
                 if(categoryFilterActive||!categorySections.length)return;
-                const headerHeight=document.querySelector('.store-header')?.getBoundingClientRect().height||0;
-                const railHeight=selectedCategoryRail?.getBoundingClientRect().height||0;
-                const reference=Math.max(0,headerHeight+railHeight+22);
+                /* A referência visual é a base da faixa fixa de categorias.
+                   Assim o traço muda no exato momento em que o título chega
+                   abaixo do menu, inclusive quando o cabeçalho muda de altura. */
+                const reference=(selectedCategoryRail?.getBoundingClientRect().bottom||0)+2;
                 let current=categorySections[0];
                 for(const section of categorySections){
                     if(section.getBoundingClientRect().top<=reference)current=section;
@@ -277,7 +278,13 @@
                 if(categoryScrollFrame)return;
                 categoryScrollFrame=requestAnimationFrame(()=>{categoryScrollFrame=0;syncCategoryByScroll();});
             };
-            const chooseCategory=choice=>{const all=choice==='all';categoryFilterActive=!all;document.querySelector('main.wrap')?.classList.toggle('category-selected',!all);categorySections.forEach(section=>section.classList.toggle('selection-hidden',!all&&section.id!==`categoria-${choice}`));revealCategoryChoice(choice);if(!all){document.getElementById(`categoria-${choice}`)?.scrollIntoView({behavior:'smooth',block:'start'});}else{document.getElementById('inicio')?.scrollIntoView({behavior:'smooth',block:'start'});requestAnimationFrame(requestCategoryScrollSync);}};
+            const scrollBelowCategoryRail=target=>{
+                if(!target)return;
+                const railBottom=selectedCategoryRail?.getBoundingClientRect().bottom||0;
+                const targetDocumentTop=window.scrollY+target.getBoundingClientRect().top;
+                window.scrollTo({top:Math.max(0,targetDocumentTop-railBottom+18),behavior:'smooth'});
+            };
+            const chooseCategory=choice=>{const all=choice==='all';categoryFilterActive=!all;document.querySelector('main.wrap')?.classList.toggle('category-selected',!all);categorySections.forEach(section=>section.classList.toggle('selection-hidden',!all&&section.id!==`categoria-${choice}`));revealCategoryChoice(choice);if(!all){scrollBelowCategoryRail(document.getElementById(`categoria-${choice}`));}else{scrollBelowCategoryRail(document.getElementById('inicio'));requestAnimationFrame(requestCategoryScrollSync);}};
             if(selectedCategoryRail){categoryButtons.forEach(button=>button.addEventListener('click',()=>chooseCategory(button.dataset.categoryChoice)));addEventListener('scroll',requestCategoryScrollSync,{passive:true});addEventListener('resize',requestCategoryScrollSync,{passive:true});requestAnimationFrame(requestCategoryScrollSync);}
             const requestedCategory=new URLSearchParams(location.search).get('categoria');
             if(requestedCategory && document.getElementById(`categoria-${requestedCategory}`)){requestAnimationFrame(()=>chooseCategory(requestedCategory));}
