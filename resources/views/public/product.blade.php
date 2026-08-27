@@ -760,7 +760,10 @@
                 if(!response.ok)throw new Error('Não foi possível abrir o resumo do pedido.');
                 const html=await response.text();
                 const doc=new DOMParser().parseFromString(html,'text/html');
-                ['accountPanel','customPanel','cartButton','orderSuccessPanel','cartPanel'].forEach(id=>{const node=doc.getElementById(id);if(node){node.id=id;document.body.appendChild(node);}});
+                // A página de produto já possui sua própria barra global da sacola.
+                // Não importe a barra da home: sem o CSS da origem ela é renderizada
+                // no fim do documento e faz o ícone SVG ocupar dimensões gigantes.
+                ['accountPanel','customPanel','orderSuccessPanel','cartPanel'].forEach(id=>{const node=doc.getElementById(id);if(node){node.id=id;document.body.appendChild(node);}});
                 [...doc.scripts].filter(script=>script.textContent.includes('const cart = new Map')||script.textContent.includes('accountChoice')).forEach(script=>{(new Function(script.textContent))();});
             })();
         }
