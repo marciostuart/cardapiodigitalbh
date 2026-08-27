@@ -658,9 +658,9 @@
             <h2>Geralmente comprados juntos</h2>
             <div class="related-grid">
                 @foreach($relatedProducts as $related)
-                    <article class="related-card" data-related-id="{{ $related->id }}" data-related-name="{{ $related->name }}" data-related-price="{{ (float) $related->price }}" data-related-options="{{ $related->optionGroups->isNotEmpty() ? '1' : '0' }}">
+                    @php($relatedImage = $related->image_path ?: $related->images->first()?->path)
+                    <article class="related-card" data-related-id="{{ $related->id }}" data-related-name="{{ $related->name }}" data-related-price="{{ (float) $related->price }}" data-related-options="{{ $related->optionGroups->isNotEmpty() ? '1' : '0' }}" data-related-image="{{ $relatedImage ? route('public.media', ['subdomain' => $venue->subdomain, 'category' => 'products', 'filename' => basename($relatedImage)]) : '' }}">
                         <a href="{{ route('public.product', ['subdomain' => $venue->subdomain, 'product' => $related]) }}" style="display:block;text-decoration:none;color:inherit">
-                        @php($relatedImage = $related->image_path ?: $related->images->first()?->path)
                         @if($relatedImage)
                             <img src="{{ route('public.media', ['subdomain' => $venue->subdomain, 'category' => 'products', 'filename' => basename($relatedImage)]) }}" alt="{{ $related->name }}" loading="lazy">
                         @else
@@ -708,14 +708,14 @@
     });
     document.querySelectorAll('.related-card').forEach(card => card.querySelector('.related-buy')?.addEventListener('click', event => {
         event.preventDefault();
-        const product = {id:Number(card.dataset.relatedId),name:card.dataset.relatedName,price:Number(card.dataset.relatedPrice||0),has_options:card.dataset.relatedOptions==='1'};
+        const product = {id:Number(card.dataset.relatedId),name:card.dataset.relatedName,price:Number(card.dataset.relatedPrice||0),image:card.dataset.relatedImage || null,has_options:card.dataset.relatedOptions==='1'};
         if (product.has_options) { location.href = card.querySelector('a')?.href || '{{ route('public.menu',['subdomain'=>$venue->subdomain]) }}'; return; }
         const quantity = Math.max(1, Math.min(99, Number(card.querySelector('.related-quantity')?.value) || 1));
         const items = JSON.parse(localStorage.getItem('cardapiodigitalbh_cart') || '[]');
         const key = String(product.id) + '-';
         const current = items.find(item => item.key === key);
-        if (current) current.quantity += quantity;
-        else items.push({key,id:product.id,name:product.name,price:product.price,optionIds:[],optionNames:[],quantity});
+        if (current) { current.quantity += quantity; current.image = current.image || product.image || null; }
+        else items.push({key,id:product.id,name:product.name,price:product.price,optionIds:[],optionNames:[],image:product.image || null,quantity});
         localStorage.setItem('cardapiodigitalbh_cart', JSON.stringify(items));
         renderProductCart();
     }));
@@ -733,7 +733,7 @@
         const ids = selected.map(option => option.id).sort((a,b)=>a-b); const key = '{{ $product->id }}-'+ids.join('-');
         const quantity = Math.max(1, Math.min(99, Number(document.querySelector('[data-product-page-quantity]')?.value) || 1));
         const items = JSON.parse(localStorage.getItem('cardapiodigitalbh_cart') || '[]'); const current = items.find(item => item.key === key);
-        if (current) current.quantity += quantity; else items.push({key,id:{{ $product->id }},name:@json($product->name),price:{{ (float)$product->price }} + selected.reduce((sum,o)=>sum+o.price,0),optionIds:ids,optionNames:selected.map(o=>o.name),quantity});
+        if (current) { current.quantity += quantity; current.image = current.image || '{{ $product->image_path ? route('public.media', ['subdomain' => $venue->subdomain, 'category' => 'products', 'filename' => basename($product->image_path)]) : '' }}' || null; } else items.push({key,id:{{ $product->id }},name:@json($product->name),price:{{ (float)$product->price }} + selected.reduce((sum,o)=>sum+o.price,0),optionIds:ids,optionNames:selected.map(o=>o.name),image:'{{ $product->image_path ? route('public.media', ['subdomain' => $venue->subdomain, 'category' => 'products', 'filename' => basename($product->image_path)]) : '' }}' || null,quantity});
         localStorage.setItem('cardapiodigitalbh_cart', JSON.stringify(items));
         renderProductCart();
     });
