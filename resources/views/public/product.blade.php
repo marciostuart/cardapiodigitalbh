@@ -554,7 +554,7 @@
 @media(max-width:720px){.option-list{grid-template-columns:1fr}}
 .product-main-quantity{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:16px 0;color:var(--muted);font-weight:800}.product-quantity-control{display:inline-flex;align-items:stretch}.product-quantity-control input{width:42px;height:36px;border:1px solid var(--line);border-right:0;border-radius:9px 0 0 9px;text-align:center;font:inherit;font-weight:800;appearance:textfield;-moz-appearance:textfield}.product-quantity-control input::-webkit-inner-spin-button,.product-quantity-control input::-webkit-outer-spin-button{display:none}.product-quantity-control .quantity-stepper{display:flex;flex-direction:column;width:18px;height:36px;overflow:hidden;border-radius:0 8px 8px 0}.product-quantity-control .quantity-step{display:grid;place-items:center;flex:1;padding:0;border:0;background:var(--brand);color:#fff;font-weight:900;line-height:1;cursor:pointer}.product-quantity-control .quantity-step:first-child{border-bottom:1px solid #ffffff66}.option-row{grid-template-columns:44px minmax(0,1fr) auto!important;align-items:center!important}.option-check{width:44px!important;height:44px!important;min-width:44px!important;align-self:center!important}.option-copy{min-width:0;padding:10px 0;text-align:left}.option-copy strong,.option-copy small{display:block}.option-price{grid-column:auto!important;justify-self:auto!important;padding:0 0 0 8px!important;white-space:nowrap}
 </style>
-    <link rel="stylesheet" href="{{ asset('css/public-checkout.css') }}?v=20260822">
+    <link rel="stylesheet" href="{{ asset('css/public-checkout.css') }}?v=20260827-2">
 </head>
 <body>
 @include('public.partials.header', ['isMenu' => false])
