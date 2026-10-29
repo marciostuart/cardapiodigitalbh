@@ -59,6 +59,21 @@ services:
         parallelism: 1
         order: start-first
         failure_action: rollback
+  payments-worker:
+    build: .
+    image: cardapiodigitalbh:${CARDAPIO_IMAGE_TAG:-latest}
+    command: php artisan queue:work redis --queue=payments --sleep=1 --tries=8 --max-time=3600
+    env_file: .env
+    restart: unless-stopped
+    networks: [360Network, internal]
+    deploy:
+      restart_policy:
+        condition: any
+        delay: 5s
+      update_config:
+        parallelism: 1
+        order: start-first
+        failure_action: rollback
 networks:
   360Network:
     external: true

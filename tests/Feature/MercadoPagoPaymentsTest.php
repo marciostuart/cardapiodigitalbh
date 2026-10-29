@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Jobs\ExpireOnlinePayment;
 use App\Jobs\SyncMercadoPagoPayment;
 use App\Models\MercadoPagoConnection;
 use App\Models\OnlinePayment;
@@ -55,6 +56,7 @@ class MercadoPagoPaymentsTest extends TestCase
 
         $orderId = $response->json('order.id');
         $payment = OnlinePayment::where('order_id', $orderId)->sole();
+        Queue::assertPushed(ExpireOnlinePayment::class, fn ($job) => $job->queue === 'payments');
         $this->assertSame('pending', $payment->status);
         $this->assertDatabaseHas('orders', ['id' => $orderId, 'payment_mode' => 'online', 'payment_status' => 'pending']);
         $this->get($response->json('tracking_url'))->assertOk()->assertSee('depois da confirmação do pagamento');
@@ -84,7 +86,7 @@ class MercadoPagoPaymentsTest extends TestCase
             'x-request-id' => $requestId,
             'x-signature' => 'ts='.$timestamp.',v1='.$signature,
         ])->assertAccepted();
-        Queue::assertPushed(SyncMercadoPagoPayment::class, fn ($job) => $job->providerPaymentId === $dataId && $job->sellerId === '123456');
+        Queue::assertPushed(SyncMercadoPagoPayment::class, fn ($job) => $job->providerPaymentId === $dataId && $job->sellerId === '123456' && $job->queue === 'payments');
 
         $this->postJson('/webhooks/mercado-pago?data.id='.$dataId, [
             'type' => 'payment', 'user_id' => '123456', 'data' => ['id' => $dataId],
