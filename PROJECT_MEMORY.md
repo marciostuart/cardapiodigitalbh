@@ -139,7 +139,7 @@ Este checklist substitui pendências antigas que ficaram desatualizadas. “Impl
 - [x] Cadastro exige aceite dos Termos e ciência da Política; cada usuário registra versão e data; documentos revisados passam a exigir novo aceite, inclusive das contas existentes. Testes cobrem bloqueio, gravação e idempotência; revisão jurídica e prazo/política operacional de retenção continuam pendentes.
 - [x] `webpush:keys` gera e grava chaves VAPID no `.env` sem exibir a chave privada; o wrapper `deploy/setup-webpush.sh` usa a imagem ativa e monta somente o `.env` protegido. Deve rodar uma vez; preserve as chaves para não invalidar inscrições.
 - [x] Composer atualizado para Laravel 13.39 e dependências corrigidas; `composer audit --locked` passou sem advisories em 2026-10-29.
-- [x] Impressão de cartões QR usa `window.print()`; agente térmico Windows com spooler/driver, fila persistente, pareamento, deduplicação e reimpressão auditada está implementado localmente. Homologação física e distribuição do executável permanecem pendentes.
+- [x] Impressão de cartões QR usa `window.print()`; agente térmico Windows com spooler/driver, fila persistente, pareamento, deduplicação e reimpressão auditada está implementado localmente. Pacote self-contained Win-x64, instalador/atualizador por usuário e desinstalador foram validados; homologação física continua pendente.
 - [x] Criado `php artisan media:audit --prefix=tenants`: modo somente leitura para volume, quantidade e idade das mídias; permite apenas `tenants` e `health`, sem exclusão. Execução local confirmou que o bucket não está configurado neste `.env`; a medição real depende da VPS.
 - [x] Baseline antes das mudanças desta rodada: `php artisan test` (84 testes/295 assertions), views e build passaram; smoke HTTP anônimo respondeu 200. Isso não é resultado da versão atual.
 
@@ -172,7 +172,7 @@ Este checklist substitui pendências antigas que ficaram desatualizadas. “Impl
 - [x] Implementado: verificação de e-mail obrigatória antes de qualquer painel; owner e equipe recebem o fluxo de verificação. Validar entrega SMTP real e o convite de um membro no piloto.
 - [ ] Definir política e alarmes de retenção/ciclo de vida do MinIO com base em crescimento, custo, recuperação e requisitos de clientes; mídia atual não deve ser apagada automaticamente. A auditoria local não pôde coletar métricas porque o bucket não está configurado neste `.env`; executar o comando somente leitura no container/VPS após confirmar o bucket.
 - [ ] Web Push implementado localmente, aguardando configurar VAPID no ambiente, aplicar migration, testar inscrição/entrega em browsers reais e confirmar uso no celular. Não anunciar entrega real até o piloto.
-- [x] Agente local Windows implementado em `printer-agent/`: usa o spooler/driver instalado pelo cliente (incluindo Epson TM-T20), pareamento de uso único, token protegido por DPAPI, polling HTTPS, fila recuperável, deduplicação local, seleção da impressora e reimpressão auditada pelo painel. Aplicativo compilado/publicado para Windows x64; compatibilidade depende de driver compatível. Piloto físico e instalador/atualização automatizada permanecem pendentes.
+- [x] Agente local Windows implementado em `printer-agent/`: usa o spooler/driver instalado pelo cliente (incluindo Epson TM-T20), pareamento de uso único, token protegido por DPAPI, polling HTTPS, fila recuperável, deduplicação local, seleção da impressora e reimpressão auditada pelo painel. Pacote self-contained Win-x64 com instalador/atualizador manual passou em build, checksum e simulações `-WhatIf`; compatibilidade depende do driver. Piloto físico permanece pendente.
 - [x] Implementada autorização temporária de geofence: owner gera código de seis dígitos por mesa; novo código invalida o anterior; validade de 15 minutos; uso único transacional; hash HMAC armazenado; auditoria de geração/uso; alternativa no pedido QR quando localização está bloqueada ou fora do raio.
 - [ ] Homologar geofence em dispositivos reais e coordenadas do estabelecimento, incluindo permissões negadas e baixa precisão.
 
@@ -185,7 +185,7 @@ Este checklist substitui pendências antigas que ficaram desatualizadas. “Impl
 ### Ordem de execução recomendada
 
 1. Fechar revisão visual móvel e proteger a alteração/artefatos locais.
-2. Confirmar release e saúde da produção; revisar backups e recuperação.
+2. Confirmar release e saúde da produção; revisar backups e recuperação. Rechecagem somente leitura em 2026-10-29: `/` e `/up` retornaram 200, mas `/favicon.ico` veio vazio, os dois assets oficiais SVG/WebP retornaram 404 e `Permissions-Policy` ainda bloqueia geolocalização; o release correto não está comprovado e a publicação depende da resolução do fingerprint SSH divergente descrito acima.
 3. Homologar Evolution e o núcleo de pedidos/pagamentos em ambientes controlados.
 4. Homologar entrega de verificação de e-mail e Web Push; definir política e alarmes do MinIO.
 5. Instalar e homologar o agente de impressão e a entrega Web Push em dispositivos reais.
