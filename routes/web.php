@@ -9,7 +9,9 @@ use App\Http\Controllers\Admin\WhatsappTemplateController;
 use App\Http\Controllers\CashierController;
 use App\Http\Controllers\ConsumerAccountController;
 use App\Http\Controllers\EvolutionWebhookController;
+use App\Http\Controllers\MercadoPagoWebhookController;
 use App\Http\Controllers\KitchenDisplayController;
+use App\Http\Controllers\LegalTermsAcceptanceController;
 use App\Http\Controllers\OperationsDashboardController;
 use App\Http\Controllers\OwnerBannerController;
 use App\Http\Controllers\OwnerCatalogController;
@@ -17,6 +19,8 @@ use App\Http\Controllers\OwnerCommerceController;
 use App\Http\Controllers\OwnerDashboardController;
 use App\Http\Controllers\OwnerInventoryController;
 use App\Http\Controllers\OwnerOrderController;
+use App\Http\Controllers\OwnerPaymentController;
+use App\Http\Controllers\OwnerPrinterController;
 use App\Http\Controllers\OwnerReportController;
 use App\Http\Controllers\OwnerScheduleController;
 use App\Http\Controllers\OwnerSettingsController;
@@ -31,6 +35,7 @@ use App\Http\Controllers\QrMenuController;
 use App\Http\Controllers\TableOrderController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\WhatsappIntegrationController;
+use App\Http\Controllers\WebPushSubscriptionController;
 use Illuminate\Support\Facades\Route;
 
 Route::domain('{subdomain}.cardapiodigitalbh.com.br')->middleware('tenant')->group(function () {
@@ -47,6 +52,7 @@ Route::domain('{subdomain}.cardapiodigitalbh.com.br')->middleware('tenant')->gro
     Route::get('/conta/nova-senha/{token}', [ConsumerAccountController::class, 'showResetPassword'])->middleware('guest:consumer')->name('public.consumer.password.reset');
     Route::post('/conta/nova-senha', [ConsumerAccountController::class, 'resetPassword'])->middleware('guest:consumer')->name('public.consumer.password.store');
     Route::get('/pedido/{token}', [PublicOrderController::class, 'track'])->name('public.order.track');
+    Route::post('/pedido/{token}/pagamento', [PublicOrderController::class, 'pay'])->middleware('throttle:5,10')->name('public.order.pay');
     Route::get('/produto/{product}', [PublicProductController::class, 'show'])->name('public.product');
     Route::get('/manifest.webmanifest', [PublicPwaController::class, 'manifest'])->name('public.manifest');
     Route::get('/sw.js', [PublicPwaController::class, 'serviceWorker'])->name('public.service-worker');
@@ -57,6 +63,8 @@ Route::get('/', function () {
 })->name('marketing.home');
 Route::get('/llms.txt', [PublicAgentController::class, 'platform'])->name('platform.llms');
 Route::post('/webhooks/evolution', EvolutionWebhookController::class)->name('webhooks.evolution');
+Route::post('/webhooks/mercado-pago', MercadoPagoWebhookController::class)->middleware('throttle:120,1')->name('webhooks.mercado-pago');
+Route::get('/push-sw.js', [PublicPwaController::class, 'pushServiceWorker'])->name('push.service-worker');
 
 Route::view('/cardapio-digital-em-belo-horizonte', 'marketing.local-seo')->name('marketing.local-seo');
 Route::view('/termos-de-uso', 'marketing.terms')->name('marketing.terms');
@@ -80,10 +88,31 @@ Route::get('/m/{token}', [QrMenuController::class, 'show'])->name('public.qr-men
 Route::post('/m/{token}/orders', [TableOrderController::class, 'storeByToken'])->middleware('throttle:30,1')->name('public.qr-order');
 
 Route::get('/dashboard', OwnerDashboardController::class)
-    ->middleware(['auth', 'account.active'])
+    ->middleware(['auth', 'account.active', 'verified', 'terms.accepted'])
     ->name('dashboard');
 
-Route::middleware(['auth', 'account.active'])->group(function () {
+Route::middleware('auth')->group(function () {
+    Route::get('/aceite-termos', [LegalTermsAcceptanceController::class, 'show'])->name('legal.acceptance.show');
+    Route::post('/aceite-termos', [LegalTermsAcceptanceController::class, 'store'])->middleware('throttle:10,1')->name('legal.acceptance.store');
+});
+
+Route::middleware(['auth', 'account.active', 'verified', 'terms.accepted'])->group(function () {
+    Route::middleware(['tenant', 'venue.access'])->group(function () {
+        Route::get('/painel/push/chave', fn () => response()->json(['publicKey' => config('services.webpush.public_key')])->header('Cache-Control', 'no-store'))->name('push.public-key');
+        Route::post('/painel/push/inscricoes', [WebPushSubscriptionController::class, 'store'])->middleware('throttle:10,1')->name('push.subscriptions.store');
+        Route::delete('/painel/push/inscricoes', [WebPushSubscriptionController::class, 'destroy'])->middleware('throttle:10,1')->name('push.subscriptions.destroy');
+        Route::middleware('role:owner')->group(function () {
+            Route::get('/painel/impressoras', [OwnerPrinterController::class, 'index'])->name('owner.printers.index');
+            Route::post('/painel/impressoras/parear', [OwnerPrinterController::class, 'pair'])->middleware('throttle:5,1')->name('owner.printers.pair');
+            Route::patch('/painel/impressoras/{device}/principal', [OwnerPrinterController::class, 'makePrimary'])->name('owner.printers.primary');
+            Route::delete('/painel/impressoras/{device}', [OwnerPrinterController::class, 'revoke'])->name('owner.printers.revoke');
+            Route::post('/painel/pedidos/{order}/imprimir', [OwnerPrinterController::class, 'reprint'])->name('owner.printers.reprint');
+            Route::get('/painel/pagamentos', [OwnerPaymentController::class, 'index'])->name('owner.payments.index');
+            Route::post('/painel/pagamentos/mercado-pago/conectar', [OwnerPaymentController::class, 'connect'])->name('owner.payments.connect');
+            Route::get('/painel/pagamentos/mercado-pago/retorno', [OwnerPaymentController::class, 'callback'])->name('owner.payments.callback');
+            Route::delete('/painel/pagamentos/mercado-pago/desconectar', [OwnerPaymentController::class, 'disconnect'])->name('owner.payments.disconnect');
+        });
+    });
     Route::middleware('platform.owner')->group(function () {
         Route::get('/owner', PlatformDashboardController::class)->name('platform.dashboard');
         Route::get('/admin', [PlatformController::class, 'index'])->name('admin.platform');
@@ -121,6 +150,7 @@ Route::middleware(['auth', 'account.active'])->group(function () {
         Route::delete('/painel/opcoes/{option}', [OwnerCatalogController::class, 'destroyOption'])->name('owner.options.destroy');
         Route::get('/painel/mesas', [OwnerTableController::class, 'index'])->name('owner.tables');
         Route::post('/painel/mesas', [OwnerTableController::class, 'store'])->name('owner.tables.store');
+        Route::post('/painel/mesas/{table}/liberacao-temporaria', [OwnerTableController::class, 'createGeofenceOverride'])->middleware('throttle:10,1')->name('owner.tables.geofence-override');
         Route::get('/painel/mesas/{table}/qr.svg', [OwnerTableController::class, 'qr'])->name('owner.tables.qr');
         Route::get('/painel/equipe', [TeamController::class, 'index'])->name('owner.team');
         Route::post('/painel/equipe', [TeamController::class, 'store'])->name('owner.team.store');
@@ -164,8 +194,8 @@ Route::middleware(['auth', 'account.active'])->group(function () {
 
 require __DIR__.'/auth.php';
 
-Route::middleware('tenant')->post('/tables/{table}/orders', [TableOrderController::class, 'store']);
-Route::middleware(['auth', 'account.active', 'tenant', 'venue.access'])->group(function () {
+Route::middleware(['tenant', 'throttle:30,1'])->post('/tables/{table}/orders', [TableOrderController::class, 'store']);
+Route::middleware(['auth', 'account.active', 'verified', 'terms.accepted', 'tenant', 'venue.access'])->group(function () {
     Route::middleware('role:owner,cashier')->group(function () {
         Route::get('/caixa', [CashierController::class, 'index'])->name('cashier.index');
         Route::post('/tabs/{tab}/payments', [CashierController::class, 'pay'])->name('cashier.pay');

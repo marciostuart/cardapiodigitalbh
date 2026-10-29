@@ -42,6 +42,7 @@ class RegisteredUserController extends Controller
             'subdomain' => ['required', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/', 'min:3', 'max:50', 'not_in:www,admin,app,api,mail,painel,suporte', 'unique:venues,subdomain'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::min(8)->mixedCase()->numbers()],
+            'accept_terms' => ['required', 'accepted'],
         ]);
 
         $user = DB::transaction(function () use ($request) {
@@ -58,13 +59,21 @@ class RegisteredUserController extends Controller
                 'subdomain' => $request->subdomain,
             ]);
 
-            return User::create([
+            $user = User::create([
                 'tenant_id' => $tenant->id,
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'role' => 'owner',
             ]);
+
+            $user->termsAcceptances()->create([
+                'terms_version' => config('legal.terms_version'),
+                'privacy_version' => config('legal.privacy_version'),
+                'accepted_at' => now(),
+            ]);
+
+            return $user;
         });
 
         event(new Registered($user));

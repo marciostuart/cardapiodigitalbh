@@ -8,6 +8,7 @@
 <div class="store-topbar"><div class="store-topbar-inner"><span>Olá{{ $customerFirstName ? ' '.$customerFirstName : '' }}@if($hasPublicIdentity)<form class="consumer-logout-form" method="post" action="{{ route('public.consumer.logout', ['subdomain' => $venue->subdomain]) }}">@csrf<button class="consumer-logout" type="submit">(sair)</button></form>@endif</span><span>{{ ($isOpen ?? true) ? 'Estamos abertos' : 'Estamos fechados' }}</span></div></div>
 <header class="store-header">
     @if(!empty(($venue->settings ?? [])['cover_path']))<div class="mobile-header-cover"><img src="{{ route('public.media',['subdomain'=>$venue->subdomain,'category'=>'covers','filename'=>basename($venue->settings['cover_path'])]) }}" alt="Capa de {{ $venue->name }}" loading="eager"><div class="mobile-header-logo">@if($venue->logo_path)<img src="{{ route('public.media',['subdomain'=>$venue->subdomain,'category'=>'logos','filename'=>basename($venue->logo_path)]) }}" alt="Logo {{ $venue->name }}">@endif</div></div>@endif
+    <section class="mobile-store-info"><h1>{{ $venue->name }}</h1><p>{{ data_get($venue->settings, 'short_description', data_get($venue->settings, 'description', '')) }}</p></section>
     <div class="store-header-main">
         <button type="button" class="mobile-menu" aria-label="Abrir menu">☰</button>
         <a class="store-brand" href="{{ $menuUrl }}" aria-label="Início do cardápio">
@@ -26,7 +27,6 @@
         <a class="active" href="{{ $menuUrl }}">Todas</a>@foreach($categories as $category)<a href="{{ $menuUrl }}?categoria={{ $category->id }}#categoria-{{ $category->id }}">{{ $category->name }}</a>@endforeach
     @endif
 </nav>
-<section class="mobile-store-info"><h1>{{ $venue->name }}</h1><p>{{ data_get($venue->settings, 'short_description', data_get($venue->settings, 'description', '')) }}</p></section>
 <style>@media(max-width:720px){.mobile-header-cover{display:block!important;height:156px!important}.mobile-header-cover>img{width:100%;height:156px;object-fit:cover}.mobile-header-logo{display:grid;place-items:center;position:absolute;left:50%;bottom:-48px;transform:translateX(-50%);width:88px;height:88px;padding:4px;border-radius:8px;background:#fff;box-shadow:0 2px 10px #0003}.mobile-header-logo img{width:100%;height:100%;border-radius:6px;object-fit:cover}.store-header-main{position:relative;z-index:3;padding-top:58px!important}.mobile-store-info{display:block;padding:8px 18px 18px;background:#fff;text-align:center}.mobile-store-info h1{margin:0;font-size:22px}.mobile-store-info p{margin:5px 0 0;color:var(--muted);line-height:1.25}.mobile-scrolled .mobile-header-cover{display:none!important}.mobile-scrolled .store-header-main{position:sticky;top:0;padding-top:10px!important}.mobile-scrolled .store-logo{width:44px!important;height:44px!important}.mobile-scrolled .mobile-store-info{display:none}}.mobile-store-info{display:none}</style>
 <script>
     (()=>{
@@ -84,3 +84,91 @@
 <style>.mobile-header-cover{display:none}.mobile-search-toggle{display:none}@media(max-width:720px){.mobile-header-cover{display:block}.store-header-main{grid-template-columns:minmax(0,1fr) auto!important;padding:12px 16px!important;background:var(--brand);color:#fff}.store-header:has(.mobile-header-cover) .store-header-main{padding-top:58px!important}.mobile-scrolled .store-header-main{padding-top:10px!important}.mobile-menu{display:none!important}.store-brand{grid-column:1;justify-content:flex-start}.mobile-store-meta{grid-column:2}.mobile-search-toggle{display:grid;grid-column:3;place-items:center;width:34px;height:34px;border:0;background:transparent;color:#fff;font-size:28px;line-height:1;cursor:pointer}.header-search{display:none;grid-column:1/-1}.header-search.mobile-search-open{display:flex}.store-header:has(.mobile-search-open) .mobile-search-toggle{color:#fff}}
 </style>
 <script>document.addEventListener('DOMContentLoaded',()=>{const b=document.querySelector('.mobile-search-toggle'),s=document.querySelector('.header-search'),i=document.getElementById('productSearch');if(!b||!s)return;b.addEventListener('click',e=>{e.stopPropagation();s.classList.toggle('mobile-search-open');if(s.classList.contains('mobile-search-open'))i.focus()});document.addEventListener('click',e=>{if(!s.contains(e.target)&&e.target!==b)s.classList.remove('mobile-search-open')})})</script>
+<style>
+/* Composição oficial do cabeçalho público no celular: a busca fica apenas
+   na barra superior; capa, identidade e categorias formam uma sequência única. */
+@media (max-width:720px) {
+    .store-header:has(.mobile-header-cover) {
+        display:flex !important;
+        flex-direction:column;
+        background:#fff !important;
+    }
+    .store-header:has(.mobile-header-cover) .store-header-main { order:1; }
+    .store-header:has(.mobile-header-cover) .mobile-header-cover { order:2; }
+    .store-header:has(.mobile-header-cover) .mobile-store-info { order:3; }
+
+    .store-header:has(.mobile-header-cover) .store-header-main {
+        display:block !important;
+        width:100% !important;
+        min-height:0 !important;
+        padding:10px 16px !important;
+        background:var(--brand) !important;
+        color:#fff !important;
+    }
+    .store-header:has(.mobile-header-cover) .store-brand,
+    .store-header:has(.mobile-header-cover) .mobile-store-meta,
+    .store-header:has(.mobile-header-cover) .mobile-search-toggle,
+    .store-header:has(.mobile-header-cover) .mobile-menu { display:none !important; }
+    .store-header:has(.mobile-header-cover) .header-search {
+        display:flex !important;
+        width:100% !important;
+        margin:0 !important;
+        color:var(--ink) !important;
+        background:#fff !important;
+    }
+    .store-header:has(.mobile-header-cover) .header-search input { color:var(--ink) !important; }
+    .store-header:has(.mobile-header-cover) .mobile-header-cover {
+        display:block !important;
+        position:relative;
+        width:100%;
+        height:156px !important;
+        overflow:visible;
+        background:#f1f1f1;
+    }
+    .store-header:has(.mobile-header-cover) .mobile-header-cover > img {
+        display:block;
+        width:100%;
+        height:156px !important;
+        object-fit:cover;
+    }
+    .store-header:has(.mobile-header-cover) .mobile-header-logo {
+        display:grid !important;
+        place-items:center;
+        position:absolute;
+        z-index:2;
+        left:50%;
+        bottom:-46px;
+        transform:translateX(-50%);
+        width:88px;
+        height:88px;
+        padding:4px;
+        border-radius:8px;
+        background:#fff;
+        box-shadow:0 2px 10px #0003;
+    }
+    .store-header:has(.mobile-header-cover) .mobile-store-info {
+        display:block !important;
+        width:100%;
+        padding:57px 18px 15px !important;
+        background:#fff;
+        text-align:center;
+    }
+    .store-header:has(.mobile-header-cover) .mobile-store-info h1 {
+        margin:0;
+        font-size:22px;
+        line-height:1.15;
+    }
+    .store-header:has(.mobile-header-cover) .mobile-store-info p {
+        margin:6px auto 0;
+        max-width:390px;
+        color:var(--ink);
+        line-height:1.3;
+    }
+    /* Ao compactar, a busca continua na única barra superior e a navegação
+       permanece colada logo abaixo dela. */
+    body.mobile-scrolled .store-header:has(.mobile-header-cover) .mobile-header-cover,
+    body.mobile-scrolled .store-header:has(.mobile-header-cover) .mobile-store-info { display:none !important; }
+    body.mobile-scrolled .store-header:has(.mobile-header-cover) .store-header-main { padding:8px 16px !important; }
+    .store-header:has(.mobile-header-cover) + .category-rail { margin-top:0 !important; }
+}
+</style>

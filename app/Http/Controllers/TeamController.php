@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rules\Password;
 
@@ -23,9 +24,10 @@ class TeamController extends Controller
             'role' => ['required', 'in:waiter,kitchen,cashier'],
             'password' => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()],
         ]);
-        User::create($data + ['tenant_id' => $request->user()->tenant_id, 'active' => true]);
+        $member = User::create($data + ['tenant_id' => $request->user()->tenant_id, 'active' => true]);
+        event(new Registered($member));
 
-        return back()->with('status', 'Membro da equipe cadastrado.');
+        return back()->with('status', 'Membro cadastrado. Enviamos um link de verificação; o acesso ao painel será liberado após a confirmação do e-mail.');
     }
 
     public function update(Request $request, User $member)

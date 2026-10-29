@@ -5,8 +5,9 @@
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}">
+                    <a href="{{ route('dashboard') }}" class="flex items-center gap-2">
                         <x-application-logo class="block h-9 w-auto fill-current text-gray-800" />
+                        <span class="hidden text-sm font-extrabold tracking-tight text-gray-800 xl:inline">Cardápio Digital BH</span>
                     </a>
                 </div>
 
@@ -25,6 +26,8 @@
                         <x-nav-link :href="route('owner.reports.index')" :active="request()->routeIs('owner.reports.*')">Relatórios</x-nav-link>
                         <x-nav-link :href="route('owner.team')" :active="request()->routeIs('owner.team*')">Equipe</x-nav-link>
                         <x-nav-link :href="route('owner.settings')" :active="request()->routeIs('owner.settings*')">Configurações</x-nav-link>
+                        <x-nav-link :href="route('owner.payments.index')" :active="request()->routeIs('owner.payments.*')">Pagamentos</x-nav-link>
+                        <x-nav-link :href="route('owner.printers.index')" :active="request()->routeIs('owner.printers.*')">Impressoras</x-nav-link>
                         <x-nav-link :href="route('owner.whatsapp.index')" :active="request()->routeIs('owner.whatsapp.*')">WhatsApp</x-nav-link>
                         <x-nav-link :href="route('operations.index')" :active="request()->routeIs('operations.*')">Operação</x-nav-link>
                     @elseif(Auth::user()->role === 'waiter')
@@ -110,6 +113,8 @@
                 <x-responsive-nav-link :href="route('owner.reports.index')" :active="request()->routeIs('owner.reports.*')">Relatórios</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('owner.team')" :active="request()->routeIs('owner.team*')">Equipe</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('owner.settings')" :active="request()->routeIs('owner.settings*')">Configurações</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('owner.payments.index')" :active="request()->routeIs('owner.payments.*')">Pagamentos</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('owner.printers.index')" :active="request()->routeIs('owner.printers.*')">Impressoras</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('owner.whatsapp.index')" :active="request()->routeIs('owner.whatsapp.*')">WhatsApp</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('operations.index')" :active="request()->routeIs('operations.*')">Operação</x-responsive-nav-link>
             @elseif(Auth::user()->role === 'waiter')

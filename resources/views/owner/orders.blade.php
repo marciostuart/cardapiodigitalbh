@@ -32,6 +32,8 @@
                             'out_for_delivery' => ['completed' => 'Concluído'],
                             default => [],
                         };
+                        if ($order->payment_mode === 'online' && $order->payment_status !== 'approved') $primaryActions = [];
+                        $paymentStatusLabels = ['pending' => 'Aguardando pagamento', 'approved' => 'Pagamento aprovado', 'failed' => 'Pagamento não concluído', 'expired' => 'Pagamento expirado', 'cancelled' => 'Pagamento cancelado', 'refunded' => 'Pagamento estornado', 'review_required' => 'Pagamento exige conferência'];
                         $canCancel = in_array('cancelled', $allowedTransitions[$order->status] ?? [], true);
                         $cancelLabel = $order->status === 'pending' ? 'Recusar pedido' : 'Cancelar pedido';
                     @endphp
@@ -41,6 +43,7 @@
                             <div>
                                 <h2 class="text-lg font-bold">#{{ $order->id }} · {{ $order->customer_name ?: $order->tab?->customer_name ?: 'Mesa' }}</h2>
                                 <p class="text-sm text-slate-500">{{ trans('status.channel.'.$order->channel) }} · {{ $order->created_at->format('d/m H:i') }} · {{ trans('status.payment.'.$order->payment_method) }}</p>
+                                @if($order->payment_mode === 'online')<p class="mt-1 text-sm font-bold {{ $order->payment_status === 'review_required' ? 'text-rose-700' : 'text-indigo-700' }}">{{ $paymentStatusLabels[$order->payment_status] ?? 'Pagamento online' }}@if($order->payment_status === 'review_required') · confira o pagamento e faça o estorno no Mercado Pago se necessário.@endif</p>@endif
                             </div>
                             <div class="text-right">
                                 <span class="rounded-full bg-slate-100 px-3 py-1 text-sm font-bold">{{ trans('status.order.'.$order->status) }}</span>

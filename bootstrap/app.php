@@ -2,7 +2,9 @@
 
 use App\Http\Middleware\EnsureAccountActive;
 use App\Http\Middleware\EnsurePlatformOwner;
+use App\Http\Middleware\EnsurePrintAgentAuthenticated;
 use App\Http\Middleware\EnsureRole;
+use App\Http\Middleware\EnsureTermsAccepted;
 use App\Http\Middleware\EnsureVenueMembership;
 use App\Http\Middleware\InjectGlobalTracking;
 use App\Http\Middleware\ResolveTenant;
@@ -21,13 +23,15 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(InjectGlobalTracking::class);
-        $middleware->validateCsrfTokens(except: ['webhooks/evolution']);
+        $middleware->validateCsrfTokens(except: ['webhooks/evolution', 'webhooks/mercado-pago']);
         $middleware->alias([
             'tenant' => ResolveTenant::class,
             'venue.access' => EnsureVenueMembership::class,
             'platform.owner' => EnsurePlatformOwner::class,
             'account.active' => EnsureAccountActive::class,
+            'terms.accepted' => EnsureTermsAccepted::class,
             'role' => EnsureRole::class,
+            'printer.agent' => EnsurePrintAgentAuthenticated::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -28,6 +28,21 @@ return [
         'webhook_secret' => env('EVOLUTION_WEBHOOK_SECRET'),
     ],
 
+    'webpush' => [
+        'public_key' => env('VAPID_PUBLIC_KEY'),
+        'private_key' => env('VAPID_PRIVATE_KEY'),
+        'subject' => env('VAPID_SUBJECT', 'mailto:falecom@cardapiodigitalbh.com.br'),
+    ],
+
+    'mercadopago' => [
+        'client_id' => env('MERCADOPAGO_CLIENT_ID'),
+        'client_secret' => env('MERCADOPAGO_CLIENT_SECRET'),
+        'redirect_uri' => env('MERCADOPAGO_REDIRECT_URI', env('APP_URL').'/painel/pagamentos/mercado-pago/retorno'),
+        'webhook_secret' => env('MERCADOPAGO_WEBHOOK_SECRET'),
+        'test_mode' => env('MERCADOPAGO_TEST_MODE', true),
+        'pkce_enabled' => env('MERCADOPAGO_PKCE_ENABLED', true),
+    ],
+
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),

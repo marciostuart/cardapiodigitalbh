@@ -24,7 +24,7 @@ class PlatformDashboardController extends Controller
                 'suspended_tenants' => Tenant::where('status', 'suspended')->count(),
                 'new_tenants' => Tenant::where('created_at', '>=', $today)->count(),
                 'orders_today' => Order::where('created_at', '>=', $today)->whereNotIn('status', ['cancelled', 'refunded'])->count(),
-                'gmv_today' => Order::where('created_at', '>=', $today)->whereNotIn('status', ['cancelled', 'refunded'])->sum('total'),
+                'gmv_today' => Order::where('created_at', '>=', $today)->whereNotIn('status', ['cancelled', 'refunded'])->where(fn ($query) => $query->where('payment_mode', '!=', 'online')->orWhere('payment_status', 'approved'))->sum('total'),
                 'whatsapp_connected' => EvolutionInstance::where('status', 'connected')->count(),
                 'whatsapp_attention' => EvolutionInstance::whereIn('status', ['disconnected', 'degraded'])->count(),
                 'message_failures' => OutboundMessage::where('status', 'failed')->count(),

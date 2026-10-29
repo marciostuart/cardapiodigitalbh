@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
 {
-    protected $fillable = ['venue_id', 'tab_id', 'customer_id', 'consumer_account_id', 'delivery_zone_id', 'public_token', 'channel', 'status', 'station', 'customer_name', 'customer_phone', 'whatsapp_consent', 'delivery_address', 'coupon_code', 'discount', 'delivery_fee', 'payment_method', 'change_for', 'subtotal', 'total', 'notes', 'kitchen_notes', 'delivery_notes'];
+    protected $fillable = ['venue_id', 'tab_id', 'customer_id', 'consumer_account_id', 'delivery_zone_id', 'public_token', 'channel', 'status', 'station', 'customer_name', 'customer_phone', 'whatsapp_consent', 'delivery_address', 'coupon_code', 'discount', 'delivery_fee', 'payment_method', 'payment_mode', 'payment_status', 'change_for', 'subtotal', 'total', 'notes', 'kitchen_notes', 'delivery_notes'];
 
     protected function casts(): array
     {
@@ -31,5 +31,15 @@ class Order extends Model
     public function consumerAccount()
     {
         return $this->belongsTo(ConsumerAccount::class);
+    }
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
+    public function onlinePayment()
+    {
+        return $this->hasOne(OnlinePayment::class);
     }
 }

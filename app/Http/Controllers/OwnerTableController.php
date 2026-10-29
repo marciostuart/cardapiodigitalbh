@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\DiningTable;
+use App\Models\AuditLog;
+use App\Models\GeofenceOverride;
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\SvgWriter;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class OwnerTableController extends Controller
@@ -41,5 +44,39 @@ class OwnerTableController extends Controller
             'Content-Disposition' => 'inline; filename="mesa-'.$table->code.'.svg"',
             'Cache-Control' => 'private, max-age=3600',
         ]);
+    }
+
+    public function createGeofenceOverride(Request $request, DiningTable $table)
+    {
+        $venue = $request->user()->tenant?->venues()->firstOrFail();
+        abort_unless($table->venue_id === $venue->id, 404);
+        abort_unless($venue->geofence_enabled, 422, 'Ative o geofence nas configurações antes de gerar códigos temporários.');
+
+        $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $expiresAt = now()->addMinutes(15);
+
+        DB::transaction(function () use ($request, $venue, $table, $code, $expiresAt): void {
+            GeofenceOverride::where('dining_table_id', $table->id)->whereNull('used_at')->delete();
+            $override = GeofenceOverride::create([
+                'tenant_id' => $venue->tenant_id,
+                'venue_id' => $venue->id,
+                'dining_table_id' => $table->id,
+                'created_by' => $request->user()->id,
+                'code_hash' => hash_hmac('sha256', $table->id.'|'.$code, (string) config('app.key')),
+                'expires_at' => $expiresAt,
+            ]);
+            AuditLog::create([
+                'actor_id' => $request->user()->id,
+                'tenant_id' => $venue->tenant_id,
+                'action' => 'geofence.override_created',
+                'subject_type' => GeofenceOverride::class,
+                'subject_id' => $override->id,
+                'metadata' => ['dining_table_id' => $table->id, 'expires_at' => $expiresAt->toIso8601String()],
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+        });
+
+        return back()->with('geofence_access_code', $code)->with('geofence_access_code_table', $table->code)->with('geofence_access_code_expires_at', $expiresAt->format('d/m/Y H:i'));
     }
 }

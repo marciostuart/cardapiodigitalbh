@@ -5,7 +5,9 @@ namespace Tests\Feature;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Venue;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class TeamManagementTest extends TestCase
@@ -14,6 +16,7 @@ class TeamManagementTest extends TestCase
 
     public function test_owner_can_create_a_waiter_with_scoped_access(): void
     {
+        Notification::fake();
         [$owner, $tenant] = $this->owner();
 
         $this->actingAs($owner)->post('/painel/equipe', [
@@ -26,6 +29,12 @@ class TeamManagementTest extends TestCase
 
         $waiter = User::where('email', 'ana@example.com')->sole();
         $this->assertSame($tenant->id, $waiter->tenant_id);
+        $this->assertNull($waiter->email_verified_at);
+        Notification::assertSentTo($waiter, VerifyEmail::class);
+        $this->actingAs($waiter)->get('/operacao')->assertRedirect(route('verification.notice'));
+        $waiter->markEmailAsVerified();
+        $this->actingAs($waiter)->get('/dashboard')->assertRedirect(route('legal.acceptance.show'));
+        $this->actingAs($waiter)->post(route('legal.acceptance.store'), ['accept_terms' => '1'])->assertRedirect(route('dashboard'));
         $this->actingAs($waiter)->get('/dashboard')->assertRedirect(route('operations.index'));
         $this->actingAs($waiter)->get('/operacao')->assertOk();
         $this->actingAs($waiter)->get('/painel/cardapio')->assertForbidden();

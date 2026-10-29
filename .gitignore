@@ -14,6 +14,9 @@
 /.zed
 /auth.json
 /node_modules
+/printer-agent/bin/
+/printer-agent/obj/
+/printer-agent/publish/
 /public/build
 /public/fonts-manifest.dev.json
 /public/hot

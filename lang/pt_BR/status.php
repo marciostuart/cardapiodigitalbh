@@ -7,7 +7,7 @@ return [
         'cancelled' => 'Cancelado', 'refunded' => 'Estornado',
     ],
     'channel' => ['table' => 'Mesa', 'pickup' => 'Retirada', 'delivery' => 'Entrega'],
-    'payment' => ['pix' => 'PIX', 'pix_external' => 'PIX', 'cash' => 'Dinheiro', 'debit' => 'Cartão de débito', 'credit' => 'Cartão de crédito', 'voucher' => 'Vale'],
+    'payment' => ['pix' => 'PIX', 'pix_external' => 'PIX', 'cash' => 'Dinheiro', 'debit' => 'Cartão de débito', 'credit' => 'Cartão de crédito', 'mercadopago' => 'Mercado Pago online', 'voucher' => 'Vale'],
     'role' => ['owner' => 'Proprietário', 'platform_owner' => 'Proprietário da plataforma', 'waiter' => 'Garçom', 'kitchen' => 'Cozinha', 'cashier' => 'Caixa'],
     'instance' => ['connected' => 'Conectado', 'connecting' => 'Conectando', 'disconnected' => 'Desconectado', 'degraded' => 'Instável'],
     'movement' => ['reserve' => 'Reserva', 'consume' => 'Consumo', 'release' => 'Liberação', 'entry' => 'Entrada', 'loss' => 'Perda'],

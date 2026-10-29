@@ -23,6 +23,7 @@ class OperationsDashboardController extends Controller
             ->where('venue_id', $venue->id)
             ->where('created_at', '>=', now()->startOfDay())
             ->where('status', '!=', 'cancelled')
+            ->where(fn ($query) => $query->where('payment_mode', '!=', 'online')->orWhere('payment_status', 'approved'))
             ->sum('total');
 
         return view('operations.dashboard', [

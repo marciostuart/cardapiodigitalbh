@@ -15,7 +15,8 @@ class StorePublicOrderRequest extends FormRequest
             'customer_phone' => ['nullable', 'string', 'max:20', 'regex:/^[0-9() +\-]{10,20}$/'],
             'whatsapp_consent' => ['nullable', 'boolean'],
             'marketing_consent' => ['nullable', 'boolean'],
-            'payment_method' => ['required', 'in:cash,pix,debit,credit'],
+            'payment_method' => ['required', 'in:cash,pix,debit,credit,mercadopago'],
+            'payment_mode' => ['sometimes', 'required', 'in:offline,online'],
             'change_for' => ['nullable', 'numeric', 'min:0'],
             'coupon_code' => ['nullable', 'string', 'max:40'],
             'delivery_zone_id' => ['nullable', 'integer', 'required_if:channel,delivery'],
@@ -34,6 +35,18 @@ class StorePublicOrderRequest extends FormRequest
             'items.*.option_ids' => ['nullable', 'array', 'max:30'],
             'items.*.option_ids.*' => ['integer'],
         ];
+    }
+
+    public function after(): array
+    {
+        return [function ($validator) {
+            if ($this->input('payment_mode', 'offline') === 'online' && $this->input('payment_method') !== 'mercadopago') {
+                $validator->errors()->add('payment_method', 'Escolha o pagamento online pelo Mercado Pago.');
+            }
+            if ($this->input('payment_mode', 'offline') === 'offline' && $this->input('payment_method') === 'mercadopago') {
+                $validator->errors()->add('payment_method', 'Escolha uma forma de pagamento presencial.');
+            }
+        }];
     }
 
     public function messages(): array

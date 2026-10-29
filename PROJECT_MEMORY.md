@@ -100,11 +100,11 @@ Plataforma SaaS independente para restaurantes, bares e lanchonetes: cardápio d
 | 2026-08-21 | A prévia lateral e o degradê do carrossel reduziram a clareza visual no desktop | O desktop exibe quatro cards completos. As setas ficam fora da coluna dos produtos, usam a cor primária do estabelecimento e a categoria pode ser expandida por “Ver tudo →” em grade sem rolagem horizontal. |
 | 2026-08-21 | Consumidores precisavam de acesso persistente entre estabelecimentos sem misturar contas de lojistas ou o CRM de cada tenant | `consumer_accounts` e endereços globais passaram a autenticar por telefone e senha em todos os subdomínios. O checkout cria ou acessa a conta antes do primeiro envio, usa ViaCEP, preserva carrinho e vincula pedidos à conta global e ao cliente local do estabelecimento. A recuperação ocorre por e-mail, sem revelar a existência da conta. |
 
-## Estado consolidado em 2026-08-20
+## Estado consolidado em 2026-08-20 (snapshot historico; producao atual nao confirmada)
 
 - Repositório: `github.com/marciostuart/cardapiodigitalbh`, branch `main`. Todo código de produto deve ser versionado; não incluir `.env`, chaves, tokens, sessões ou URLs assinadas.
 - Produção: VPS em `/opt/cardapiodigitalbh`, stack Swarm isolada `cardapiodigitalbh`, serviços `app`, `web` (Caddy) e `worker`. A rede `360Network` é somente a conexão compartilhada com o proxy; nunca alterar stacks, rede, volumes, banco ou serviços de outros projetos.
-- Publicação comprovada mais recente: tag/imagens `6719fe9`, os três serviços em `1/1`. O processo é: testes locais, `git` commit/push, gerar arquivo do commit, enviar para `releases/`, extrair somente em `/opt/cardapiodigitalbh`, construir as duas imagens desta tag, atualizar somente a stack e validar HTTP/serviços.
+- Última publicação registrada no snapshot histórico: tag/imagens `6719fe9`, serviços `1/1`. A stack atual não foi confirmada. O processo de release registrado é: validação local, commit/push, pacote da revisão, envio para `releases/`, extração somente em `/opt/cardapiodigitalbh`, construção das imagens e atualização apenas desta stack.
 - Arquitetura: Laravel, PostgreSQL exclusivo, Redis, fila em worker, MinIO/S3 privado por tenant e Caddy. As mídias públicas são entregues por `/media` sem sessão, com isolamento de subdomínio/tenant, cache público de um ano e cache complementar no PWA. Não substituir MinIO por armazenamento local sem antes projetar persistência, backup, escalabilidade e rollback.
 - Domínios: o institucional é `cardapiodigitalbh.com.br`; cada cardápio usa exclusivamente `https://{slug}.cardapiodigitalbh.com.br`. Alterar slug exige aviso de quebra de links/QR Codes antigos. O estabelecimento demonstrativo autorizado usa `paulinlanches`.
 - Identidade da vitrine: cores e logo do estabelecimento são fonte da interface pública, favicon e PWA. Cabeçalho limpo com faixa superior na cor primária, saudação à esquerda, estado aberto à direita, logo/nome e busca; sem pedido mínimo, compartilhamento ou sacola no cabeçalho. O mesmo cabeçalho e trilho de categorias devem estar em todas as páginas públicas. Categorias ficam em trilho horizontal com “Todas”; títulos são sobrepostos e centralizados nas fotos com sombra. O botão fixo do carrinho é o acesso à sacola. Há rodapé global com direitos autorais e link rastreável para a 360BH.
@@ -115,16 +115,73 @@ Plataforma SaaS independente para restaurantes, bares e lanchonetes: cardápio d
 - Descoberta por IA: `llms.txt` é um índice Markdown complementar para agentes e não substitui SEO técnico, páginas rastreáveis ou dados estruturados. Cada subdomínio tem orientação própria; o domínio principal também expõe um índice institucional. Não expor ferramentas que criem pedidos, cobrem valores ou alterem dados sem confirmação explícita de pessoa usuária.
 - Administração: `/owner` é o painel executivo da plataforma; `/admin` é a gestão de tenants/planos/impersonação e suporte. O painel do lojista usa `/painel/*`. O Owner pode redefinir somente a instância WhatsApp do tenant selecionado. GTM global é configurado pelo Owner; o lojista usa campos validados para Analytics e Pixel da Meta, nunca scripts arbitrários.
 - Catálogo de demonstração: importação autorizada de Paulin Lanches concluída com 83 produtos, 8 categorias, 83 imagens e 173 opções. Tratar como dados de demonstração do tenant existente; manter consistência e não importar novamente sem necessidade.
-- Qualidade: no último conjunto validado, `php artisan test` passou com 84 testes e 295 asserções. Sempre repetir testes, compilação das views e smoke test dos endereços afetados antes de afirmar publicação.
+- Qualidade: o último conjunto completo de testes registrado antes desta rodada passou com 84 testes e 295 asserções. A rodada atual repetiu verificações estáticas/build/migrations, mas ainda não repetiu a suite completa nem comprovou publicação.
 
-## Pendências pós-lançamento
+## Checklist mestre de conclusão do projeto (revisado em 2026-10-29)
 
-1. Adotar a stack pelo Portainer para controle Total quando o produto estiver estável.
-2. Decidir quando tornar a verificação de e-mail obrigatória; o template e a infraestrutura de envio já estão preparados.
-3. Monitorar o crescimento e definir política de retenção/ciclo de vida do bucket MinIO.
-4. Completar banners, Web Push e agente de impressão.
-5. Homologar Mercado Pago por estabelecimento somente após estabilização do núcleo operacional.
-6. Em etapa posterior, implementar cobrança SaaS, marketplace, anúncios, afiliados e vouchers.
+Este checklist substitui pendências antigas que ficaram desatualizadas. “Implementado” descreve o código; “validar” exige evidência no ambiente real; nenhuma integração é considerada homologada somente por testes simulados.
+
+### Decisões confirmadas pelo responsável
+
+- Verificação de e-mail obrigatória antes do acesso ao painel.
+- Pagamento online cria o pedido com estado aguardando pagamento e oferece checkout/QR antes de enviar para a cozinha; o piloto usará PIX/cartão pelo Mercado Pago.
+- Impressão inicial: USB em computador Windows, começando por Epson TM-T20 e compatibilidade via drivers instalados no Windows.
+- Geofence: proprietário autoriza exceção por prazo curto (15 minutos, código de uso único).
+- Credenciais Evolution/Mercado Pago ainda precisam ser verificadas na VPS; somente templates e instruções seguros estão prontos. O responsável preencherá os valores sem enviá-los pelo chat.
+
+### Núcleo do produto
+
+- [x] SaaS multi-tenant, catálogo, pedidos, mesas/comandas, caixa, cozinha, equipe, estoque, horários, delivery/retirada, cupons e relatórios estão implementados e cobertos por testes locais.
+- [x] Banners já estão implementados: CRUD por estabelecimento, agendamento, ordenação, pausa, mídia isolada e renderização pública. Removido o registro incorreto de banners como planejados.
+- [x] PWA básico já existe: manifesto por tenant, service worker, cache da home/mídias e atualização de versão. Isso não equivale a Web Push.
+- [x] Implementada base de Web Push para novos pedidos: inscrição explícita por usuário/dispositivo, endpoints validados, chaves/endpoint criptografados, payload sem dados pessoais, fila idempotente em `outbound_messages`, remoção de endpoints expirados e worker de notificações. O envio não é bloqueante para o pedido.
+- [x] Verificação de e-mail é obrigatória antes dos painéis para owner e equipe; o convite da equipe também dispara o e-mail de verificação. Entrega SMTP real ainda depende de homologação.
+- [x] Cadastro exige aceite dos Termos e ciência da Política; cada usuário registra versão e data; documentos revisados passam a exigir novo aceite, inclusive das contas existentes. Testes cobrem bloqueio, gravação e idempotência; revisão jurídica e prazo/política operacional de retenção continuam pendentes.
+- [x] `webpush:keys` gera e grava chaves VAPID no `.env` sem exibir a chave privada; o wrapper `deploy/setup-webpush.sh` usa a imagem ativa e monta somente o `.env` protegido. Deve rodar uma vez; preserve as chaves para não invalidar inscrições.
+- [x] Composer atualizado para Laravel 13.39 e dependências corrigidas; `composer audit --locked` passou sem advisories em 2026-10-29.
+- [x] Impressão de cartões QR usa `window.print()`; agente térmico Windows com spooler/driver, fila persistente, pareamento, deduplicação e reimpressão auditada está implementado localmente. Homologação física e distribuição do executável permanecem pendentes.
+- [x] Criado `php artisan media:audit --prefix=tenants`: modo somente leitura para volume, quantidade e idade das mídias; permite apenas `tenants` e `health`, sem exclusão. Execução local confirmou que o bucket não está configurado neste `.env`; a medição real depende da VPS.
+- [x] Baseline antes das mudanças desta rodada: `php artisan test` (84 testes/295 assertions), views e build passaram; smoke HTTP anônimo respondeu 200. Isso não é resultado da versão atual.
+
+- [x] Validações locais em 2026-10-29: `php artisan test` passou com 92 testes/369 asserções; 295 arquivos PHP de origem passaram em `php -l`; todas as migrations passaram em SQLite efêmero; `composer audit --locked`, `npm run build`, compilação/limpeza Blade, lista de 139 rotas, `node --check public/js/staff-web-push.js`, `bash -n deploy/setup-webpush.sh`, publicação self-contained single-file Win-x64 do agente e `git diff --check` passaram. O executável local tem SHA-256 `DA7B65E3AC7BFE8CF5347FDAE487922029C29390F47293378A2882DE33B6D122`; foi mantido em `%TEMP%`, fora do Git. Os testes específicos cobrem expiração/uso único do override e criptografia/isolamento/idempotência do Web Push. A checagem Git só emite aviso de conversão CRLF em `PROJECT_MEMORY.md`.
+
+### UX pública e publicação
+
+- [x] Revisão responsiva em Firefox/Playwright: página pública em 390×844 sem overflow horizontal; 84 imagens carregadas, busca abre pelo botão, cabeçalho compacto permanece no topo e categorias seguem logo abaixo. Simulação controlada aplicando o CSS local com capa: uma busca; composição barra/capa/logo/nome/descrição/categorias; no scroll, capa/identidade somem e busca/categorias permanecem. A arte real de capa e páginas autenticadas ainda precisam de aceite no release/dispositivo.
+- [x] Identidade institucional aplicada a partir da cópia sincronizada `D:\Márcio\Google Drive\Drive\360BH\Site Cardápio Digital BH`: SVG oficial e favicon entraram em `public/images`, o painel e autenticação usam a marca, botões/seleção ativa usam o vermelho `#EA4335`, amarelo `#FBBC05` foi mantido como acento e a página local de BH foi harmonizada. A vitrine pública continua usando a identidade configurada por cada lojista.
+- [x] README de Portainer agora separa primeira instalação de stack existente e exige inventário, backup e plano de retorno antes de reaplicar, sem alterar stacks de outros projetos.
+- [ ] A alteração local de `resources/views/public/partials/header.blade.php` (90 linhas) ainda não foi commitada nem implantada; os arquivos locais `release-*.tar.gz` também estão sem rastreamento e devem ser preservados até identificar seu uso.
+- [ ] Confirmar qual commit está implantado na VPS e conferir serviços/health da stack exclusiva `cardapiodigitalbh`; publicar somente após revisão visual e validação, sem tocar em outros recursos. Em 2026-10-29, domínio raiz e `/up` responderam HTTP 200, mas os novos caminhos do logo e favicon retornaram 404; isso não comprova que o código local esteja publicado.
+- [ ] Validar fluxos autenticados de owner/lojista e a jornada completa de pedidos no ambiente de homologação/produção, além dos testes automatizados.
+- [ ] Verificar automação de backup e restauração ensaiada do PostgreSQL e MinIO; definir RPO/RTO e retenção documentados.
+- [ ] Adotar gestão da stack pelo Portainer somente depois de inventariar o estado atual e confirmar que a stack exclusiva pode ser importada sem recriação destrutiva.
+
+### Integrações e decisões de operação
+
+- [ ] Aplicar os campos comentados de `.env.production.example` ao `.env` protegido somente da stack `cardapiodigitalbh`; preencher Evolution/Mercado Pago em sandbox e gerar VAPID pelo script. A VPS não está acessível nesta sessão, então o `.env` real não foi alterado; nunca compartilhar os valores no chat.
+- [ ] Homologar Evolution API real com instância de teste por tenant: QR/conexão, webhook autenticado, outbox, retentativas, idempotência, consentimento e Reset Whats estritamente isolado. Testes atuais usam API simulada.
+- [ ] Homologar Mercado Pago por estabelecimento em sandbox e piloto controlado: OAuth/credenciais, PIX e cartão, webhook assinado/idempotente, estados concorrentes, estorno/reembolso, reconciliação e falhas. Não habilitar cobrança real antes da aprovação do piloto.
+- [x] Implementado: verificação de e-mail obrigatória antes de qualquer painel; owner e equipe recebem o fluxo de verificação. Validar entrega SMTP real e o convite de um membro no piloto.
+- [ ] Definir política e alarmes de retenção/ciclo de vida do MinIO com base em crescimento, custo, recuperação e requisitos de clientes; mídia atual não deve ser apagada automaticamente. A auditoria local não pôde coletar métricas porque o bucket não está configurado neste `.env`; executar o comando somente leitura no container/VPS após confirmar o bucket.
+- [ ] Web Push implementado localmente, aguardando configurar VAPID no ambiente, aplicar migration, testar inscrição/entrega em browsers reais e confirmar uso no celular. Não anunciar entrega real até o piloto.
+- [x] Agente local Windows implementado em `printer-agent/`: usa o spooler/driver instalado pelo cliente (incluindo Epson TM-T20), pareamento de uso único, token protegido por DPAPI, polling HTTPS, fila recuperável, deduplicação local, seleção da impressora e reimpressão auditada pelo painel. Aplicativo compilado/publicado para Windows x64; compatibilidade depende de driver compatível. Piloto físico e instalador/atualização automatizada permanecem pendentes.
+- [x] Implementada autorização temporária de geofence: owner gera código de seis dígitos por mesa; novo código invalida o anterior; validade de 15 minutos; uso único transacional; hash HMAC armazenado; auditoria de geração/uso; alternativa no pedido QR quando localização está bloqueada ou fora do raio.
+- [ ] Homologar geofence em dispositivos reais e coordenadas do estabelecimento, incluindo permissões negadas e baixa precisão.
+
+### Expansão comercial (fora do núcleo de lançamento)
+
+- [ ] Cobrança SaaS e gestão de inadimplência.
+- [ ] Marketplace, anúncios, afiliados e vouchers.
+- [ ] Validar com o responsável o conteúdo legal, identificação/canal do controlador, política e prazos de retenção, suporte operacional e processo de incidente antes de ampliar a base comercial.
+
+### Ordem de execução recomendada
+
+1. Fechar revisão visual móvel e proteger a alteração/artefatos locais.
+2. Confirmar release e saúde da produção; revisar backups e recuperação.
+3. Homologar Evolution e o núcleo de pedidos/pagamentos em ambientes controlados.
+4. Homologar entrega de verificação de e-mail e Web Push; definir política e alarmes do MinIO.
+5. Instalar e homologar o agente de impressão e a entrega Web Push em dispositivos reais.
+6. Só depois avançar cobrança SaaS e demais produtos comerciais.
 
 ## Matriz de paridade do legado
 
@@ -135,11 +192,13 @@ Plataforma SaaS independente para restaurantes, bares e lanchonetes: cardápio d
 | Mesas, QR e comandas | Implementado/testado | URL canônica no subdomínio do estabelecimento |
 | Estoque de produto e insumos | Implementado/testado | reserva, consumo e proteção contra venda excedente |
 | Horários e fechamento automático | Implementado/testado | inclui intervalo após meia-noite |
-| Geofence | Implementado/testado | Haversine no servidor; liberação temporária ainda pendente |
+| Geofence | Implementado localmente | Haversine no servidor e liberação temporária do owner por código de uso único, expiração, hash e auditoria; aceite em dispositivos reais pendente |
 | Retirada, delivery, clientes, CEP, frete e cupons | Implementado/testado | totais recalculados no servidor |
 | Evolution e Reset Whats | Implementado/testado localmente | teste contratual usa API simulada; homologação real pendente |
 | Variações e adicionais | Implementado/testado | grupos obrigatórios/opcionais, limites e preço no servidor |
 | Relatórios | Implementado/testado | período, KPIs, canais, produtos e CSV |
-| Banners, impressão e Web Push | Planejado | próximo lote operacional |
-| Mercado Pago por estabelecimento | Planejado | liberar por feature flag após piloto |
+| Banners | Implementado | CRUD, agendamento e renderização pública; teste/validação de produção ainda deve acompanhar publicação |
+| Impressão QR | Implementado | impressão pelo navegador; agente Windows de spooler/driver também implementado localmente, aguardando piloto físico |
+| Web Push | Implementado localmente | consentimento e envio para novos pedidos; VAPID e entrega real ainda aguardam configuração/piloto |
+| Gateway de pagamento online por estabelecimento | Implementado localmente | Mercado Pago OAuth/Checkout Pro por lojista; pedido fica aguardando pagamento e só segue para cozinha após aprovação; credenciais sandbox e homologação ainda pendentes |
 | Marketplace, afiliados, anúncios e vouchers | Planejado | não bloqueia o lançamento operacional |

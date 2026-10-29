@@ -29,6 +29,7 @@ class StoreTableOrderRequest extends FormRequest
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'location_accuracy' => ['nullable', 'numeric', 'min:0', 'max:10000'],
+            'geofence_access_code' => ['nullable', 'digits:6'],
             'notes' => ['nullable', 'string', 'max:500'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.product_id' => ['required', 'integer', 'exists:products,id'],

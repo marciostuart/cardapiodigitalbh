@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTableOrderRequest;
 use App\Models\DiningTable;
+use App\Models\AuditLog;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Tab;
 use App\Services\InventoryService;
 use App\Services\WhatsappNotifier;
+use App\Services\WebPushNotifier;
 use App\Support\Geofence;
 use App\Support\VenueAvailability;
 use App\Support\OrderLineBuilder;
@@ -41,10 +43,20 @@ class TableOrderController extends Controller
     {
         $venue = $table->venue()->firstOrFail();
         abort_unless(VenueAvailability::isOpen($venue), 422, 'O estabelecimento está fechado neste momento.');
-        Geofence::assertInside($venue, $request->validated('latitude'), $request->validated('longitude'));
-
         return DB::transaction(function () use ($request, $table, $venue) {
             $table = DiningTable::lockForUpdate()->findOrFail($table->id);
+            $override = Geofence::assertInside($venue, $table, $request->validated('latitude'), $request->validated('longitude'), $request->validated('geofence_access_code'));
+            if ($override) {
+                AuditLog::create([
+                    'tenant_id' => $venue->tenant_id,
+                    'action' => 'geofence.override_used',
+                    'subject_type' => $override::class,
+                    'subject_id' => $override->id,
+                    'metadata' => ['dining_table_id' => $table->id],
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                ]);
+            }
             $consumer = Auth::guard('consumer')->user();
             $customerName = $consumer?->name ?: (trim((string) $request->validated('customer_name', '')) ?: null);
             $customerPhone = $consumer?->phone ?: $request->validated('customer_phone');
@@ -67,6 +79,7 @@ class TableOrderController extends Controller
             $order->update(['subtotal' => $subtotal, 'total' => $subtotal]);
             app(InventoryService::class)->reserve($order);
             DB::afterCommit(fn () => app(WhatsappNotifier::class)->queue($order->fresh(), 'order_received'));
+            DB::afterCommit(fn () => app(WebPushNotifier::class)->queueNewOrder($order->fresh()));
 
             if ($customerName) {
                 $request->session()->put('public_customer_name', $customerName);

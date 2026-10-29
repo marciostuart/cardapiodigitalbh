@@ -30,11 +30,17 @@ class RegistrationTest extends TestCase
             'email' => 'test@example.com',
             'password' => 'Password1',
             'password_confirmation' => 'Password1',
+            'accept_terms' => '1',
         ]);
 
         $this->assertAuthenticated();
         $this->assertDatabaseHas('tenants', ['name' => 'Restaurante Teste', 'plan' => 'free', 'status' => 'active']);
         $this->assertDatabaseHas('venues', ['subdomain' => 'restaurante-teste']);
+        $this->assertDatabaseHas('terms_acceptances', [
+            'user_id' => User::where('email', 'test@example.com')->firstOrFail()->id,
+            'terms_version' => config('legal.terms_version'),
+            'privacy_version' => config('legal.privacy_version'),
+        ]);
         Notification::assertSentTo(User::where('email', 'test@example.com')->firstOrFail(), WelcomeToCardapio::class);
         Notification::assertSentTo(User::where('email', 'test@example.com')->firstOrFail(), WelcomeToCardapio::class, function ($notification, $channels) {
             $mail = $notification->toMail(User::where('email', 'test@example.com')->firstOrFail());
@@ -59,5 +65,20 @@ class RegistrationTest extends TestCase
         ])->assertSessionHasErrors('subdomain');
 
         $this->assertGuest();
+    }
+
+    public function test_registration_requires_terms_acceptance_before_creating_an_account(): void
+    {
+        $this->post('/register', [
+            'name' => 'Test User',
+            'venue_name' => 'Restaurante Teste',
+            'subdomain' => 'restaurante-teste',
+            'email' => 'test@example.com',
+            'password' => 'Password1',
+            'password_confirmation' => 'Password1',
+        ])->assertSessionHasErrors('accept_terms');
+
+        $this->assertDatabaseCount('tenants', 0);
+        $this->assertDatabaseCount('users', 0);
     }
 }

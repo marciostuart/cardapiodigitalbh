@@ -17,6 +17,29 @@ class UserFactory extends Factory
      */
     protected static ?string $password;
 
+    public function configure(): static
+    {
+        return $this->afterCreating(function (User $user): void {
+            $user->termsAcceptances()->firstOrCreate(
+                [
+                    'terms_version' => config('legal.terms_version'),
+                    'privacy_version' => config('legal.privacy_version'),
+                ],
+                ['accepted_at' => now()],
+            );
+        });
+    }
+
+    public function withoutCurrentTermsAcceptance(): static
+    {
+        return $this->afterCreating(function (User $user): void {
+            $user->termsAcceptances()
+                ->where('terms_version', config('legal.terms_version'))
+                ->where('privacy_version', config('legal.privacy_version'))
+                ->delete();
+        });
+    }
+
     /**
      * Define the model's default state.
      *

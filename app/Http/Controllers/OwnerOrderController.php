@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\Product;
 use App\Services\InventoryService;
+use App\Services\ThermalPrintService;
 use App\Services\WhatsappNotifier;
 use App\Support\OrderLineBuilder;
 use Illuminate\Http\Request;
@@ -35,6 +36,10 @@ class OwnerOrderController extends Controller
             'status' => ['required', 'in:accepted,preparing,ready,out_for_delivery,completed,cancelled'],
         ])['status'];
 
+        if ($next === 'accepted' && $order->payment_mode === 'online' && $order->payment_status !== 'approved') {
+            return back()->withErrors(['status' => 'Este pedido só pode ser aceito depois que o Mercado Pago confirmar o pagamento.']);
+        }
+
         if (!in_array($next, self::allowedTransitions()[$order->status] ?? [], true)) {
             return back()->withErrors(['status' => 'Este pedido já está em outro estágio. Atualize a página e escolha uma das próximas etapas disponíveis.']);
         }
@@ -45,6 +50,9 @@ class OwnerOrderController extends Controller
             if (!in_array($next, self::allowedTransitions()[$current->status] ?? [], true)) {
                 return false;
             }
+            if ($next === 'accepted' && $current->payment_mode === 'online' && $current->payment_status !== 'approved') {
+                return 'unpaid';
+            }
 
             if ($current->status === 'pending' && $next === 'accepted') {
                 app(InventoryService::class)->consume($current);
@@ -54,6 +62,9 @@ class OwnerOrderController extends Controller
             }
 
             $current->update(['status' => $next]);
+            if ($next === 'accepted') {
+                DB::afterCommit(fn () => app(ThermalPrintService::class)->queueKitchenTicket($current->fresh()));
+            }
             $event = match ($next) {
                 'preparing' => 'order_preparing',
                 'ready' => 'order_ready',
@@ -68,6 +79,9 @@ class OwnerOrderController extends Controller
             return true;
         });
 
+        if ($updated === 'unpaid') {
+            return back()->withErrors(['status' => 'O pagamento ainda não foi aprovado. Atualize o pedido antes de aceitá-lo.']);
+        }
         if (!$updated) {
             return back()->withErrors(['status' => 'Este pedido foi atualizado por outra pessoa. Atualize a página e tente novamente.']);
         }

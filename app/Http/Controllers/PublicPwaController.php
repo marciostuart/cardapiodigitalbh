@@ -9,6 +9,39 @@ use Illuminate\Support\Facades\Cache;
 
 class PublicPwaController extends Controller
 {
+    public function pushServiceWorker()
+    {
+        $script = <<<'JS'
+self.addEventListener('push', event => {
+  let payload = {};
+  try { payload = event.data ? event.data.json() : {}; } catch (_) {}
+  const title = typeof payload.title === 'string' ? payload.title : 'Cardápio Digital BH';
+  const body = typeof payload.body === 'string' ? payload.body : 'Há uma atualização no painel.';
+  const tag = typeof payload.tag === 'string' ? payload.tag : 'cardapio-notificacao';
+  const url = typeof payload.url === 'string' && payload.url.startsWith('/') && !payload.url.startsWith('//') ? payload.url : '/dashboard';
+  event.waitUntil(self.registration.showNotification(title, { body, tag, data: { url } }));
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  const path = event.notification.data && typeof event.notification.data.url === 'string' ? event.notification.data.url : '/dashboard';
+  const target = new URL(path, self.location.origin);
+  if (target.origin !== self.location.origin) return;
+  event.waitUntil(clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windows => {
+    const current = windows.find(client => new URL(client.url).origin === self.location.origin);
+    if (current) return current.navigate(target.href).then(client => client.focus());
+    return clients.openWindow(target.href);
+  }));
+});
+JS;
+
+        return response($script, 200, [
+            'Content-Type' => 'application/javascript; charset=utf-8',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate',
+            'Service-Worker-Allowed' => '/',
+        ]);
+    }
+
     public function manifest(Request $request, string $subdomain)
     {
         $venue = $request->attributes->get('venue');
@@ -52,10 +85,13 @@ self.addEventListener('message', event => { if (event.data && event.data.type ==
 self.addEventListener('fetch', event => {
   const request = event.request;
   if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) return;
-  if (request.destination === 'image' || new URL(request.url).pathname.startsWith('/media/')) {
+  if (new URL(request.url).pathname.startsWith('/media/')) {
     event.respondWith(caches.match(request).then(cached => cached || fetch(request).then(response => { const copy = response.clone(); caches.open(CACHE_NAME).then(cache => cache.put(request, copy)); return response; }))); return;
   }
   if (request.mode === 'navigate') {
+    const path = new URL(request.url).pathname;
+    const isPublicPage = path === '/' || path.startsWith('/produto/');
+    if (!isPublicPage) { event.respondWith(fetch(request)); return; }
     event.respondWith(fetch(request).then(response => { const copy = response.clone(); caches.open(CACHE_NAME).then(cache => cache.put(request, copy)); return response; }).catch(() => caches.match(request).then(cached => cached || caches.match(HOME_URL))));
   }
 });
