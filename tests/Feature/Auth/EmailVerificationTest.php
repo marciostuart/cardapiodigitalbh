@@ -4,7 +4,9 @@ namespace Tests\Feature\Auth;
 
 use App\Models\User;
 use Illuminate\Auth\Events\Verified;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
@@ -71,6 +73,27 @@ class EmailVerificationTest extends TestCase
         Event::assertDispatched(Verified::class);
         $this->assertTrue($user->fresh()->hasVerifiedEmail());
         $response->assertRedirect(route('dashboard', absolute: false).'?verified=1');
+    }
+
+    public function test_verification_email_uses_canonical_url_without_default_https_port(): void
+    {
+        $user = User::factory()->unverified()->create();
+
+        config(['app.url' => 'https://cardapiodigitalbh.com.br']);
+        URL::forceRootUrl('http://cardapiodigitalbh.com.br:443');
+        URL::forceScheme('https');
+
+        try {
+            $mail = (new VerifyEmail)->toMail($user);
+            $verificationUrl = $mail->viewData['actionUrl'];
+
+            $this->assertStringStartsWith('https://cardapiodigitalbh.com.br/verify-email/', $verificationUrl);
+            $this->assertStringNotContainsString(':443/', $verificationUrl);
+            $this->assertTrue(URL::hasValidSignature(Request::create($verificationUrl)));
+        } finally {
+            URL::forceRootUrl(null);
+            URL::forceScheme(null);
+        }
     }
 
     public function test_email_is_not_verified_with_invalid_hash(): void
