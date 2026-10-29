@@ -22,9 +22,14 @@ for name in $services; do
     printf 'OK %s replicas=%s\n' "$service" "$replicas"
 done
 
-for path in / /up /images/cardapio-digital-bh-logo.svg /images/cardapio-digital-bh-favicon.webp; do
-    curl -fsS --max-time 15 -o /dev/null "$base_url$path" || fail "HTTP falhou em $base_url$path."
-    printf 'OK HTTP %s\n' "$path"
+for path in / /up /favicon.ico /images/cardapio-digital-bh-logo.svg /images/cardapio-digital-bh-favicon.webp; do
+    bytes=$(curl -fsS --max-time 15 -o /dev/null -w '%{size_download}' "$base_url$path") \
+        || fail "HTTP falhou em $base_url$path."
+    case "$bytes" in
+        ''|*[!0-9]*) fail "resposta invalida ao verificar $base_url$path." ;;
+    esac
+    [ "$bytes" -gt 0 ] || fail "$base_url$path respondeu HTTP sem conteudo."
+    printf 'OK HTTP %s bytes=%s\n' "$path" "$bytes"
 done
 
 headers=$(curl -fsS --max-time 15 -D - -o /dev/null "$base_url/") || fail 'nao foi possivel ler os cabecalhos HTTP.'

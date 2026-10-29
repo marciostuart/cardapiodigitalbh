@@ -16,7 +16,7 @@ Os passos abaixo descrevem a primeira instalacao. Se ja existir uma stack `carda
 4. Publique `docker-compose.yml` pelo recurso Git do Portainer.
 5. Na primeira instalacao, execute `php artisan migrate --force` e `php artisan storage:link` no container `app`. Em cada release que inclua migration, aplique `php artisan migrate --force` com a nova imagem antes de liberar as novas funcoes; migrations devem manter compatibilidade com a revisao anterior durante o rollout.
 6. Para habilitar Web Push, depois de implantar o codigo, execute `sh deploy/setup-webpush.sh` uma vez no host Swarm e preserve o par VAPID. O comando grava as chaves diretamente no `.env` protegido sem exibir a privada. Reaplique somente a stack `cardapiodigitalbh` para carregar as variaveis.
-7. Rode `sh deploy/verify-stack-smoke.sh` no host Swarm. Para um ambiente de teste, defina `CARDAPIO_PUBLIC_URL` antes do comando. O script verifica os quatro serviços em 1/1, health, marca, favicon e permissao de geolocalizacao; fluxos autenticados e pilotos fisicos precisam de testes proprios.
+7. Rode `sh deploy/verify-stack-smoke.sh` no host Swarm. Para um ambiente de teste, defina `CARDAPIO_PUBLIC_URL` antes do comando. O script verifica os quatro serviços em 1/1, health, respostas nao vazias para marca/favicon e permissao de geolocalizacao; fluxos autenticados e pilotos fisicos precisam de testes proprios.
 
 O Traefik recebe o dominio raiz e os subdominios pela rede `360Network`. Caddy atende HTTP internamente e o PHP-FPM executa Laravel. Os workers processam as filas `default` e `payments` no Redis.
 
