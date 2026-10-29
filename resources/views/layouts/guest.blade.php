@@ -53,5 +53,6 @@
             <section class="auth-card"><a href="/" class="back">← Voltar para o site</a>{{ $slot }}</section>
         </main>
     </div>
+    @include('layouts.cookie-consent')
 </body>
 </html>

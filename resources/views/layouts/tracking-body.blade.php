@@ -1,1 +1,1 @@
-{{-- O GTM global é inserido pelo middleware para abranger todas as páginas HTML. --}}
+@include('layouts.cookie-consent')

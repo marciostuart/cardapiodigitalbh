@@ -39,6 +39,8 @@ O agente local usa o driver instalado no Windows e atende impressoras USB, inclu
 
 O cadastro e o acesso ao painel registram o aceite e a versão dos Termos de Uso e da Política de Privacidade. Ao alterar um documento, atualize a variável correspondente (`CARDAPIO_TERMS_VERSION` ou `CARDAPIO_PRIVACY_VERSION`) no `.env` protegido; usuários existentes verão a confirmação antes de continuar. Os valores padrão estão em `config/legal.php`.
 
+Google Analytics, Meta Pixel e Google Tag Manager ficam bloqueados até o visitante escolher as categorias de medição e publicidade no gerenciador de cookies. A escolha pode ser revista pelo botão “Preferências de cookies”; o Tag Manager só carrega quando as duas categorias foram aceitas.
+
 Nao envie chaves, tokens ou o conteudo do `.env` pelo chat. Se um campo ja existir, atualize o valor dessa linha; nao crie uma segunda linha com o mesmo nome.
 
 ## Validacao

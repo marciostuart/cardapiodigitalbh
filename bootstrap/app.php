@@ -23,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(InjectGlobalTracking::class);
+        $middleware->encryptCookies(except: ['cd_tracking_consent']);
         $middleware->validateCsrfTokens(except: ['webhooks/evolution', 'webhooks/mercado-pago']);
         $middleware->alias([
             'tenant' => ResolveTenant::class,

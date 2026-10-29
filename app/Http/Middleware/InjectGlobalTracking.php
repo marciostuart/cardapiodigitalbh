@@ -19,6 +19,12 @@ class InjectGlobalTracking
             return $response;
         }
 
+        // A global GTM container can include analytics and advertising tags, so
+        // require explicit consent to both non-essential categories.
+        if ($request->cookie('cd_tracking_consent') !== 'a1m1') {
+            return $response;
+        }
+
         $containerId = Schema::hasTable('platform_settings') ? PlatformSetting::value('gtm_container_id') : null;
         if (! $containerId) return $response;
 
