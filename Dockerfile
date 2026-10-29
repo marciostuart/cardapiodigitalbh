@@ -23,7 +23,9 @@ COPY composer.json composer.lock ./
 COPY --from=vendor /var/www/html/vendor ./vendor
 COPY . .
 COPY --from=frontend /build/public/build ./public/build
-RUN composer dump-autoload --no-dev --optimize && chown -R www-data:www-data storage bootstrap/cache
+RUN mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views bootstrap/cache \
+    && composer dump-autoload --no-dev --optimize \
+    && chown -R www-data:www-data storage bootstrap/cache
 CMD ["php-fpm", "-F"]
 
 FROM caddy:2.10-alpine AS web
