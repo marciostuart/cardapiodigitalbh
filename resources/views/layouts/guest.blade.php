@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="theme-color" content="#EA4335">
     <title>{{ $title ?? 'Acesso | Cardápio Digital BH' }}</title>
-    <link rel="icon" type="image/svg+xml" href="{{ asset('images/cardapio-digital-bh-logo.svg') }}">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images/cardapio-digital-bh-brand.svg') }}">
     <link rel="icon" type="image/webp" href="{{ asset('images/cardapio-digital-bh-favicon.webp') }}">
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet"/>
@@ -14,9 +14,9 @@
     <style>
         body{background:#fffaf6}
         .auth-shell{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,45%)}
-        .auth-side{background:radial-gradient(circle at 78% 18%,rgba(251,188,5,.3),transparent 30%),linear-gradient(145deg,#2d2422,#422820);padding:clamp(35px,6vw,78px);color:#fff;display:flex;flex-direction:column;justify-content:space-between}
+        .auth-side{background:radial-gradient(circle at 78% 18%,rgba(251,188,5,.3),transparent 30%),linear-gradient(145deg,#b9362b,#681f1b);padding:clamp(35px,6vw,78px);color:#fff;display:flex;flex-direction:column;justify-content:space-between}
         .brand{display:flex;align-items:center;gap:12px;color:#fff;font-weight:800;font-size:20px;letter-spacing:-.6px;text-decoration:none}
-        .brand img{width:48px;height:48px;object-fit:contain;background:#fff;border-radius:12px;padding:3px}
+        .brand img{display:block;width:min(170px,55vw);height:auto;max-height:108px;object-fit:contain;background:#fff;border-radius:16px;padding:12px}
         .auth-side h1{font-size:clamp(36px,5vw,56px);letter-spacing:-2px;line-height:1.02;max-width:600px;margin:30px 0 20px}
         .auth-side p{max-width:470px;color:#f1dfd5;font-size:17px}
         .auth-side .eyebrow{color:#fbbc05}
@@ -37,7 +37,7 @@
 <body>
     <div class="auth-shell">
         <aside class="auth-side">
-            <a class="brand" href="/"><img src="{{ asset('images/cardapio-digital-bh-logo.svg') }}" alt=""><span>Cardápio Digital BH</span></a>
+            <a class="brand" href="/" aria-label="Cardápio Digital BH, página inicial"><img src="{{ asset('images/cardapio-digital-bh-brand.svg') }}" alt="Cardápio Digital BH" width="640" height="403" fetchpriority="high"></a>
             <div>
                 <p class="eyebrow uppercase text-xs font-bold tracking-widest">Operação para alimentação</p>
                 <h1>Seu salão no ritmo certo.</h1>

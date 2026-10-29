@@ -211,3 +211,12 @@ Este checklist substitui pendências antigas que ficaram desatualizadas. “Impl
 | Web Push | Implementado localmente | consentimento e envio para novos pedidos; VAPID e entrega real ainda aguardam configuração/piloto |
 | Gateway de pagamento online por estabelecimento | Implementado localmente | Mercado Pago OAuth/Checkout Pro por lojista; pedido fica aguardando pagamento e só segue para cozinha após aprovação; credenciais sandbox e homologação ainda pendentes |
 | Marketplace, afiliados, anúncios e vouchers | Planejado | não bloqueia o lançamento operacional |
+
+
+### Identidade visual institucional e otimização de imagens (2026-10-29)
+
+- A referência solicitada está em D:\Márcio\Google Drive\Drive\360BH\Site Cardápio Digital BH. A marca completa veio de Logo2.svg; foi criada a versão vetorial public/images/cardapio-digital-bh-brand.svg com área útil ajustada. O símbolo standalone existente continua válido no painel interno; as páginas institucionais, cadastro/acesso, favicons e a página local de BH usam a marca completa.
+- A home institucional substitui o logotipo desenhado em CSS e o telefone fictício por logo oficial e fotografias do diretório de referência, com variantes de desktop/mobile. As cores e o layout da vitrine de cada lojista permanecem independentes.
+- Imagens raster da referência foram redimensionadas e exportadas a WebP qualidade 75: desktop 1600x900, 53.168 bytes (fonte JPEG 79.404 bytes); mobile 900x1600, 39.562 bytes (fonte 61.166 bytes); favicon 150x150 RGBA, 4.788 bytes; sombra decorativa 250x250 RGBA, 378 bytes (PNG antigo 2.018 bytes removido). Logos permanecem SVG vetorial; favicon.ico permanece para compatibilidade.
+- O fluxo de uploads de lojistas já usa WebP no `TenantMedia` e redimensiona até 1400 px, com qualidade adaptativa 68→55 para manter alvo de 140 KiB; esta política operacional já cobre logos, produtos, banners, capas e imagens SEO. A carga visual institucional usa q75 nos raster novos.
+- CSS institucional recebe cache bust ?v=20261029-brand. Localmente, páginas home e SEO foram renderizadas em desktop 1440 px e mobile 390 px; as imagens carregaram, erros JS não ocorreram e a rolagem horizontal móvel foi eliminada. Compilação Blade e git diff --check passaram. Publicação e validação visual ao vivo deste conjunto ainda pendentes até o registro do release.
