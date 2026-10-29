@@ -12,13 +12,13 @@ Os passos abaixo descrevem a primeira instalacao. Se ja existir uma stack `carda
 
 1. Crie o banco PostgreSQL `cardapiodigitalbh` e o bucket MinIO `cardapiodigitalbh`.
 2. No repositorio clonado pelo Portainer, copie `.env.production.example` para `.env` e preencha os valores sem inclui-los no Git.
-3. Crie a rede externa `traefik` se ela ainda nao existir e confirme que os nomes `postgres`, `redis` e `minio` sao acessiveis pela stack.
+3. Crie a rede externa `360Network` se ela ainda nao existir e confirme que os nomes `postgres`, `redis` e `minio` sao acessiveis pela stack.
 4. Publique `docker-compose.yml` pelo recurso Git do Portainer.
 5. Na primeira instalacao, execute `php artisan migrate --force` e `php artisan storage:link` no container `app`. Em cada release que inclua migration, aplique `php artisan migrate --force` com a nova imagem antes de liberar as novas funcoes; migrations devem manter compatibilidade com a revisao anterior durante o rollout.
 6. Para habilitar Web Push, depois de implantar o codigo, execute `sh deploy/setup-webpush.sh` uma vez no host Swarm e preserve o par VAPID. O comando grava as chaves diretamente no `.env` protegido sem exibir a privada. Reaplique somente a stack `cardapiodigitalbh` para carregar as variaveis.
-7. Verifique `https://cardapiodigitalbh.com.br/up` e depois um subdominio de estabelecimento.
+7. Rode `sh deploy/verify-stack-smoke.sh` no host Swarm. Para um ambiente de teste, defina `CARDAPIO_PUBLIC_URL` antes do comando. O script verifica os quatro serviços em 1/1, health, marca, favicon e permissao de geolocalizacao; fluxos autenticados e pilotos fisicos precisam de testes proprios.
 
-O Traefik recebe o dominio raiz e os subdominios. Caddy atende HTTP internamente e o PHP-FPM executa Laravel. O worker processa filas no Redis.
+O Traefik recebe o dominio raiz e os subdominios pela rede `360Network`. Caddy atende HTTP internamente e o PHP-FPM executa Laravel. Os workers processam as filas `default` e `payments` no Redis.
 
 Para a Evolution API, configure somente no ambiente de produção: `EVOLUTION_API_URL`, `EVOLUTION_API_KEY` e `EVOLUTION_WEBHOOK_SECRET`. O webhook deve apontar para `https://cardapiodigitalbh.com.br/webhooks/evolution` e enviar o segredo no cabeçalho `X-Webhook-Secret`.
 

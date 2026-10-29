@@ -147,6 +147,7 @@ Este checklist substitui pendências antigas que ficaram desatualizadas. “Impl
 - [x] Corrigida a fila operacional: `SyncMercadoPagoPayment` e `ExpireOnlinePayment` usam `payments`; novo serviço Swarm `payments-worker` consome essa fila. Compose validado com parser YAML e testes confirmam os jobs; falta publicar e verificar réplicas/execução na VPS.
 - [x] `git archive` agora exclui `release-*.tar.gz` rastreados via `.gitattributes`; os arquivos históricos locais foram preservados e não entram no pacote da VPS.
 - [x] O template `.env.production.example` orienta em passos curtos a gerar VAPID com `deploy/setup-webpush.sh`; o script escreve no `.env` protegido da VPS sem imprimir a chave privada. Execução e entrega real continuam pendentes da VPS e de um browser piloto.
+- [x] Criado `deploy/verify-stack-smoke.sh`, somente leitura, para conferir app/web/worker/payments-worker em 1/1, `/`, `/up`, logo, favicon e permissão de geolocalização; sintaxe shell validada. README corrigido para a rede externa `360Network`. O script precisa ser executado após a publicação.
 
 ### UX pública e publicação
 
@@ -155,7 +156,7 @@ Este checklist substitui pendências antigas que ficaram desatualizadas. “Impl
 - [x] README de Portainer agora separa primeira instalação de stack existente e exige inventário, backup e plano de retorno antes de reaplicar, sem alterar stacks de outros projetos.
 - [x] A alteração de `resources/views/public/partials/header.blade.php` foi revisada, commitada e enviada na branch `codex/cardapio-lancamento-20261029`; hash remoto conferido. Os 15 arquivos `release-*.tar.gz` foram inventariados sem extração: são arquivos TAR válidos de versões-fonte, sem `.env` ou `public/build`; 7 já estão rastreados e 8 seguem locais. Todos foram preservados e excluídos do contexto Docker.
 - [x] Corrigida localmente a política do Caddy: a resposta pública atual envia `geolocation=()` e impede o geofence; a versão da branch passa a permitir localização somente na própria origem. Validar o cabeçalho e a permissão do navegador após implantar.
-- [ ] Confirmar qual commit está implantado na VPS e conferir serviços/health da stack exclusiva `cardapiodigitalbh`; publicar somente após revisão visual e validação, sem tocar em outros recursos. Em 2026-10-29, domínio raiz e `/up` responderam HTTP 200, mas os novos caminhos do logo e favicon retornaram 404 e o cabeçalho ativo ainda bloqueia geolocalização.
+- [ ] Confirmar qual commit está implantado na VPS e conferir serviços/health da stack exclusiva `cardapiodigitalbh`; publicar somente após revisão visual e validação, sem tocar em outros recursos. Em 2026-10-30, domínio raiz e `/up` responderam HTTP 200, mas os caminhos do logo e favicon retornaram 404 e o cabeçalho ativo ainda envia `geolocation=()`; a branch já contém a correção e o smoke check de pós-publicação.
 - [ ] Validar fluxos autenticados de owner/lojista e a jornada completa de pedidos no ambiente de homologação/produção, além dos testes automatizados.
 - [ ] Verificar automação de backup e restauração ensaiada do PostgreSQL e MinIO; definir RPO/RTO e retenção documentados.
 - [ ] Adotar gestão da stack pelo Portainer somente depois de inventariar o estado atual e confirmar que a stack exclusiva pode ser importada sem recriação destrutiva.
