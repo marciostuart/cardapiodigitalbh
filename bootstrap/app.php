@@ -22,6 +22,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Traefik and Caddy terminate HTTPS before forwarding requests to PHP-FPM.
+        // Trust only the private reverse-proxy network so signed HTTPS URLs validate.
+        $middleware->trustProxies(at: env('TRUSTED_PROXIES', '10.0.1.0/24'));
         $middleware->append(InjectGlobalTracking::class);
         $middleware->encryptCookies(except: ['cd_tracking_consent']);
         $middleware->validateCsrfTokens(except: ['webhooks/evolution', 'webhooks/mercado-pago']);

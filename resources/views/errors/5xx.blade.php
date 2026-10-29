@@ -1,0 +1,1 @@
+@include('errors.layout', ['code' => isset($exception) ? $exception->getStatusCode() : '5xx', 'title' => 'O serviço está temporariamente indisponível', 'message' => 'Ocorreu uma falha temporária. Aguarde um pouco e tente novamente.'])

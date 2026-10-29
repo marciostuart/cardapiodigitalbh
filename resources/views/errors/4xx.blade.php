@@ -1,0 +1,1 @@
+@include('errors.layout', ['code' => isset($exception) ? $exception->getStatusCode() : '4xx', 'title' => 'Não foi possível concluir esta solicitação', 'message' => 'Confira o endereço e os dados enviados. Se o problema persistir, volte ao início e tente novamente.'])

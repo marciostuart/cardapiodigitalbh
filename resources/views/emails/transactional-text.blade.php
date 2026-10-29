@@ -9,3 +9,4 @@
 {{ $footer }}
 
 Cardápio Digital BH
+Seu negócio merece um cardápio que vende.
