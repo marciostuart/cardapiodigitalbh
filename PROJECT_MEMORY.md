@@ -206,7 +206,7 @@ Este checklist substitui pendências antigas que ficaram desatualizadas. “Impl
 | Variações e adicionais | Implementado/testado | grupos obrigatórios/opcionais, limites e preço no servidor |
 | Relatórios | Implementado/testado | período, KPIs, canais, produtos e CSV |
 | Banners | Implementado | CRUD, agendamento e renderização pública; teste/validação de produção ainda deve acompanhar publicação |
-| Impressão QR | Implementado | impressão pelo navegador; agente Windows de spooler/driver também implementado localmente, aguardando piloto físico |
+| Impressão QR | Implementado localmente | impressão pelo navegador; agente Windows x64 agora tem pacote autocontido, instalador/atualizador por usuário, checksum e desinstalador; parsing, build, checksum e simulações `-WhatIf` passaram. Piloto físico com Windows e impressoras térmicas (incluindo Epson TM-T20) ainda pendente; atualizações são manuais |
 | Web Push | Implementado localmente | consentimento e envio para novos pedidos; VAPID e entrega real ainda aguardam configuração/piloto |
 | Gateway de pagamento online por estabelecimento | Implementado localmente | Mercado Pago OAuth/Checkout Pro por lojista; pedido fica aguardando pagamento e só segue para cozinha após aprovação; credenciais sandbox e homologação ainda pendentes |
 | Marketplace, afiliados, anúncios e vouchers | Planejado | não bloqueia o lançamento operacional |

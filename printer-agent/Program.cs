@@ -15,6 +15,9 @@ internal static class Program
     [STAThread]
     private static void Main()
     {
+        using var mutex = new Mutex(true, @"Local\CardapioDigitalBH.PrintAgent", out var createdNew);
+        if (!createdNew) return;
+
         ApplicationConfiguration.Initialize();
         Application.Run(new AgentContext());
     }
@@ -23,6 +26,7 @@ internal static class Program
 internal sealed class AgentContext : ApplicationContext
 {
     private static readonly HttpClient Client = new() { Timeout = TimeSpan.FromSeconds(12) };
+    private readonly Icon _agentIcon;
     private readonly NotifyIcon _icon;
     private readonly ToolStripMenuItem _status;
     private readonly ToolStripMenuItem _printerMenu;
@@ -57,7 +61,8 @@ internal sealed class AgentContext : ApplicationContext
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add("Sair", null, (_, _) => ExitThread());
 
-        _icon = new NotifyIcon { Icon = SystemIcons.Application, Text = "Cardápio Digital BH · Impressão", ContextMenuStrip = menu, Visible = true };
+        _agentIcon = Icon.ExtractAssociatedIcon(Application.ExecutablePath) ?? (Icon)SystemIcons.Application.Clone();
+        _icon = new NotifyIcon { Icon = _agentIcon, Text = "Cardápio Digital BH · Impressão", ContextMenuStrip = menu, Visible = true };
         _icon.DoubleClick += (_, _) => ShowStatus();
         RefreshPrinterMenu();
 
@@ -78,6 +83,7 @@ internal sealed class AgentContext : ApplicationContext
         _config = null;
         _icon.Visible = false;
         _icon.Dispose();
+        _agentIcon.Dispose();
         _dispatcher.Dispose();
         base.ExitThreadCore();
     }
@@ -265,7 +271,7 @@ internal sealed class AgentContext : ApplicationContext
         catch { return null; }
     }
 
-    private void SaveConfig() => File.WriteAllText(_configPath, JsonSerializer.Serialize(_config));
+    private void SaveConfig() => WriteAtomically(_configPath, JsonSerializer.Serialize(_config));
 
     private HashSet<long> LoadPrinted()
     {
@@ -273,7 +279,31 @@ internal sealed class AgentContext : ApplicationContext
         catch { return []; }
     }
 
-    private void SavePrinted() => File.WriteAllText(_printedPath, JsonSerializer.Serialize(_printed));
+    private void SavePrinted() => WriteAtomically(_printedPath, JsonSerializer.Serialize(_printed));
+
+    private static void WriteAtomically(string path, string contents)
+    {
+        var temporaryPath = Path.Combine(
+            Path.GetDirectoryName(path)!,
+            $".{Path.GetFileName(path)}.{Guid.NewGuid():N}.tmp");
+
+        try
+        {
+            var bytes = new UTF8Encoding(false).GetBytes(contents);
+            using (var stream = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            {
+                stream.Write(bytes, 0, bytes.Length);
+                stream.Flush(flushToDisk: true);
+            }
+
+            File.Move(temporaryPath, path, overwrite: true);
+        }
+        finally
+        {
+            try { File.Delete(temporaryPath); }
+            catch { }
+        }
+    }
 
     private static byte[] Entropy() => Encoding.UTF8.GetBytes("CardapioDigitalBH.PrintAgent.v1");
 
