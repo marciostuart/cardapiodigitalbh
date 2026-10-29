@@ -127,7 +127,7 @@ Este checklist substitui pendências antigas que ficaram desatualizadas. “Impl
 - Pagamento online cria o pedido com estado aguardando pagamento e oferece checkout/QR antes de enviar para a cozinha; o piloto usará PIX/cartão pelo Mercado Pago.
 - Impressão inicial: USB em computador Windows, começando por Epson TM-T20 e compatibilidade via drivers instalados no Windows.
 - Geofence: proprietário autoriza exceção por prazo curto (15 minutos, código de uso único).
-- Credenciais Evolution/Mercado Pago ainda precisam ser verificadas na VPS; somente templates e instruções seguros estão prontos. O responsável preencherá os valores sem enviá-los pelo chat.
+- O `.env` local agora contém campos vazios e instruções para Evolution, VAPID e Mercado Pago; nenhuma credencial de sandbox foi configurada localmente. Os valores da VPS só poderão ser verificados após restabelecer SSH seguro; o responsável preencherá segredos sem enviá-los pelo chat.
 
 ### Núcleo do produto
 
