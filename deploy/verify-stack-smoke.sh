@@ -23,7 +23,11 @@ for name in $services; do
 done
 
 for path in / /up /favicon.ico /images/cardapio-digital-bh-logo.svg /images/cardapio-digital-bh-favicon.webp; do
-    bytes=$(curl -fsS --max-time 15 -o /dev/null -w '%{size_download}' "$base_url$path") \
+    cache_bust=
+    case "$path" in
+        /favicon.ico|/images/*) cache_bust="?smoke=$(date +%s)-$$" ;;
+    esac
+    bytes=$(curl -fsS --max-time 15 -o /dev/null -w '%{size_download}' "$base_url$path$cache_bust") \
         || fail "HTTP falhou em $base_url$path."
     case "$bytes" in
         ''|*[!0-9]*) fail "resposta invalida ao verificar $base_url$path." ;;
