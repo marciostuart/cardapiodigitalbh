@@ -23,16 +23,19 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        VerifyEmail::createUrlUsing(fn (object $notifiable): string => $this->withCanonicalAppRoot(
-            fn (): string => URL::temporarySignedRoute(
+        VerifyEmail::createUrlUsing(function (object $notifiable): string {
+            $relativeUrl = URL::temporarySignedRoute(
                 'verification.verify',
                 now()->addMinutes(config('auth.verification.expire', 60)),
                 [
                     'id' => $notifiable->getKey(),
                     'hash' => sha1($notifiable->getEmailForVerification()),
                 ],
-            ),
-        ));
+                absolute: false,
+            );
+
+            return $this->withCanonicalAppRoot(fn (): string => URL::to($relativeUrl));
+        });
 
         ResetPassword::toMailUsing(function (object $notifiable, string $token) {
             $url = $this->withCanonicalAppRoot(fn (): string => url(route('password.reset', [

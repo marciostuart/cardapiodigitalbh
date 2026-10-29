@@ -33,7 +33,8 @@ class EmailVerificationTest extends TestCase
         $verificationUrl = URL::temporarySignedRoute(
             'verification.verify',
             now()->addMinutes(60),
-            ['id' => $user->id, 'hash' => sha1($user->email)]
+            ['id' => $user->id, 'hash' => sha1($user->email)],
+            absolute: false,
         );
 
         $response = $this->actingAs($user)->get($verificationUrl);
@@ -54,7 +55,8 @@ class EmailVerificationTest extends TestCase
         $verificationUrl = URL::temporarySignedRoute(
             'verification.verify',
             now()->addMinutes(60),
-            ['id' => $user->id, 'hash' => sha1($user->email)]
+            ['id' => $user->id, 'hash' => sha1($user->email)],
+            absolute: false,
         );
         $verificationUri = parse_url($verificationUrl, PHP_URL_PATH).'?'.parse_url($verificationUrl, PHP_URL_QUERY);
 
@@ -75,6 +77,47 @@ class EmailVerificationTest extends TestCase
         $response->assertRedirect(route('dashboard', absolute: false).'?verified=1');
     }
 
+    public function test_email_can_be_verified_without_an_authenticated_session(): void
+    {
+        $user = User::factory()->unverified()->create();
+        Event::fake();
+
+        $verificationUrl = URL::temporarySignedRoute(
+            'verification.verify',
+            now()->addMinutes(60),
+            ['id' => $user->id, 'hash' => sha1($user->getEmailForVerification())],
+            absolute: false,
+        );
+
+        $response = $this->get($verificationUrl);
+
+        Event::assertDispatched(Verified::class);
+        $this->assertTrue($user->fresh()->hasVerifiedEmail());
+        $response->assertRedirect(route('login', absolute: false));
+        $response->assertSessionHas('status', 'email-verified');
+    }
+
+    public function test_email_can_be_verified_when_a_different_account_is_signed_in(): void
+    {
+        $user = User::factory()->unverified()->create();
+        $otherUser = User::factory()->unverified()->create();
+
+        $verificationUrl = URL::temporarySignedRoute(
+            'verification.verify',
+            now()->addMinutes(60),
+            ['id' => $user->id, 'hash' => sha1($user->getEmailForVerification())],
+            absolute: false,
+        );
+
+        $response = $this->actingAs($otherUser)->get($verificationUrl);
+
+        $this->assertTrue($user->fresh()->hasVerifiedEmail());
+        $this->assertFalse($otherUser->fresh()->hasVerifiedEmail());
+        $response->assertRedirect(route('login', absolute: false));
+        $response->assertSessionHas('status', 'email-verified');
+        $this->assertGuest();
+    }
+
     public function test_verification_email_uses_canonical_url_without_default_https_port(): void
     {
         $user = User::factory()->unverified()->create();
@@ -89,7 +132,7 @@ class EmailVerificationTest extends TestCase
 
             $this->assertStringStartsWith('https://cardapiodigitalbh.com.br/verify-email/', $verificationUrl);
             $this->assertStringNotContainsString(':443/', $verificationUrl);
-            $this->assertTrue(URL::hasValidSignature(Request::create($verificationUrl)));
+            $this->assertTrue(URL::hasValidSignature(Request::create($verificationUrl), absolute: false));
         } finally {
             URL::forceRootUrl(null);
             URL::forceScheme(null);
@@ -103,11 +146,13 @@ class EmailVerificationTest extends TestCase
         $verificationUrl = URL::temporarySignedRoute(
             'verification.verify',
             now()->addMinutes(60),
-            ['id' => $user->id, 'hash' => sha1('wrong-email')]
+            ['id' => $user->id, 'hash' => sha1('wrong-email')],
+            absolute: false,
         );
 
-        $this->actingAs($user)->get($verificationUrl);
+        $response = $this->actingAs($user)->get($verificationUrl);
 
+        $response->assertForbidden();
         $this->assertFalse($user->fresh()->hasVerifiedEmail());
     }
 }
