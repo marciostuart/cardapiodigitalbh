@@ -16,7 +16,6 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
-        @include('layouts.tracking-head')
     </head>
     <body class="font-sans antialiased">
         @include('layouts.tracking-body')

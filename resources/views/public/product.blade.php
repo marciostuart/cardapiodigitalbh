@@ -6,6 +6,7 @@
     @php($seo = $venue->settings ?? [])
     <title>{{ $product->name }} | {{ $seo['seo_title'] ?? $venue->name }}</title>
     <meta name="description" content="{{ Str::limit($product->description ?: 'Conheça '.$product->name.' no cardápio de '.$venue->name, 155) }}">
+    @include('layouts.tracking-head', ['venue' => $venue])
     <style>
         :root {
             --brand: {{ $venue->primary_color ?? '#087f5b' }};
@@ -787,5 +788,6 @@
     renderProductCart();
 </script>
 <style>@media(min-width:721px){.wrap{max-width:1170px!important}}.product-cart-bar .cart-bag{display:grid;place-items:center;width:32px;height:32px}.product-cart-bar .cart-bag-icon{width:30px;height:30px;fill:currentColor;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.product-cart-bar .cart-bag-icon path:first-child{fill:currentColor}.product-cart-bar .cart-bag-icon path:last-child{fill:none}</style>
+@include('layouts.cookie-consent')
 </body>
 </html>

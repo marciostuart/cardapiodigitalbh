@@ -19,6 +19,11 @@ class InjectGlobalTracking
             return $response;
         }
 
+        // Never expose private dashboard or bearer-token URLs to a global tag container.
+        if (! $request->routeIs('marketing.home', 'marketing.local-seo', 'marketing.terms', 'marketing.privacy', 'public.menu', 'public.product')) {
+            return $response;
+        }
+
         // A global GTM container can include analytics and advertising tags, so
         // require explicit consent to both non-essential categories.
         if ($request->cookie('cd_tracking_consent') !== 'a1m1') {

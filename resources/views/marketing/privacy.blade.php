@@ -32,10 +32,11 @@
 
             <h2>Cookies, medição e publicidade</h2>
             <p>Cookies essenciais mantêm sessão, autenticação e segurança. Google Analytics, Meta Pixel e o Google Tag Manager não são carregados antes da escolha do visitante. As preferências de medição e publicidade podem ser aceitas ou recusadas separadamente; o Tag Manager só é ativado quando ambas são aceitas, pois sua configuração pode conter tags das duas categorias.</p>
+            <p>Essas tags são usadas em páginas públicas institucionais e de cardápio. Não são carregadas no painel, em páginas de redefinição de senha ou em links de pedido e mesa que contêm tokens de acesso.</p>
             <p>A escolha fica salva neste navegador por até 180 dias. Use o botão “Preferências de cookies”, disponível nas páginas, para revisar ou retirar sua escolha. Recusar não impede o uso do serviço.</p>
 
             <h2>Compartilhamento e armazenamento</h2>
-            <p>Os dados são processados em infraestrutura de hospedagem, banco de dados e armazenamento de objetos usados para operar a plataforma. Mercado Pago, Evolution API, Google, Meta e serviços de notificação do navegador recebem dados somente nas situações descritas nesta política e conforme os recursos ativados. O bucket de arquivos da plataforma é privado, com acesso separado por estabelecimento.</p>
+            <p>Os dados são processados em infraestrutura de hospedagem, banco de dados e armazenamento de objetos usados para operar a plataforma. As telas de acesso e painel também solicitam a fonte Figtree ao serviço fonts.bunny.net. Mercado Pago, Evolution API, Google, Meta e serviços de notificação do navegador recebem dados somente nas situações descritas nesta política e conforme os recursos ativados. O bucket de arquivos da plataforma é privado, com acesso separado por estabelecimento.</p>
             <p>Não vendemos dados pessoais. Aplicamos controles de acesso e medidas técnicas de proteção. Nenhum sistema conectado à internet é completamente imune a riscos.</p>
 
             <h2>Finalidades e direitos</h2>

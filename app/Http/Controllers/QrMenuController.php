@@ -10,8 +10,9 @@ use Illuminate\Http\Request;
 
 class QrMenuController extends Controller
 {
-    public function show(Request $request, string $token)
+    public function show(Request $request)
     {
+        $token = (string) $request->route('token');
         $table = DiningTable::where('qr_token', $token)->whereHas('venue.tenant', fn ($q) => $q->where('status', 'active'))->with('venue')->firstOrFail();
         $venue = $table->venue;
         $resolved = $request->attributes->get('venue');
