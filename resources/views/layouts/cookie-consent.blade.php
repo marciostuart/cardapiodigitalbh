@@ -36,4 +36,4 @@
     </section>
     <button type="button" class="cd-cookie-manage" data-cookie-manage @unless($hasCookieChoice) hidden @endunless>Preferências de cookies</button>
 </div>
-<script defer src="{{ asset('js/cookie-consent.js') }}"></script>
+<script defer src="{{ asset('js/cookie-consent-20261121.js') }}"></script>

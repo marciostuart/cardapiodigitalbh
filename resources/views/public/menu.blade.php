@@ -109,7 +109,7 @@
 .cart-summary-actions .quantity-step[data-summary-more]{order:0!important}.cart-summary-actions .quantity-step[data-summary-less]{order:1!important}
 .cart-total-row{display:flex;justify-content:space-between;gap:16px;margin-top:10px;padding-top:12px;border-top:2px solid var(--brand);font-size:18px;font-weight:900}
     </style>
-    <style>@media(max-width:720px){.catalog-list .product-track,.catalog-list.category-selected .product-track{grid-template-columns:1fr!important}.catalog-list .product-card,.catalog-list.category-selected .product-card{width:100%!important;max-width:none!important}}</style>
+    <style>.product-body h3{display:block}.product-description{margin-top:8px}@media(max-width:720px){.catalog-list .product-track,.catalog-list.category-selected .product-track{grid-template-columns:1fr!important}.catalog-list .product-card,.catalog-list.category-selected .product-card{width:100%!important;max-width:none!important}.product-track{touch-action:pan-x pan-y}}</style>
     <link rel="stylesheet" href="{{ asset('css/public-checkout.css') }}?v=20260827-2">
 </head>
 <body>
@@ -158,7 +158,6 @@
                 <article class="product-card" data-product-card data-search="{{ Str::lower($product->name.' '.$product->description) }}">
                     <a class="product-photo-link" href="{{ route('public.product',['subdomain'=>$venue->subdomain,'product'=>$product]) }}" aria-label="Ver detalhes de {{ $product->name }}">
                         @if($product->image_path)<img class="product-photo" src="{{ route('public.media',['subdomain'=>$venue->subdomain,'category'=>'products','filename'=>basename($product->image_path)]) }}" alt="{{ $product->name }} - {{ $venue->name }}" @if($loop->parent->first && $loop->first) loading="eager" fetchpriority="high" @else loading="lazy" @endif decoding="async">@else<div class="photo-placeholder">🍽️</div>@endif
-                        <span class="product-photo-shadow" aria-hidden="true"></span><h3 class="product-title-overlay">{{ $product->name }}</h3>
                     </a>
                     <div class="product-body"><h3>{{ $product->name }}</h3><p class="product-description">{{ $product->description ?: 'Confira este produto no cardápio.' }}</p><div class="product-purchase"><span class="product-price">R$ {{ number_format((float) $product->price, 2, ',', '.') }}</span><label class="product-quantity">Qtd.<span class="quantity-control"><input type="number" min="1" max="99" value="1" inputmode="numeric" aria-label="Quantidade de {{ $product->name }}" data-product-quantity><span class="quantity-stepper"><button type="button" class="quantity-step" data-quantity-action="more" aria-label="Aumentar quantidade">+</button><button type="button" class="quantity-step" data-quantity-action="less" aria-label="Diminuir quantidade">−</button></span></span></label></div>
                     @if((isset($table) || $venue->pickup_enabled || $venue->delivery_enabled) && ($isOpen ?? true))
